@@ -1,0 +1,225 @@
+<% http_header("style/form2.css", "/funcs.js", "/streamboost.js", "/jquery-1.7.2.min.js", "filterSelect.js") %>
+<% body_header("_edit_device", "QOS_device.htm", "edit_device") %>
+<style type="text/css">
+
+.oneline{width: 100%; height: auto;  position: relative; top: 20px; float:left;}
+.lineleft{width:40%; height:200px;  position: relative; float:left; background-image: url(../image/v_middleline.gif); background-repeat: no-repeat; background-position: 90% 20%; }
+.lineleft .devIcon{width: 80px; height: 80px; position: relative; top:20px; left: 20px; background-color: #702b86;}
+.lineleft .devIcon img{position: relative; top: 3px; left: 3px; width:74px; height:74px}
+.lineleft .devType{width:200px; height: 40px; position: relative; top:-40px; left: 120px;}
+.lineleft .devType .short {position: relative; top:-25px; right: 90px;}
+.lineleft .devType .long {position: relative; top:-25px; right: 110px;}
+.lineleft .devName{position: relative; top:0px; left: 20px; }
+.lineleft .devName b {font: bold 14px arial; color:black}
+
+.lineright{width: 60%; height: auto; position: relative; top:0px; left:0px; float:left;  }
+
+.spliteline{width:100%; height:2px; background: url(image/middleline.gif) 0 0 repeat-x; float:left;}
+.pri_down, .pri_up{width: auto ; padding: 5px 20px 5px 20px; background-color: #d1d2d4; display:inline; margin-right:5px; cursor: pointer;}
+.pri_up{ background-color: #702b86; color: white; }
+
+.right_table tr{height: 30px;}
+</style>
+
+<div class="page_title">$edit_device</div>
+<div class="fix_button">
+<TABLE width=100% border=0 cellpadding=0 cellspacing=2>
+<TR>
+	<TD nowrap align=center>
+	<script>
+		var master="<% cfg_get("http_loginname") %>";
+		if( master=="admin" )
+			document.write('<input class="new_cancel_bt ui-corner-all" type="reset" name="Cancel" value="$cancel_mark" onClick="location.href=\'QOS_device.htm\';"><input class="new_apply_bt ui-corner-all" type="submit" name="Apply" value="$apply_mark" onClick="return check_device_edit_apply(document.forms[0]);">');
+		else
+			document.write('<input class="new_greycancel_bt ui-corner-all" type="reset" name="Cancel" value="$cancel_mark" disabled><input class="new_greyapply_bt ui-corner-all" type="submit" name="Apply" value="$apply_mark" disabled>');
+	</script>
+	</TD>
+</TR>
+</TABLE>
+</div>
+<script language="javascript" type="text/javascript">
+<!--% list_access_control_device() %-->
+
+<% refresh_timestamp("edit_application") %>
+
+var ts='<% cfg_get("edit_application") %>';
+
+var trend_micro_enable="<% cfg_get("trend_micro_enable") %>";
+var edit_mac_addr=parent.qos_edit_mac.toUpperCase();
+var edit_ip_addr=parent.qos_edit_ip;
+var edit_name = parent.qos_edit_name;
+var priority=parent.qos_edit_priority;
+var devtype=parent.qos_edit_devtype;
+var contype=parent.qos_edit_contype;
+var onOff=parent.qos_edit_onOff;
+
+function change_priority(p)
+{
+	$$(".pri_up").removeClass("pri_up").addClass("pri_down");
+	$$("#"+p).removeClass("pri_down").addClass("pri_up");
+}
+
+function loadvalue()
+{
+	var cf = document.forms[0];
+	cf.name_tag.value="";
+	//cf.icon_tag[46].selected = true;
+	if(trend_micro_enable == "1" && top.enable_ap_flag != 1 && top.enable_bridge_flag == 0)
+		document.getElementById("dev_priority").style.display="";
+	else
+		document.getElementById("dev_priority").style.display="none";
+
+
+	cf.name_tag.value=edit_name.replace(/&#38;/g,'&').replace(/&#35;/g,'#').replace(/&#34;/g,'"').replace(/&#39;/g,"'").replace(/&gt;/g,'>').replace(/&lt;/g,'<').replace(/&#40;/g,"(").replace(/&#41;/g,")");
+
+	change_priority(priority);
+
+	if(onOff == 0) {
+		$$(".devIcon").css("background-color", "#949599");
+		document.getElementById("dev_priority").style.display="none";
+	}
+}
+
+function select_icon()
+{
+	var icon_img=document.getElementById("icon_img");
+	var device_icons=document.getElementById("icon_tag");
+	var type_id = device_icons.options[device_icons.selectedIndex].value;
+
+	var priority = type_list[type_id][1];
+	if(priority == 10)
+		change_priority("HIGHEST");
+	else if(priority == 20)
+		change_priority("HIGH");
+	else if(priority == 30)
+		change_priority("MEDIUM");
+	else if(priority == 40)
+		change_priority("LOW");
+	else
+		change_priority("MEDIUM");
+	var image = type_list[type_id][2];
+	icon_img.src="image/streamboost/"+image+".jpg";
+}
+
+function check_device_edit_apply(cf)
+{
+	var device_icons=document.getElementById("icon_tag");
+	var value_priority = "MEDIUM";
+	var value_type = "47";
+	var i=0;
+	if(trend_micro_enable == "1" && top.enable_ap_flag != 1 && top.enable_bridge_flag == 0){
+		if($$(".pri_up"))
+			value_priority = $$(".pri_up").attr("id");
+		else
+			value_priority = "MEDIUM";
+	}else
+		value_priority = "_";
+
+//	for(i=0;i< priority_arr.length;i++) {
+//		if(device_icons.options[i].selected==true)
+//			value_type = i+1;
+//	}
+	value_type = device_icons.value;
+	var value_name = cf.name_tag.value.replace(/\\/g,"\\\\");
+	var value_mac = edit_mac_addr;
+
+	if(value_priority == "" || value_type == "") {
+		sAlert("Value of priority or type cannot be NULL!");
+		return false;
+	} else {
+		cf.hid_edit_mac.value = value_mac;
+		cf.hid_edit_priority.value = value_priority;
+		cf.hid_edit_type.value = value_type;
+		cf.hid_edit_name.value = value_name;
+	}
+	cf.submit();
+}
+
+</script>
+<div id="main" class="main_top_button">
+<input type="hidden" name="hid_edit_mac">
+<input type="hidden" name="hid_edit_priority">
+<input type="hidden" name="hid_edit_type">
+<input type="hidden" name="hid_edit_name">
+
+<div class="oneline">
+	<div class="lineleft">
+		<div class="devIcon big-corner-all">
+			<script>document.write("<img  id='icon_img' src=image/streamboost/"+type_list[devtype][2]+".jpg width=74px height=74px id=icon_img />");</script>
+		</div>
+		<div class="devType">
+			<script>document.write(show_type(contype));</script>
+		</div>
+		<div class="devName"><b><script>
+			var acture_name = edit_name.replace(/#/g,"&#35;").replace(/&/g,"&#38;").replace(/\\/g, "&#92;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\(/g,"&#40;").replace(/\)/g,"&#41;").replace(/\"/g,'&#34;').replace(/\'/g,'&#39;');
+			document.write(acture_name);
+		</script></b></div>
+	</div>
+	<div class="lineright">
+
+<TABLE border=0 cellpadding=2 cellspacing=0 width=100% class="right_table">
+<TR >
+	<TD nowrap ><A tabindex=-1 href="javascript:loadhelp('_edit_device','ip_tag')"><b>$info_mark_ip</b></a></TD>
+	<TD nowrap align="left"><script>document.write(edit_ip_addr);</script></TD>
+</TR>
+<TR >
+	<TD nowrap ><A tabindex=-1 href="javascript:loadhelp('_edit_device','mac_tag')"><b>$info_mark_mac</b></a></TD>
+	<TD nowrap align="left"><script>document.write(edit_mac_addr);</script></TD>
+</TR>
+<TR >
+	<TD nowrap ><A tabindex=-1 href="javascript:loadhelp('_edit_device','name_tag')"><b>$lan_mark_name</b></a></TD>
+	<TD nowrap align="left"><input type="text" name="name_tag" maxLength="64" size="20" value=""></TD>
+</TR>
+<TR >
+	<TD nowrap ><b>$device_type</b></TD>
+	<TD nowrap align="left">
+		<select id="icon_tag" onchange="select_icon();">
+			<script>
+				function sort_type_fun(a, b)
+				{
+					return (a[0].toLowerCase() > b[0].toLowerCase()) ? 1: -1;
+				}
+
+				var sort_type_list = new Array();
+				for(var i in type_list)
+				{
+					var tmp = type_list[i];
+					tmp.push(i);
+					sort_type_list.push(tmp);
+				}
+				sort_type_list.sort(sort_type_fun);
+				for(var j=0; j<sort_type_list.length; j++)
+				{
+					var type_id = sort_type_list[j][3];
+					if(type_id == devtype)
+						document.write('<option value="'+type_id+'" selected>'+type_list[type_id][0]+'</option>');
+					else
+						document.write('<option value="'+type_id+'">'+type_list[type_id][0]+'</option>');
+				}
+			</script>
+		</select>
+		<script>
+			$$("select").filterSelect();
+			$$("select").hide();
+			$$("option").hide();
+		</script>
+	</TD>
+</TR>
+<TR id="dev_priority" style="display:none;">
+	<TD nowrap ><A tabindex=-1 href="javascript:loadhelp('_edit_device','priority_tag')"><b>$qos_devpriority</b></a></TD>
+	<TD nowrap align="left">
+		<div id="LOW" class="pri_down ui-corner-all" onclick="change_priority(this.id)">$qos_low</div>
+		<div id="MEDIUM" class="pri_down ui-corner-all" onclick="change_priority(this.id)">$medium_mark</div>
+		<div id="HIGH" class="pri_down ui-corner-all" onclick="change_priority(this.id)">$qos_high</div>
+		<div id="HIGHEST" class="pri_down ui-corner-all" onclick="change_priority(this.id)">$qos_highest</div>
+	</TD>
+</TR>
+<TR><TD>&nbsp;</TD></TR>
+</TABLE>
+	</div>
+</div>
+</div>
+<% help_box("0","_edit_device") %>
+</form>
+</body>
+</html>

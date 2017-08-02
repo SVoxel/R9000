@@ -1,0 +1,33 @@
+#!/bin/sh /etc/rc.common
+START=13
+
+disable_eeprom_wp() # disable eeprom write protect
+{
+	echo 214 223 > /sys/bus/i2c/drivers/pca9554/0-0020/externoutput
+}
+
+enable_eeprom_wp()  # enable eeprom write protect
+{
+	echo 246 255 > /sys/bus/i2c/drivers/pca9554/0-0020/externoutput
+}
+
+is_old_eeprom() # old value of eeprom 0x9E is "0x51", the new should be "0x50"
+{
+	eeprog -fx -16 /dev/i2c-0 0x57 -r 0x9E -t 5 2>/dev/null | grep -q '51'
+}
+
+update_eeprom()  # modify the value of eeprom 0x9E to become "0x50" (P)
+{
+	disable_eeprom_wp
+	echo -n P | eeprog -fx -16 /dev/i2c-0 0x57 -w 0x9E -t 5
+	enable_eeprom_wp
+}
+
+boot() {
+	if [ "$(/bin/config get wp_enable)" = "1" ];then
+		is_old_eeprom && update_eeprom
+		/bin/config set wp_enable="0"
+		/bin/config commit
+	fi
+}
+

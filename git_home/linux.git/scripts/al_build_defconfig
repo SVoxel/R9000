@@ -1,0 +1,89 @@
+#!/bin/bash
+
+echo "Creating arch/arm/configs/alpine_sa_defconfig - Storage Advance"
+cp arch/arm/configs/alpine_defconfig arch/arm/configs/alpine_sa_defconfig
+./scripts/config --file arch/arm/configs/alpine_sa_defconfig --set-str CONFIG_LOCALVERSION _sa
+./scripts/config --file arch/arm/configs/alpine_sa_defconfig -e CONFIG_ARM_LPAE
+./scripts/config --file arch/arm/configs/alpine_sa_defconfig -e CONFIG_ARM_PAGE_SIZE_LARGE
+./scripts/config --file arch/arm/configs/alpine_sa_defconfig -e CONFIG_ARM_PAGE_SIZE_32KB
+./scripts/config --file arch/arm/configs/alpine_sa_defconfig -e CONFIG_LFS_ON_32CPU
+./scripts/config --file arch/arm/configs/alpine_sa_defconfig -e CONFIG_BTRFS_FS_AHASH_CRC
+./scripts/config --file arch/arm/configs/alpine_sa_defconfig -e CONFIG_NET_DMA
+./scripts/config --file arch/arm/configs/alpine_sa_defconfig -m CONFIG_ISCSI_TCP
+./scripts/config --file arch/arm/configs/alpine_sa_defconfig -d CONFIG_XFRM_ALGO
+./scripts/config --file arch/arm/configs/alpine_sa_defconfig -d CONFIG_XFRM_USER
+./scripts/config --file arch/arm/configs/alpine_sa_defconfig -d CONFIG_NET_KEY
+./scripts/config --file arch/arm/configs/alpine_sa_defconfig -d CONFIG_INET_AH
+./scripts/config --file arch/arm/configs/alpine_sa_defconfig -d CONFIG_INET_ESP
+
+echo "Creating arch/arm/configs/alpine_na_defconfig - Network Advance"
+cp arch/arm/configs/alpine_defconfig arch/arm/configs/alpine_na_defconfig
+./scripts/config --file arch/arm/configs/alpine_na_defconfig --set-str CONFIG_LOCALVERSION _na
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_FUNC_REORDER
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_BRIDGE
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_ARM_LPAE
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_HUGETLBFS
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_TRANSPARENT_HUGEPAGE
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_TRANSPARENT_HUGEPAGE_MADVISE
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_UIO
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -d CONFIG_NET_VENDOR_INTEL
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -d CONFIG_XFS_FS
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -d CONFIG_BTRFS_FS
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -d CONFIG_DEBUG_KERNEL
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -d CONFIG_DEBUG_USER
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -d CONFIG_DNOTIFY
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -d CONFIG_INOTIFY_USER
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_NET_MQ_TX_LOCK_OPT
+#./scripts/config --file arch/arm/configs/alpine_na_defconfig -d CONFIG_AL_ETH_ALLOC_FRAG
+#./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_AL_ETH_ALLOC_SKB
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_NETFILTER
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_BRIDGE
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -d CONFIG_NF_CONNTRACK_PROC_COMPAT
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_802_3
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_AMONG
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_ARP
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_ARPREPLY
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_BROUTE
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_DNAT
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_IP
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_LIMIT
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_LOG
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_MARK
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_MARK_T
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_NFLOG
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_PKTTYPE
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_REDIRECT
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_SNAT
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_STP
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_T_FILTER
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_T_NAT
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_EBT_VLAN
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_BRIDGE_NF_EBTABLES
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_KVM
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_VIRTUALIZATION
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_TUN
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_CAIF
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_CAIF_VIRTIO
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_VHOST_NET
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_VHOST_RING
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_VLAN_8021Q
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_CC_STACKPROTECTOR
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_NF_CONNTRACK
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_NF_CONNTRACK_EVENTS
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_NF_CONNTRACK_FTP
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_NF_CONNTRACK_SIP
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_NF_CT_NETLINK
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_NF_CT_NETLINK_TIMEOUT
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_NF_CONNTRACK_IPV4
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_IP_NF_IPTABLES
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_IP_NF_FILTER
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_NF_NAT_IPV4
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -m CONFIG_IP_NF_TARGET_MASQUERADE
+./scripts/config --file arch/arm/configs/alpine_na_defconfig -e CONFIG_NETFILTER_ADVANCED
+
+
+echo "Creating arch/arm/configs/alpine_be_defconfig - big endian mode"
+cp arch/arm/configs/alpine_defconfig arch/arm/configs/alpine_be_defconfig
+./scripts/config --file arch/arm/configs/alpine_be_defconfig --set-str CONFIG_LOCALVERSION _be
+./scripts/config --file arch/arm/configs/alpine_be_defconfig -e CONFIG_CPU_BIG_ENDIAN
+./scripts/config --file arch/arm/configs/alpine_be_defconfig -e CONFIG_CPU_ENDIAN_BE8

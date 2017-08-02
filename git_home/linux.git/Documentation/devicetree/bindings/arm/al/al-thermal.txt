@@ -1,0 +1,13 @@
+Annapurna Labs Thermal Sensor Device
+
+Properties:
+- compatible : Should contain "annapurna-labs,al-thermal".
+- reg : Offset and length of the register set for the device
+
+Example:
+
+thermal {
+	compatible = "annapurna-labs,al-thermal";
+	reg = <0xfd860a00 0x100>;
+};
+

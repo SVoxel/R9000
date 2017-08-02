@@ -1,0 +1,58 @@
+#!/bin/sh
+
+bond_id=$1
+
+proc_info="/proc/net/bonding/bond$1"
+
+[ ! -e $proc_info ] && exit 0
+
+prev_active_slave_list=""
+status_before=""
+
+while [ 1 ]
+do
+
+active_slave_list=$(cat $proc_info  \
+		| grep Join_slave_list  \
+		| awk -F ":" '{printf $2}')
+
+if [ "$prev_active_slave_list" != "$active_slave_list" ]
+then
+
+bitmap=0
+for slave in $active_slave_list
+do
+	slave_id=$(echo $slave | grep -Eo '[0-9]+')
+	bitmap=$(($bitmap + (1<<$slave_id)))
+done
+ssdk_sh_id 0 trunk group set $bond_id enable `printf "0x%x" $bitmap` > /dev/null
+prev_active_slave_list="$active_slave_list"
+
+######################### For Lag Log ##############################
+bonded_list=$(cat /proc/net/bonding/bond$1 | grep Join_slave_list | awk -F ":" '{print $2}')
+slave_list=$(cat /proc/net/bonding/bond$1 | grep "Slave Interface" | awk -F ":" '{print $2}')
+
+active="active"
+
+for p in $slave_list
+do
+	bonded=$(echo $bonded_list | grep $p)
+	if [ -z "$bonded" ]; then
+		active="no"
+	fi
+
+	if [ "$active" = "active" ]; then
+		if [ "$status_before" = "no" -o "x$status_before" = "x" ]; then
+			logger -- "[LAG] Active lag now,"
+		fi
+	elif [ "$active" = "no" -a "$status_before" = "active" ]; then
+			logger -- "[LAG] Inctive lag now,"
+	fi
+done
+
+status_before=$active
+########################### End Log ###################################
+fi
+sleep 1
+done
+

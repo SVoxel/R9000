@@ -1,0 +1,87 @@
+diff -Nur aMule-2.3.1.old//src/ExternalConnector.cpp aMule-2.3.1/src/ExternalConnector.cpp
+--- aMule-2.3.1.old//src/ExternalConnector.cpp	2012-05-28 14:46:51.708610514 -0400
++++ aMule-2.3.1/src/ExternalConnector.cpp	2012-05-28 14:47:08.568610518 -0400
+@@ -207,6 +207,7 @@
+ 	  m_strOSDescription(NULL)
+ {
+ 	SetAppName(wxT("aMule"));	// Do not change!
++	m_fifo.open("/tmp/greendownload/statfifo/emule");
+ }
+ 
+ CaMuleExternalConnector::~CaMuleExternalConnector()
+@@ -215,6 +216,12 @@
+ 	delete m_locale;
+ 	free(m_strFullVersion);
+ 	free(m_strOSDescription);
++	m_fifo.close();
++}
++
++void CaMuleExternalConnector::WriteFifo(std::string buf)
++{
++	m_fifo.write(buf.c_str(),strlen(buf.c_str()));
+ }
+ 
+ void CaMuleExternalConnector::OnInitCommandSet()
+diff -Nur aMule-2.3.1.old//src/ExternalConnector.h aMule-2.3.1/src/ExternalConnector.h
+--- aMule-2.3.1.old//src/ExternalConnector.h	2012-05-28 14:46:51.738610514 -0400
++++ aMule-2.3.1/src/ExternalConnector.h	2012-05-28 14:47:08.568610518 -0400
+@@ -37,6 +37,10 @@
+ #include <wx/cmdline.h>		// For wxCmdLineEntryDesc
+ #include <ec/cpp/RemoteConnect.h>
+ 
++#include <fstream>
++#include <iostream>
++#include <sstream>
++#include <string>
+ #include <wx/intl.h>
+ 
+ #define CMD_DEPRECATED		0x1000
+@@ -139,6 +143,8 @@
+ 	void SendPacket(const CECPacket *request) { m_ECClient->SendPacket(request); }
+ 	void ConnectAndRun(const wxString &ProgName, const wxString& ProgVersion);
+ 	void ShowGreet();
++	void WriteFifo(std::string buf);
++	std::fstream	m_fifo;
+ 
+ 	//
+ 	// Command line processing
+diff -Nur aMule-2.3.1.old//src/TextClient.cpp aMule-2.3.1/src/TextClient.cpp
+--- aMule-2.3.1.old//src/TextClient.cpp	2012-05-28 14:46:51.718610514 -0400
++++ aMule-2.3.1/src/TextClient.cpp	2012-05-28 15:04:02.148610760 -0400
+@@ -707,10 +707,13 @@
+ 			CEC_ConnState_Tag *connState = (CEC_ConnState_Tag*)response->GetTagByName(EC_TAG_CONNSTATE);
+ 			if (connState) {
+ 				s << _("eD2k") << wxT(": ");
++				bool ed2k = false;
++				bool kad = false;
+ 				if (connState->IsConnectedED2K()) {
+ 					CECTag *server = connState->GetTagByName(EC_TAG_SERVER);
+ 					CECTag *serverName = server ? server->GetTagByName(EC_TAG_SERVER_NAME) : NULL;
+ 					if (server && serverName) {
++						ed2k = true;
+ 						s << CFormat(_("Connected to %s %s %s")) %
+ 						 serverName->GetStringData() %
+ 						 server->GetIPv4Data().StringIP() %
+@@ -725,6 +728,7 @@
+ 				if (connState->IsKadRunning()) {
+ 					if (connState->IsConnectedKademlia()) {
+ 						s << _("Connected") << wxT(" (");
++						kad = true;
+ 						if (connState->IsKadFirewalled()) {
+ 							s << _("firewalled");
+ 						} else {
+@@ -738,6 +742,14 @@
+ 					s << _("Not running");
+ 				}
+ 				s << wxT('\n');
++				if(ed2k == false && kad == false)
++					WriteFifo(std::string(("-1\n")));
++				else if(ed2k == true && kad == false)
++					WriteFifo(std::string(("0\n")));
++				else if(ed2k == false && kad == true)
++					WriteFifo(std::string(("1\n")));
++				else
++					WriteFifo(std::string(("2\n")));
+ 			}
+ 			const CECTag *tmpTag;
+ 			if ((tmpTag = response->GetTagByName(EC_TAG_STATS_DL_SPEED)) != 0) {

@@ -1,0 +1,30 @@
+﻿<html>
+<head>
+<title>USB Backup Error</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+#title { position:fixed; top:0px; left:0px; width:100%; }
+#container { text-align:left; width:100%; overflow-y:hidden; overflow-x:hidden; }
+#tb2 tr { margin: 3px; padding: 0.4em; font-size: 1.2em; height: 18px; }
+#tb1 tr { margin: 3px; padding: 0.4em; font-size: 1.0em; height: 18px; }
+#tb1 tr td{ border-bottom:solid; border-width:0px 0px 3px 0px; padding:0px; border-color:#FAFAFA; }
+</style>
+</head>
+<body>
+<div id="title">
+<table id="tb2" style="width:100%; background-color: #FAFAFA" nowrap>
+<tr>
+	<TD style="width:2%"></TD>
+	<TD style="width:58%">File name</TD>
+	<TD style="width:40%">Error reason</TD>
+</tr>
+</table>
+</div>
+
+<div id="container">
+<table id="tb1" style="width:100%; margin-top:20px;" cellpadding="0" cellspacing="0">
+<% usb_backup_error() %>
+</table>
+</div>
+</body>
+</html>

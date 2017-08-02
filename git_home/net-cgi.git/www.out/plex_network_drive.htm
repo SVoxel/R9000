@@ -1,0 +1,202 @@
+<% http_header("style/form.css", "/funcs.js") %>
+<% body_header("", "plex_network_drive.htm", "plex_net_add") %>
+<div class="page_title">$plex_media_ser</div>
+<div class="fix_button">
+<TABLE width=100% border=0 cellpadding=0 cellspacing=2>
+<script>
+var master="<% cfg_get("http_loginname") %>";
+if( master =="admin" )
+    document.write('<TR><TD nowrap colspan=2 align=center><input class="cancel_bt" type="button" name="Cancel" id="cancel" value="$cancel_mark" onClick="location.href=\'plex_media.htm\';">&nbsp;&nbsp;<input class="apply_bt" type="button" name="Apply" id="apply" value="$apply_mark" onClick="click_apply();"></TD></TR>');
+else
+	document.write('<TR><TD nowrap colspan=2 align=center><input class="cancel1_bt" type="button" name="Cancel" id="cancel" value="$cancel_mark" disabled>&nbsp;&nbsp;<input class="apply1_bt" type="button" name="Apply" id="apply" value="$apply_mark" disabled></TD></TR>');
+</script>
+</TABLE>
+</div>
+<style>
+#drive_tab td{white-space:nowrap;}
+.title_line td{background-color: #767676; color:white;}
+.grey_line{background-color: #e5e5e5;}
+input[type="text"], input[type="password"]{min-width: 250px;}
+select{min-width: 254px;}
+</style>
+<div id="main" class="main_top_button">
+    <div style="position:absolute;width:100%;z-index:-999">
+    	<table width="100%" border="0" cellpadding="0" cellspacing="3">
+    		<tr>
+    			<td width="70%" id="logo_left"></td>
+    			<td width="30%"><img src="plex_logo_new.png" style="width:145px;float:right;margin-right:20px;"></td>
+    		</tr>
+    	</table>
+    </div>
+<% table_header() %>
+
+<script>
+<% save_timestamp("plex_net_add", "plex_net_edit") %>
+<% plex_list_netdev() %>
+var result = parseInt("<% cat_file("/tmp/plex_net_result") %>");
+var onEditing = "<% cfg_get("plex_net_on_edit") %>";
+<% cfg_set("plex_net_on_edit", "0") %>
+var errMsg = ["", "$plex_incorrect_err", "$plex_not_support_err", "$plex_address_err", "$plex_folder_err", "$plex_network_err", "$plex_firmwall_err"];
+if(!isNaN(result) && onEditing == "1") {
+    if(result == 0)
+        this.location.href = "plex_media.htm";
+    else if(result < 7) {
+        sAlert(errMsg[result]);
+        var isErr = 1;
+    }
+}
+
+var edit_drive = parent.window.plex_net_edit_info;
+var cf = document.forms[0];
+var attDev = { device:[ <% json_device_info("json") %> ]};
+var flag = parent.window.plex_net_flag;
+attDev.device.pop();
+
+function loadvalue(){
+	setTimeout('document.getElementById("logo_left").style.minWidth=Math.floor(document.body.offsetWidth*0.7)+"px"', 100);
+	//setTimeout('document.getElementById("drive_tab").style.minWidth=Math.floor(document.body.offsetWidth*0.7)+"px"', 100);
+    if(flag == "add") {
+        if(isErr == 1)
+            fill_input();
+        else
+            cf.cont_name.value = "NAS" + (net_drive_num + 1);
+    }
+    else {
+        cf.cont_name.disabled = true;
+        fill_input();
+    }
+}
+
+function fill_input() {
+    cf.cont_name.value = edit_drive[0];
+    cf.folder_name.value = edit_drive[2];
+    cf.user_name.value = edit_drive[3];
+    cf.password.value = edit_drive[4];
+}
+
+function field_ip(index){
+	document.getElementById("ipAddr").value=document.getElementById("ipAddr"+index).innerHTML;
+}
+
+function click_apply()
+{
+    if(cf.folder_name.value[0] != "/")
+        cf.folder_name.value = "/" + cf.folder_name.value;
+    var message = "";
+    if(cf.edit_drive_option.selectedIndex == 0 && flag == "add")
+        message = "$plex_select_drive";
+    else if(cf.folder_name.value == "" ||　/[\\:*?<>|"]+/g.test(cf.folder_name.value) || /\/\//g.test(cf.folder_name.value))
+        message = "$plex_invalid_folder"
+    else if(cf.cont_name.value == "" || /^[-\w]+$$/g.test(cf.cont_name.value) == false)
+        message = "$plex_invalid_name";
+    else {
+        for(var i=1; i<=net_drive_num; i++) {
+            var info = eval("net_drive" + i);
+            if(i == parent.window.plex_net_edit_index && flag == "edit")
+                continue;
+            if(cf.cont_name.value == info[0]) {
+                message = "$plex_multi_name";
+                break;
+            }
+            else if(cf.edit_drive_option.value == info[1] && cf.folder_name.value == info[2]) {
+                message = "$plex_folder_added";
+                break;
+            }
+        }
+    }
+    if(message != "") {
+        sAlert(message);
+        return false;
+    }
+
+    if(flag == "edit") {
+        cf.hidden_net_mac.value = edit_drive[1];
+        cf.hidden_net_folder.value = edit_drive[2];
+        cf.submit_flag.value = "plex_net_edit";
+    }
+    else {
+        cf.hidden_net_mac.value = cf.edit_drive_option.value;
+        cf.hidden_net_folder.value = cf.folder_name.value;
+    }
+	if(flag == "edit") {
+		if(cf.cont_name.value == edit_drive[0] && cf.folder_name.value == edit_drive[2] && cf.user_name.value == edit_drive[3] &&  cf.password.value == edit_drive[4]) {console.log(true)
+			this.location.href = "plex_media.htm";
+			return;
+		}
+	}
+    if(typeof parent.window.plex_net_edit_info == "undefined")
+        parent.window.plex_net_edit_info = ["", "", "", "", ""];
+    parent.window.plex_net_edit_info[0] = cf.cont_name.value;
+    parent.window.plex_net_edit_info[2] = cf.folder_name.value;
+    parent.window.plex_net_edit_info[3] = cf.user_name.value;
+    parent.window.plex_net_edit_info[4] = cf.password.value;
+	cf.cont_name.disabled = false;
+    cf.submit();
+}
+
+function fixed_cont_name(st) {
+    if(flag != "edit")
+        return;
+    if(st == edit_drive[2]) {
+        cf.cont_name.value = edit_drive[0];
+        cf.cont_name.disabled = true;
+    }
+    else {
+        cf.cont_name.disabled = false;
+    }
+}
+</script>
+<input type="hidden" name="hidden_net_mac">
+<input type="hidden" name="hidden_net_folder">
+<TR>
+	<TD>$plex_con_name</TD>
+	<TD>
+	<input type="text" name="cont_name" id="cont_name" maxlength="30" value="">
+	</TD>
+</TR>
+<TR id="select_line" style="display:;">
+	<TD>$plex_select_device</TD>
+	<TD>
+	    <select name="edit_drive_option" id="edit_drive_option">
+	    <script>
+            if(flag == "add")
+                document.write('<option value="undefined">$plex_drop_tip</option>')
+            else
+                document.getElementById("edit_drive_option").disabled = true;
+            for(var i=0; i<attDev.device.length; i++) {
+                if(flag == "add")
+                    document.write('<option value="'+ attDev.device[i].mac +'">'+ attDev.device[i].name +' - '+ attDev.device[i].ip + "</option>");
+                else if(flag == "edit" && attDev.device[i].mac == edit_drive[1]) {
+                    document.write('<option value="'+ attDev.device[i].mac +'">'+ attDev.device[i].name +' - '+ attDev.device[i].ip + "</option>");
+                }
+            }
+            if(flag == "edit" && document.getElementById("edit_drive_option").options.length == 0)
+                document.write('<option value="'+ attDev.device[i].mac +'">'+ attDev.device[i].mac +' - '+ "0.0.0.0" + "</option>");
+        </script>
+	    </select>
+	</TD>
+</TR>
+<TR>
+	<TD>$plex_folder</TD>
+	<TD>
+	<input type="text" name="folder_name" id="folder_name" maxlength="255" oninput="fixed_cont_name(this.value)" onkeyup="fixed_cont_name(this.value)"> $plex_example
+	</TD>
+</TR>
+<TR>
+	<TD>$ddns_username</TD>
+	<TD>
+	<input type="text" name="user_name" id="user_name" maxlength="30">
+	</TD>
+</TR>
+<TR>
+	<TD>$basic_pppoe_passwd</TD>
+	<TD>
+	<input type="password" name="password" id="password" maxlength="30">
+	</TD>
+</TR>
+</TABLE>
+</div>
+<% help_box("0", "_plex") %>
+</FORM>
+</BODY>
+</HTML>

@@ -1,0 +1,27 @@
+#!/bin/bash
+
+export BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+dt_list=(
+alpine_db_m0
+alpine_db
+alpine_db_no_arch_timer
+alpine_db_al212
+alpine_db_al314
+alpine_db_pcie
+alpine_db_pcie_no_arch_timer
+alpine_sdnic
+alpine_sdnic_nand
+alpine_k2s
+alpine_security_box)
+
+pushd $BASEDIR
+sed -i '/targets += dtbs/i dtb-$(CONFIG_ARCH_ALPINE) += \\\n' ../arch/arm/boot/dts/Makefile
+git clone http://gerrit.il.annapurnalabs.com:8080/dt
+for i in ${dt_list[@]}; do
+  cp dt/${i}.dts ../arch/arm/boot/dts
+  sed -i '/dtb-$(CONFIG_ARCH_ALPINE) += \\/a \\t'"${i}"'.dtb \\' ../arch/arm/boot/dts/Makefile
+done
+rm -rf dt
+popd
+

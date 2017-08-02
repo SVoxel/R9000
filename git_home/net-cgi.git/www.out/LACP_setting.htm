@@ -1,0 +1,76 @@
+<% http_header("style/form.css", "/funcs.js") %>
+<% body_header("", "LACP_setting.htm", "aggregation") %>
+<div class="page_title">$lacp_head</div>
+<script>
+var aggre_option = "<% cfg_get("link_aggregation_sta")%>";
+<% get_aggre_sta() %>
+function loadvalue()
+{
+	var cf = document.forms[0];
+
+	if(aggre_option == "2")
+		cf.Aggregationsta[1].checked = true;
+	else if(aggre_option == "1")
+		cf.Aggregationsta[2].checked = true;
+	else
+		cf.Aggregationsta[0].checked = true;
+}
+</script>
+<div class="fix_button">
+<TABLE width=100% border=0 cellpadding=0 cellspacing=2>
+<script>
+var master="<% cfg_get("http_loginname") %>";
+if( master == "admin" )
+	document.write('<TR><TD nowrap colspan=2 align=center><input class="cancel_bt" type="button" name="Cancel" id="cancel" value="$cancel_mark" onClick="location.href=\'LACP_setting.htm\';">&nbsp;&nbsp;<input class="apply_bt" type="submit" name="Apply" id="apply" value="$apply_mark"></TD></TR>');
+else
+	document.write('<TR><TD nowrap colspan=2 align=center><input class="cancel1_bt" type="button" name="Cancel" id="cancel" value="$cancel_mark" disabled>&nbsp;&nbsp;<input class="apply1_bt" type="submit" name="Apply" id="apply" value="$apply_mark" disabled></TD></TR>');
+</script>
+</TABLE>
+
+</div>
+<div id="main" class="main_top_button">
+<div>
+<TABLE cellspacing=5 cellPadding=0 width=100% border=0>
+<TR>
+	<TD colspan="2" nowrap>
+		<input type="radio" name="Aggregationsta" value="0">$r_disable
+	</TD>
+</TR>
+<TR>
+	<TD colspan="2" nowrap>
+		<input type="radio" name="Aggregationsta" value="2" >$lacp_enable
+	</TD>
+</TR>
+<TR>
+	<TD colspan="2" nowrap>
+		<input type="radio" name="Aggregationsta" value="1" >Enable static LAG
+	</TD>
+</TR>
+$bluebar
+<TR>
+	<TD colspan="2" nowrap>$lacp_status:
+	<script>
+		if(aggre_sta == "active")
+			document.write('<a style="color:green">$lacp_active</a>');
+		else
+			document.write("<a>$lacp_inactive</a>");
+	</script>
+	
+	</TD>
+</TR>
+</table>
+</div>
+<div align="center">
+<script>
+if(aggre_sta == "active")
+	document.write('<img src="image/lacp_active.png" width="50%">');
+else
+	document.write('<img src="image/lacp_inactive.png" width="50%">');
+</script>
+</div>
+</div>
+<% help_box("0","_lacp") %>
+</FORM>
+</BODY>
+</HTML>
+

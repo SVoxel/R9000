@@ -1,0 +1,9 @@
+if ALPINE_HW29765235P0P512P1024P4X4P4X4_32
+
+config SYS_VENDOR
+	default "annapurna-labs"
+
+config SYS_SOC
+	default "alpine_hw29765235p0p512p1024p4x4p4x4"
+
+endif

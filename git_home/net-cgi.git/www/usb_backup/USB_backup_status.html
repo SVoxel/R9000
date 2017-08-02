@@ -1,0 +1,30 @@
+<html>
+<head>
+<title>USB Backup Query</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Pragma" content="no-cache">
+<script type="text/javascript">
+<% usb_backup_drive() %>
+parent.progress = "<% cfg_get("usb_backup_percent") %>";
+parent.status = "<% cfg_get("usb_backup_state") %>";
+
+if(parent.first_load == 1)
+{
+	parent.load_sel_hdd();
+	parent.first_load = 0;
+}
+parent.print_drive_info("pri");
+parent.print_drive_info("bak");
+parent.clear_sel_hdd("pri");
+parent.clear_sel_hdd("bak");
+parent.display_control();
+parent.disabled_control();
+parent.load_status();
+
+setTimeout('location.href= "USB_backup_status.html"', 5000);
+
+</script>
+</head>
+<body>
+</body>
+</html>

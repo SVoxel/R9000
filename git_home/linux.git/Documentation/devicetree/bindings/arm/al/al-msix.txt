@@ -1,0 +1,16 @@
+Annapurna Labs MSIX handler
+
+Properties:
+- compatible : Should contain "annapurna-labs,al-msix".
+- reg : Offset and length of the MSIX address space
+- interrupts : first and last irq to be configured as edge triggered, as
+               required for MSIX
+
+Example:
+
+msix {
+	compatible = "annapurna-labs,al-msix";
+	reg = <0xfbe00000 0x100000>;
+	interrupts = <0 96 1 0 159 1>;
+};
+

@@ -1,0 +1,68 @@
+diff -Nur aMule-2.3.1.old//src/DownloadQueue.cpp aMule-2.3.1/src/DownloadQueue.cpp
+--- aMule-2.3.1.old//src/DownloadQueue.cpp	2012-05-29 04:22:42.478622216 -0400
++++ aMule-2.3.1/src/DownloadQueue.cpp	2012-05-29 05:25:27.798623116 -0400
+@@ -1497,7 +1497,7 @@
+ 		AddToResolve(link->GetHashKey(), it->addr, it->port, it->hash, it->cryptoptions);
+ 	}
+ 	if(response != NULL)
+-		response->AddTag(CECTag(EC_TAG_STRING,CFormat(_("Succeed add %s")) % file->m_filename ));
++		response->AddTag(CECTag(EC_TAG_STRING,CFormat(_("%s Succeed add")) % file->m_filename ));
+ 	return true;	
+ }
+ 
+diff -Nur aMule-2.3.1.old//src/TextClient.cpp aMule-2.3.1/src/TextClient.cpp
+--- aMule-2.3.1.old//src/TextClient.cpp	2012-05-29 04:22:42.438622216 -0400
++++ aMule-2.3.1/src/TextClient.cpp	2012-05-29 05:35:18.368623256 -0400
+@@ -319,6 +319,7 @@
+ 		case CMD_ID_CANCEL:
+ 		case CMD_ID_RESUME:
+ 		{
++			bool success = false;
+ 			if ( args.IsEmpty() ) {
+ 				Show(_("This command requires an argument. Valid arguments: 'all', filename, or a number.\n"));
+ 				return 0;
+@@ -357,6 +358,7 @@
+ 						} else if ( hash.Decode(token.Trim(false).Trim(true)) ) {
+ 							if ( !hash.IsEmpty() ) {
+ 								Show(_("Processing by hash: "+token+wxT("\n")));
++								success = true;
+ 								request->AddTag(CECTag(EC_TAG_PARTFILE, hash));
+ 							}
+ 						} else {
+@@ -371,6 +373,7 @@
+ 									partmetname.Truncate(partmetname.Len()-4) == token ||
+ 									partmetname.Truncate(partmetname.Len()-5) == token) {
+ 									Show(_("Processing by filename: "+token+wxT("\n")));
++									success = true;
+ 									request->AddTag(CECTag(EC_TAG_PARTFILE, tag->FileHash()));
+ 								}		
+ 							}	
+@@ -384,6 +387,10 @@
+ 				} // End of dl queue processing
+ 
+ 			} // end of command processing
++			if(success == true)
++				WriteFifo(std::string(("0\n")));
++			else
++				WriteFifo(std::string(("-1\n")));
+ 			break;
+ 		}
+ 
+@@ -651,6 +658,17 @@
+ 				const CECTag *tag = response->GetFirstTagSafe();
+ 				if (tag->IsString()) {
+ 					s <<	CFormat(_("%s")) % wxGetTranslation(tag->GetStringData());
++					wxString succ(wxGetTranslation(tag->GetStringData()));
++					if(succ.Find(wxT("Succeed add")) == wxNOT_FOUND){
++						std::stringstream str;
++						str <<"-1"<<std::endl;
++						WriteFifo(str.str());
++					}
++					else{
++						std::stringstream str;
++						str <<"0 "<<succ.mb_str()<<std::endl;
++						WriteFifo(str.str());
++					}
+ 				} else {
+ 					s << msgFailedUnknown;
+ 				}

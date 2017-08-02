@@ -1,0 +1,52 @@
+#!/bin/sh
+
+prev=`cat /var/run/bond-mode`
+mode=
+
+member_list="p1,p2"
+
+config_by_datalib()
+{
+	mode=`config get link_aggregation_sta`
+	
+	[ "$mode" = "$prev" ] && exit 1
+	
+	[ "$prev" != "0" ] && bond-ctrl del 2
+	[ "$mode"  = "1" ] && bond-ctrl add 2 mode manual  $member_list
+	[ "$mode"  = "2" ] && bond-ctrl add 2 mode dynamic $member_list
+	
+	echo $mode > /var/run/bond-mode
+}
+
+config_by_command()
+{
+	mode_p=$1
+
+	[ "$mode_p" = "disable" ] && mode="0"
+	[ "$mode_p" = "manual"  ] && mode="1"
+	[ "$mode_p" = "dynamic" ] && mode="2"
+	
+	[ -z "$mode" ] && exit 0
+	
+	[ "$mode" = "prev" ] && exit 1
+	
+	[ "$prev" != "0" ] && bond-ctrl del 2
+	[ "$mode"  = "1" ] && bond-ctrl add 2 mode manual  $member_list
+	[ "$mode"  = "2" ] && bond-ctrl add 2 mode dynamic $member_list
+	
+	config set link_aggregation_sta=$mode
+	echo $mode > /var/run/bond-mode
+}
+
+if [ $# -lt 1 ]
+then
+	config_by_datalib 
+else
+	if [ "$1" = "boot" ]
+	then
+		config_by_datalib
+	else
+		config_by_command $1
+	fi
+fi
+

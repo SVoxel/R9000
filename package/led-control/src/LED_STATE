@@ -1,0 +1,26 @@
+#!/bin/sh
+
+led_onoff_state=`config get led_onoff_state`
+
+led_toggle()
+{
+
+	#if [ "$led_onoff_state" = "init" ]; then
+	#	led_onoff_state="off"
+	#	ledcontrol -n option_off -c green -s on
+	#fi
+	echo "led toggle">/dev/console
+	if [ "$led_onoff_state" = "0" ]; then
+		config set led_onoff_state=1
+		ledcontrol -n option_off -c green -s on
+	else
+		config set led_onoff_state=0
+		ledcontrol -n option_blink -c green -s on
+	fi
+}
+
+case "$1" in
+	toggle)
+	led_toggle;;
+	*) ;;
+esac

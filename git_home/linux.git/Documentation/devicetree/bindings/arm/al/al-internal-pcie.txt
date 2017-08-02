@@ -1,0 +1,84 @@
+Annapurna Labs Internal PCIe Controller
+
+Properties:
+- compatible : Should contain "annapurna-labs,al-internal-pcie"
+- device_type : "pci"
+- #size-cells : <2>
+- #address-cells : <3>
+- #interrupt-cells : <1>
+- interrupt-parent = <&gic_main>;
+- interrupt-map-mask = <0xf800 0 0 7>
+	The irq depends on the pci device number, so we set the mask to 0xf800.
+	All devices use interrupt INTA, so we set the mask to 7 and in the map
+	only INTA is added.
+- interrupt-map = <0x1800 0 0 1 &gic_main 0 112 4>: for device number 3 (0x1800 >> 11)
+	irq 144 (112 + 32) for INTA is assigned.
+
+- ranges : citation from :
+	   ranges is a list of address translations. Each entry in the ranges
+	   table is a tuple containing the child address, the parent address,
+	   and the size of the region in the child address space. The size of
+	   each field is determined by taking the child's #address-cells
+	   value, the parent's #address-cells value, and the child's #size-cells
+	   value.
+           Child addresses (PCI addresses) use 3 cells, and PCI ranges are
+	   encoded into 2 cells. The first question might be, why do we need
+	   three 32 bit cells to specify a PCI address. The three cells are
+	   labeled phys.hi, phys.mid and phys.low [2].
+	   phys.hi cell: npt000ss bbbbbbbb dddddfff rrrrrrrr
+	   phys.mid cell: hhhhhhhh hhhhhhhh hhhhhhhh hhhhhhhh
+	   phys.low cell: llllllll llllllll llllllll llllllll
+	   PCI addresses are 64 bits wide, and are encoded into phys.mid and
+	   phys.low. However, the really interesting things are in phys.high
+	   which is a bit field:
+	   - n: relocatable region flag (doesn't play a role here)
+	   - p: prefetchable (cacheable) region flag
+	   - t: aliased address flag (doesn't play a role here)
+	   - ss: space code
+	   - 00: configuration space
+	   - 01: I/O space
+	   - 10: 32 bit memory space
+	   - 11: 64 bit memory space
+	   - bbbbbbbb: The PCI bus number. PCI may be structured hierarchically.
+	               So we may have PCI/PCI bridges which will define sub busses.
+	   - ddddd: The device number, typically associated with IDSEL signal
+	            connections.
+	   - fff: The function number. Used for multifunction PCI devices.
+	   - rrrrrrrr: Register number; used for configuration cycles.
+	   For the purpose of PCI address translation, the important fields
+	   are p and ss. The value of p and ss in phys.hi determines which PCI
+	   address space is being accessed. So looking onto our ranges
+	   property, we have three regions: a 32 bit prefetchable memory
+	   region beginning on PCI address 0x80000000 of 512 MByte size which
+	   will be mapped onto address 0x80000000 on the host CPU.  a 32 bit
+	   non-prefetchable memory region beginning on PCI address 0xa0000000
+	   of 256 MByte size which will be mapped onto address 0xa0000000 on
+	   the host CPU.  an I/O region beginning on PCI address 0x00000000 of
+	   16 MByte size which will be mapped onto address 0xb0000000 on the
+	   host CPU.  To throw a wrench into the works, the presence of the
+	   phys.hi bitfield means that an operating system needs to know that
+	   the node represents a PCI bridge so that it can ignore the
+	   irrelevant fields for the purpose of translation. An OS will look
+	   for the string "pci" in the PCI bus nodes to determine whether it
+	   needs to mask of the extra fields.
+
+Example:
+
+pcie-internal {
+	compatible = "annapurna-labs,al-internal-pcie";
+	device_type = "pci";
+	#size-cells = <2>;
+	#address-cells = <3>;
+	#interrupt-cells = <1>;
+	interrupt-parent = <&gic_main>;
+	interrupt-map-mask = <0xf800 0 0 7>;
+	interrupt-map = <0x0000 0 0 1 &gic_main 0 64 4>;
+
+	/* ranges:
+	 * - ECAM - non prefetchable config space
+	 * - 32 bit non prefetchable memory space
+	 */
+	ranges = <0x00000000 0x0 0xfbc00000 0xfbc00000 0x0 0x100000
+		  0x02000000 0x0 0xfe000000 0xfe000000 0x0 0x1000000>;
+};
+

@@ -1,0 +1,57 @@
+<% http_header("style/form.css", "/funcs.js") %>
+<% body_header("", "aggregation.htm", "aggregation") %>
+<div class="page_title">$link_aggregation</div>
+<script>
+var aggre_option = <% cfg_get("link_aggregation_sta")%>;
+function loadvalue()
+{
+	var cf = document.forms[0];
+	if(aggre_option == 0)
+		cf.Aggregationsta[0].checked = true;
+	else if(aggre_option == 1)
+		cf.Aggregationsta[1].checked = true;
+	else if(aggre_option == 2)
+		cf.Aggregationsta[2].checked = true;
+}
+
+function checkLED(cf)
+{
+	return true;
+}
+</script>
+<div class="fix_button">
+<TABLE width=100% border=0 cellpadding=0 cellspacing=2>
+<TR>
+        <TD nowrap colspan=2 align=center>
+        <input class='cancel_bt' type='button' name="Cancel" value='$cancel_mark' onClick='location.href="LED_control_setting.htm";'>&nbsp;&nbsp;
+        <input class="apply_bt" type="submit" name="Apply" value="$apply_mark" onClick="return checkLED(document.forms[0]);">
+        </TD>
+</TR>
+</TABLE>
+
+</div>
+<div id="main" class="main_top_button">
+<TABLE cellspacing=5 cellPadding=0 width=100% border=0>
+<TR>
+        <TD nowrap>
+        <input onclick='' type="radio" name="Aggregationsta" value="0">$r_disable
+        </TD>
+</TR>
+<TR>
+        <TD nowrap>
+        <input onclick='' type="radio" name="Aggregationsta" value="1" >$aggre_static
+        </TD>
+</TR>
+<TR>
+        <TD nowrap>
+        <input onclick='' type="radio" name="Aggregationsta" value="2"  >$aggre_dynamic
+        </TD>
+</TR>
+$bluebar
+</table>
+</div>
+<% help_box("0","_aggregation") %>
+</FORM>
+</BODY>
+</HTML>
+

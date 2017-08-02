@@ -1,0 +1,6 @@
+#Empty
+
+all:
+
+clean:
+

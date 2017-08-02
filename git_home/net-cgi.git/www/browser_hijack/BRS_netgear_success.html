@@ -1,0 +1,18 @@
+<html>
+<head>
+</head>
+<body>
+<script>
+/* 22281: add sn after success href */
+var sn="<% get_sn() %>";
+var lang_url = "$success_href";
+lang_url = lang_url.replace(/(.*)\/[^\/]+\.aspx/g, "$$1/<% cfg_get("macro_host_name") %>.aspx")
+//top.location.href = "$success_href"+"?sn="+sn;
+/* to fix bug 29273 */
+if( "<%cfg_get("dns_hijack") %>" == "1" && "<%cfg_get("hijack_process") %>" == "2" )
+	setTimeout('top.location.href = lang_url+"?sn="+sn;', 2000);
+else
+	top.location.href = lang_url+"?sn="+sn;
+</script>
+</body>
+</html>

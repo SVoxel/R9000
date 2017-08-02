@@ -1,0 +1,180 @@
+ANNAPURNA LABS SOFTWARE LICENSE AGREEMENT
+
+PLEASE READ THIS SOFTWARE LICENSE AGREEMENT CAREFULLY BEFORE USING SOFTWARE
+FROM ANNAPURNA LABS. BY USING ANNAPURNA LABS SOFTWARE, YOU SIGNIFY YOUR ASSENT
+TO AND ACCEPTANCE OF THIS SOFTWARE LICENSE AGREEMENT AND ACKNOWLEDGE YOU HAVE
+READ AND UNDERSTAND THE TERMS. AN INDIVIDUAL ACTING ON BEHALF OF AN ENTITY
+REPRESENTS THAT HE OR SHE HAS THE AUTHORITY TO ENTER INTO THIS SOFTWARE LICENSE
+AGREEMENT ON BEHALF OF THAT ENTITY. IF YOU DO NOT ACCEPT THE TERMS OF THIS
+AGREEMENT, THEN YOU MUST NOT USE THE ANNAPURNA LABS SOFTWARE.
+
+This Agreement is made and entered into by the Recipient and Annapurna Labs
+(U.S.), Inc., (“Annapurna Labs”) a Delaware corporation having a principal
+place of business at 1830 the Alameda, San Jose, CA 95126 USA. The Annapurna
+Labs Software Agreement (“ALSLA”) governs the use of any of the software
+releases by Annapurna Labs that include or refer to this license, and any
+related updates, source code, appearance, structure and organization (the
+"Software"), regardless of the delivery mechanism. Recipient shall use this
+Software only on its own hardware products, which uses semiconductor devices
+developed by or for Annapurna Labs (“Recipient’s Hardware Product”).
+
+1. License Grant
+Subject to the terms of this Agreement and including all restrictions below and
+subject to Recipient’s payment of the license fees (if applicable) charged by
+Annapurna Labs for the Software, Annapurna Labs grants to Recipient a
+non-exclusive, non-transferable, non-sublicensable, royalty-free licenses to
+distribute and internally use the Software as set forth in Sections 1, 2 and 3.
+The license granted in this Section is subject to the third party software
+licenses and requirements as detailed in Section 4 (Third Party Software)
+below, and the license granted herein shall not apply to any third party
+software that is subject to a separate third party software license. Recipient
+(a) shall not copy the Software, except for the purpose of using the Software
+on its own system(s) and for its internal archive or emergency restart
+purposes; (b) shall not disclose, provide, transfer or otherwise make available
+the Software or documentation, or any portion thereof, to any person other than
+Recipient or its employees or independent contractors without the prior written
+consent of Annapurna Labs; (c) shall not perform any reverse compiling or
+reverse engineering of the Software; and (d) shall take the same measures it
+customarily utilizes to protect the confidential nature of its own proprietary
+data to protect the confidential nature of such Software.
+
+2. Limitations of Use
+Recipient acknowledges that the Software includes commercially valuable,
+substantial trade secrets of Annapurna Labs which are being entrusted to
+Recipient in confidence and agrees to use the Software internally only and only
+for the purpose of use with Recipient’s Hardware Product only, and Recipient
+agrees not to disclose the Software to any third party except as expressly
+authorized herein. Recipient further agrees that any disclosure or distribution
+of the Software that is authorized herein (whether to a Recipient employee or
+an authorized third party) shall be done subject to a written obligation of
+confidentiality.  Recipient acknowledges and agrees that any use of the
+Software to develop code for a semiconductor device not developed by or for
+Annapurna Labs is a material breach of this Agreement and Recipient therefore
+receives no right hereunder to do so.
+
+3. Distribution Restrictions
+Recipient may distribute the Software as
+part of Recipient’s Hardware Product in binary format. Any distribution in
+source requires written agreement from Annapurna Labs. Distribution of the
+Software is subject to the following conditions:  (i) Recipient is solely
+responsible to Recipient’s direct or indirect customers, distributors,
+sub-distributors and End Users for any warranty, update or support obligations
+or other liability which Recipient provides or which may arise from Recipient’s
+distribution of the Software hereunder, (ii) Recipient shall not make any
+statement that Recipient’s Hardware Product is "certified" or otherwise
+endorsed, or that its performance is guaranteed, by Annapurna Labs, (iii)
+Recipient shall not use Annapurna Labs’s name or trademarks to market
+Recipient’s Hardware Product without Annapurna Labs’s written permission, and
+(iv) Recipient shall indemnify, hold harmless, and defend Annapurna Labs
+(including all of its officers, employees, directors, subsidiaries,
+representatives, affiliates and agents) and Annapurna Labs’s suppliers and
+licensors from and against any claims or lawsuits, including attorney's fees
+and expenses, that arise or result from distribution of Recipient’s Hardware
+Products or the Software pursuant to this Agreement.
+
+4. Third Party Software
+All third party software (e.g. - drivers, utilities, operating system
+components, libraries, tools, etc.) which may be distributed with or as part of
+the Software hereunder will be subject to the terms and conditions of any third
+party licenses which may be supplied with such third party software or in the
+end user documentation, and installation, use and/or further distribution by
+Recipient or Recipient’s licensee will be subject to such third party licenses.
+Some third party software and some of the Software components may be subject to
+open source license provisions, and installation,
+use and/or further distribution by Recipient or Recipient’s licensee of such
+third party software and Software components are subject to the respective open
+source license under which it is provided. The license agreement for each
+software component is located in the software component's source code. This
+agreement does not limit User's rights under, or grant User rights that
+supersede, the license terms of any particular third party software. Annapurna
+Labs expressly disclaims liability of any kind with respect to installation,
+use or distribution by Recipient of third party software.
+
+5. Intellectual Property Rights
+The Software and all information relating thereto, regardless of its type of
+form, remain the property of Annapurna Labs. The title and all applicable
+rights in patents, patent applications, copyrights, trademarks, trade secrets
+and other intellectual property rights in the Software, and information
+relating to the Software including any documentation, shall be and will remain
+in Annapurna Labs.  This Agreement and the rights granted hereunder are
+personal to Recipient and may not be assigned or otherwise transferred by
+Recipient, by operation of law or otherwise, without the prior written consent
+of Annapurna Labs, and any change of control of Recipient shall constitute an
+assignment hereunder.  Any modifications made by licensee shall remain property
+of Licensee. Annapurna Labs shall have no liability incidental or otherwise for
+the changes made by licensee. Any code modifications submitted back to
+Annapurna Labs shall become property of Annapurna Labs Corp and may be included
+in subsequent versions of the software with no financial or other obligations
+to the licensee.
+
+6. Marketing
+Recipient will provide Annapurna Labs with an advance copy of any written
+publication or public presentation related to the use of the Software at least
+one month prior to submission.  Any publication or public presentation related
+to the use of the Software must be approved in writing by Annapurna Labs. At no
+time may comparison with other solutions (semiconductor or software) be made or
+authorized by Recipient without prior written consent obtained from Annapurna
+Labs. Recipient agrees to reasonably consider joint marketing activities with
+Annapurna Labs, including press releases, quotes for a Annapurna Labs press
+release, and other related PR activity, which will be done only upon written
+approval of both parties.
+
+7. Term and Termination
+Annapurna Labs may terminate this Agreement if the Recipient materially
+breaches this Agreement, and fails to fully cure such breach within Fifteen
+(15) days after notice of such breach is received by the Recipient.  Upon
+termination, Recipient will immediately destroy the Software or return all
+copies of the Software to Annapurna Labs and all rights hereunder shall
+immediately terminate.
+
+8. No Other Rights
+ALL MATERIALS PROVIDED UNDER THIS AGREEMENT ARE DELIVERED TO, AND ACCEPTED BY
+RECIPIENT “AS IS”.  NO WARRANTIES ARE GIVEN, WHETHER EXPRESS, IMPLIED OR
+STATUTORY, INCLUDING WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+PURPOSE, NONINFRINGEMENT AND TITLE.  RECIPIENT SHALL HAVE THE SOLE
+RESPONSIBILITY FOR THE ADEQUATE PROTECTION AND BACK-UP OF ITS DATA USED IN
+CONNECTION WITH THE SOFTWARE PROVIDED HEREUNDER.  YOU ACKNOWLEDGE AND AGREE
+THAT THE LICENSED MATERIALS HAVE NOT BEEN TESTED OR CERTIFIED BY ANY GOVERNMENT
+AGENCY OR INDUSTRY REGULATORY ORGANIZATION OR ANY OTHER THIRD PARTY
+ORGANIZATION. YOU AGREE THAT PRIOR TO USING, INCORPORATING OR DISTRIBUTING THE
+LICENSED MATERIALS IN OR WITH ANY COMMERCIAL PRODUCT THAT YOU WILL THOROUGHLY
+TEST THE PRODUCT AND THE FUNCTIONALITY OF THE LICENSED MATERIALS IN OR WITH
+THAT PRODUCT AND BE SOLELY RESPONSIBLE FOR ANY PROBLEMS OR FAILURES. IN NO
+EVENT WILL ANNAPURNA LABS BE LIABLE FOR ANY CONSEQUENTIAL DAMAGES WHATSOEVER,
+INCLUDING LOSS OF DATA OR USE, LOST PROFITS OR ANY INCIDENTAL OR SPECIAL
+DAMAGES, ARISING OUT OF OR IN CONNECTION WITH THIS LICENSE OR THE USE OR
+PERFORMANCE OF THE SOFTWARE, WHETHER IN ACTION OF CONTRACT OR TORT, INCLUDING
+NEGLIGENCE.  ANNAPURNA LABS FURTHER DISCLAIMS ANY LIABILITY WHATSOEVER FOR
+INFRINGEMENT OF ANY INTELLECTUAL PROPERTY RIGHTS OF ANY THIRD PARTY.
+
+9. Open Source Software Restrictions
+Unless expressly permitted elsewhere in this license, Recipient may not combine
+or distribute the Software with Open Source Software (as defined below) or with
+software developed using Open Source Software (e.g., tools) in a manner that
+subjects Annapurna Labs or any portion of the Software provided by Annapurna
+Labs hereunder to any license obligations of such Open Source Software. "Open
+Source Software" means any software licensed under terms requiring that other
+software combined or distributed with such software: (i) be disclosed or
+distributed in source code form; or (ii) be licensed on terms inconsistent with
+the terms of this Agreement.
+
+10. Support and Maintenance
+Annapurna Labs has no obligation to support the Software under this Agreement.
+Any support provided will be based on best effort.
+
+11. Subcontractors
+Recipient may provide access to the Software to subcontractors who perform work
+solely on Recipient’s behalf, provided that: (i) Recipient will be liable for
+any breach of this Agreement by such subcontractors; and (ii) such
+subcontractors must agree in writing that they are subject to the terms of this
+Agreement, that they may use the Software solely as necessary to perform their
+work for Recipient, and they retain no license rights or other rights hereunder
+once they have discontinued their performance of work on Recipient’s behalf.
+
+12. Entire Agreement
+This Agreement constitutes the entire Agreement between Recipient and Annapurna
+Labs and supersedes any other oral or written agreements related to this
+subject matter.  This Agreement shall be governed by and interpreted in
+accordance with the laws of the State of California, excluding its choice of
+law rules.
+

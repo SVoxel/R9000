@@ -1,0 +1,87 @@
+#!/bin/sh /etc/rc.common
+START=99
+
+CONFIG=/bin/config
+PROG=/usr/sbin/openvpn
+PID_FILE=/var/run/openvpn-client.pid
+LOG_FILE=/var/log/openvpn-client.log
+AP_MODE=$($CONFIG get ap_mode)
+BRIDGE_MODE=$($CONFIG get bridge_mode)
+EXTENDER_MODE=$($CONFIG get extender_mode)
+OPENVPN_CONF_DIR=/etc/openvpn/config/client
+
+start() {
+	# Check existence of /etc/openvpn/config/client/*.ovpn file
+	OVPN_CLIENT_CONF=0
+	for OVPN in $OPENVPN_CONF_DIR/*.ovpn; do
+		if [[ -f $OVPN ]]; then
+			OVPN_CLIENT_CONF=$OVPN
+			break
+		fi
+	done
+
+	# If no *.ovpn file in /etc/openvpn/config/client
+	if [ $OVPN_CLIENT_CONF = "0" ]; then
+		echo "Error: No *.ovpn file in /etc/openvpn/config/client directory."
+		exit 1;
+	fi
+
+	# Check if not router mode
+	if [ "$AP_MODE" == "1" ] || [ "$BRIDGE_MODE" == "1" ] || [ "$EXTENDER_MODE" == "1" ]; then
+		echo "Error: Not router mode."
+		echo "Error: Not router mode." >> $LOG_FILE
+		exit 1
+	fi
+
+	# Check if OpenVPN server is enabled
+	if [ "$($CONFIG get vpn_enable)" = "1" ]; then
+		echo "Error: OpenVPN server is enabled. Disable it to start OpenVPN client."
+		echo "Error: OpenVPN server is enabled. Disable it to start OpenVPN client." >> $LOG_FILE
+		/sbin/ledcontrol -n wan -c red -s on
+		exit 1
+	fi
+
+	# Check if tun0 interface already exists
+	ifconfig | grep -q tun0
+	if [ $? -eq 0 ]; then
+		echo "Error: tun0 interface exists. OpenVPN client is probably already started."
+		echo "Error: tun0 interface exists. OpenVPN client is probably already started." >> $LOG_FILE
+		exit 1
+	fi
+
+	# Start OpenVPN client
+	$PROG --writepid $PID_FILE --log-append $LOG_FILE --config $OVPN_CLIENT_CONF --script-security 2 --up /etc/openvpn/ovpnclient-up.sh --down /etc/openvpn/ovpnclient-down.sh --daemon
+	echo "Please wait..."
+	sleep 20
+	ifconfig | grep -q tun0
+	if [ $? -ne 0 ]; then
+		echo "Error: OpenVPN client start failed."
+		echo "Error: OpenVPN client start failed." >> $LOG_FILE
+		/sbin/ledcontrol -n wan -c red -s on
+		if [ -f $PID_FILE ]; then
+			kill `cat $PID_FILE` 
+			rm -f $PID_FILE
+		fi
+		exit 1
+	fi
+
+	# Restart firewall	
+	net-wall rule
+	net-wall start
+}
+
+stop() {
+	if [ -f $PID_FILE ]; then
+		kill `cat $PID_FILE` 
+		rm -f $PID_FILE
+	fi
+
+	# Restart firewall	
+	net-wall rule
+	net-wall start
+}
+
+restart() {
+	stop
+	start
+}

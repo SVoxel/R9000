@@ -1,0 +1,256 @@
+#! /bin/sh
+
+DISK_FIND_TABLE=/tmp/find_disk_abcxzy
+USB_MAP_TABLE=/tmp/plexmediaserver/.usb_map_table
+USB_MAP_NEW=/tmp/plexmediaserver/.usb_map_latest_mount_point
+USB_MOUNT_POINT="sda,sdb,sdc,sdd,sde,sdf,sdg,sdh,sdi,sdj,sdk,sdl,sdm,sdn,sdo"
+download_state="$(/bin/config get green_download_enable)"
+download_start() {
+	sleep 2
+	green_download=`ps -w| grep -v grep |grep -c green_download.sh`
+	download_entry=`ps -w| grep -v grep |grep -c greendownload`
+	[ "x$green_download" != "x0" ] && return
+	[ "x$download_entry" != "x0" ] && return
+	[ "x$download_state" == "x1" ] && echo "hotplug starting green_download ........" > /dev/console && /usr/sbin/green_download.sh start
+}
+
+get_vendor_from_disk()
+{
+	dev=`echo "$1" | cut -c 1-3`
+	vendor=`cat /sys/block/$dev/device/vendor`
+	model=`cat /sys/block/$dev/device/model`
+
+	vendor=$(echo ${vendor} | sed 's/[[:space:]]*$//')
+	model=$(echo ${model} | sed 's/[[:space:]]*$//')
+
+	device_vendor="$vendor $model"
+	device_vendor=`echo $device_vendor | sed 's/[[:space:]]*$//'`
+	echo "$device_vendor"
+}
+
+get_volume_from_disk()
+{
+	disk_name=`echo $1 | sed 's/[0-9]//g'`
+	partition_num=`echo $1 | cut -c 4-`
+	volume=`/usr/sbin/vol_id -L /dev/$1`
+	if [ "x$volume" = "x" ];then
+		volume=`echo $(/usr/sbin/parted -s /dev/$disk_name print | grep "Number" -A16 | sed -n '2,16p' | awk 'NF>=6{for(n=6;n<=NF;n++)printf $n" ";print     ""}' | sed -n $partition_num"p")`
+		if [ "x$volume" = "x" ];then
+			volume="$1"
+		fi
+	fi
+	echo "$volume"
+}
+
+# $---> sda1
+print_log()
+{
+        if [ `length $1` != '4' ];then
+                return
+        fi
+
+	sata_disk_name=`/bin/config get sata_diskname`
+
+	device_name=`cat $DISK_FIND_TABLE | grep $1 | awk -F* '{print $2}'`
+	[ "x$device_name" = "x" ] && device_name=`get_vendor_from_disk "$1"`
+	volume_name=`cat $DISK_FIND_TABLE | grep $1 | awk -F* '{{{i=NF-3; a="*";while(i!=0) {printf $(NF-i); if(i!=1) printf a; i--}}}}'`
+	[ "x$volume_name" = "x" ] && volume_name=`get_volume_from_disk "$1"`
+
+	if [ "x$sata_disk_name" = "x$1" ]; then
+		logger "[External disk attached] The External disk attached $device_name($volume_name) is attached to the router,"
+                return
+	else
+		logger "[USB device attached] The USB storage device $device_name($volume_name) is attached to the router,"
+                return
+	fi
+
+	volume_name=`/usr/sbin/vol_id -L /dev/$1`
+	if [ ! -n "$volume_name" ]; then
+	       volume_name=$1
+	fi
+	logger "[USB device attached] The USB storage device $1($volume_name) is attached to the router,"
+}
+
+if [ $# -eq 0 ];then
+	echo "Must run with devicename."
+	exit 1
+fi
+
+#serial : mount point : device name 
+sd=`echo $1 |cut -b 1-3`
+usb_num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $1}'`
+usb_serial="`cat /proc/scsi/usb-storage/$usb_num |grep "Serial" |awk '{print $NF}'`"
+if [ ! -f $USB_MAP_TABLE -o ! -s $USB_MAP_TABLE ];then
+    echo "$usb_serial,sda,$sd" > $USB_MAP_TABLE
+	mount_point=sda
+else
+	usb_map_info=$(sed -n "/^$usb_serial,sd[a-o],sd[a-o]$/p" $USB_MAP_TABLE)
+	if [ "x$usb_map_info" = "x" ];then
+		tail_map_info=$(tail -n1 $USB_MAP_TABLE |awk -F"," '{print $2}')
+		mount_point=$(echo $USB_MOUNT_POINT |awk -F"$tail_map_info" '{print $2}' |awk -F"," '{print $2}')
+		if [ "x$mount_point" = "x" ];then
+			if [ ! -f $USB_MAP_NEW -o ! -s $USB_MAP_NEW ];then
+				mount_point=sda
+				sed -i "1s/.*/$usb_serial,$mount_point,$sd/" $USB_MAP_TABLE
+				echo "$usb_serial,$mount_point,$sd" >$USB_MAP_NEW 
+			else
+				new_usb_info=$(cat $USB_MAP_NEW |head -1)
+				new_serial=$(echo $new_usb_info |awk -F"," '{print $1}')
+				old_usb_info=$(sed -n "/^$new_serial,sd[a-o],sd[a-o]$/{n;p};h" $USB_MAP_TABLE)
+				old_mount_point=$(echo $old_usb_info |awk -F"," '{print $2}')
+				mount_point=$old_mount_point
+				sed -i "s/$old_usb_info/$usb_serial,$mount_point,$sd/g" $USB_MAP_TABLE
+				echo "$usb_serial,$mount_point,$sd" > $USB_MAP_NEW	
+			fi
+		else
+			echo "$usb_serial,$mount_point,$sd" >> $USB_MAP_TABLE
+		fi
+	else
+		mount_point=$(echo $usb_map_info |awk -F"," '{print $2}')
+		sed -i "s/$usb_map_info/$usb_serial,$mount_point,$sd/g" $USB_MAP_TABLE
+	fi
+fi
+uniq $USB_MAP_TABLE >/tmp/usb_map_table
+cp -rf /tmp/usb_map_table $USB_MAP_TABLE
+mount_part=$mount_point$(echo $1 |cut -b 4-)
+if [ -d /mnt/$mount_part ];then
+	fuser -m /tmp/mnt/$mount_part |xargs kill -9 2>/dev/null
+	umount /tmp/mnt/$mount_part
+fi
+
+fs_type=$(vol_id /dev/$1 | grep ID_FS_TYPE | awk -F= '{print $2}')
+if [ "x$fs_type" = "x" ]; then
+	fs_type=$(parted -s /dev/$1 print | sed -n '/Number/{n;p}' | awk '{print $5}')
+fi
+echo This partition type is $fs_type !
+
+partition_label=$(vol_id /dev/$1 | grep ID_FS_LABEL_SAFE | awk -F= '{print $2}')
+if [ ! -z "$partition_label" ]; then
+	if [ -e /mnt/$partition_label ]; then
+		rm -f /mnt/$partition_label
+	fi
+
+	if [ -d /mnt/$partition_label ]; then
+		rmdir /mnt/$partition_label
+	fi
+
+	ln -sf $mount_part /mnt/$partition_label
+fi
+
+partition_tb=$(parted -s /dev/`echo $1 | sed 's/[0-9]//g'` print | grep "Partition Table" | awk '{print $3}')
+if [ "x$(parted -s /dev/`echo $1 | sed 's/[0-9]//g'` print noshare | grep $1)" = "x" -o "x$partition_tb" = "xloop" -o "x$partition_tb" = "xgpt" ]; then
+	mkdir /mnt/$mount_part
+	case "$fs_type" in
+		"ntfs")
+			echo "do chkntfs..." > /dev/console
+			chkntfs -a -f /dev/$1 > /dev/console
+			sleep 1
+			echo "do mount ntfs..." > /dev/console
+			mount -t ufsd -o nls=utf8,rw,nodev,noatime,uid=0,gid=0,fmask=0,dmask=0 --force /dev/$1 /mnt/$mount_part
+		;;
+		"ext4")
+			mount -t ext4 -o nodev,noatime,barrier=0,data=writeback /dev/$1 /mnt/$mount_part
+		;;
+		"ext3")
+			mount -t ext3 -o nodev,noatime,barrier=0,data=writeback /dev/$1 /mnt/$mount_part
+			if [ $? -ne 0 ];then
+				mount -t ext4 -o nodev,noatime,barrier=0,data=writeback /dev/$1 /mnt/$mount_part
+			fi
+		;;
+		"ext2")
+			echo "do e2fsck..." > /dev/console
+			e2fsck -p /dev/$1 > /dev/console
+			sleep 1
+			echo "do mount ext2..." > /dev/console
+			mount -t ext2 -o nodev,noatime  /dev/$1 /mnt/$mount_part
+		;;
+		"hfs")
+			mount -t hfs -o nodev,noatime /dev/$1 /mnt/$mount_part
+		;;
+		"hfsplus")
+			mount -t hfsplus -o nodev,noatime --force /dev/$1 /mnt/$mount_part
+		;;
+		"vfat")
+			mount -o usefree,utf8=yes,fmask=0000,dmask=0000 /dev/$1 /mnt/$mount_part
+			if [ $? -ne 0 ];then
+				sleep 2
+				mount -o usefree,utf8=yes,fmask=0000,dmask=0000 /dev/$1 /mnt/$mount_part
+			fi
+		;;
+		*)
+		mount  /dev/$1 /mnt/$mount_part
+		if [ $? -ne 0 ]; then
+			rmdir /mnt/$mount_part
+			if [ ! -z "$partition_label" ]; then
+				rm -f /mnt/$partition_label
+			fi
+		else
+			echo "mount /mnt/$mount_part success"
+		fi
+		return
+		;;
+	esac
+fi
+
+if [ -x /mnt/$mount_part/autorun/scripts/post-mount.sh ]; then
+	/mnt/$mount_part/autorun/scripts/post-mount.sh $mount_part &
+fi
+
+# Trick with OpenVPN client config files stored in /openvpn-client folder on the USB
+if [ -d /mnt/$mount_part/openvpn-client ]; then
+	/etc/init.d/openvpn-client stop
+	if [ -d /etc/openvpn/config/client ]; then
+		rm -rf /etc/openvpn/config/client
+	fi
+
+	if [ ! -f /mnt/$mount_part/openvpn-client/disable ]; then
+		mkdir /etc/openvpn/config
+		mkdir /etc/openvpn/config/client
+		cp -r /mnt/$mount_part/openvpn-client/* /etc/openvpn/config/client
+		chmod 0644 /etc/openvpn/client/*
+		/etc/init.d/openvpn-client start
+	fi
+fi		
+
+diskname=$(echo $1 | sed 's/[0-9].*//')
+lastpartition=$(cat /proc/partitions | grep $diskname | awk '{print $4}' | tail -1)
+echo "disk name is $diskname last partition is $lastpartition"
+
+partition_num=$(cat /proc/partitions | grep $diskname | wc -l)
+if [ $1 != $lastpartition -a $partition_num -gt 2 ];then
+	update_smb $diskname &
+	if [ "x$(pidof afpd)" != "x" ];then
+		/usr/sbin/update_afp $diskname &
+	else
+		/etc/init.d/run_afpd start
+	fi
+fi
+
+if [ $1 = $lastpartition ]; then
+	echo noop > /sys/block/$diskname/queue/scheduler
+	echo 1024 > /sys/block/$diskname/queue/nr_requests
+
+	/usr/sbin/detectSATA start
+	if [ "x$(pidof update_smb)" != "x" ]; then
+		echo "update_smb is running, sleep 2" > /dev/console
+		sleep 2
+	fi
+	update_smb $diskname
+	if [ "x$(pidof afpd)" != "x" ];then
+        	/usr/sbin/update_afp $diskname &
+	else
+		/etc/init.d/run_afpd start
+	fi
+	#/usr/sbin/usb_cfg approve $1
+	/sbin/cmdftp restart
+	/sbin/cmddlna restart &
+	#if download is ennable  start download
+	download_start
+	[ ! -f /tmp/boot_status ] && /etc/plexmediaserver/cmdplexmediaserver start
+fi
+
+print_log $1
+rm /tmp/umount_result
+
+#for Cloud Backup
+netdrive.sh nusb_mount $mount_part &

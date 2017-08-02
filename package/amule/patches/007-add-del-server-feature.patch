@@ -1,0 +1,62 @@
+Binary files aMule-2.3.1.old//src/.ExternalConn.cpp.swp and aMule-2.3.1/src/.ExternalConn.cpp.swp differ
+diff -Nur aMule-2.3.1.old//src/TextClient.cpp aMule-2.3.1/src/TextClient.cpp
+--- aMule-2.3.1.old//src/TextClient.cpp	2012-06-19 06:30:04.379057749 -0400
++++ aMule-2.3.1/src/TextClient.cpp	2012-06-19 06:32:42.909057787 -0400
+@@ -92,6 +92,7 @@
+ 	CMD_ID_SHOW_DL,
+ 	CMD_ID_SHOW_LOG,
+ 	CMD_ID_SHOW_SERVERS,
++	CMD_ID_DELSERVER,
+ 	CMD_ID_SHOW_SHARED,
+ 	CMD_ID_RESET_LOG,
+ 	CMD_ID_SHUTDOWN,
+@@ -224,6 +225,39 @@
+ 			}
+ 			break;
+ 
++		case CMD_ID_DELSERVER:
++			{
++				unsigned int ip[4];
++				unsigned int port;
++				// Not much we can do against this unicode2char.
++				int result = sscanf(unicode2char(args), "%d.%d.%d.%d:%d", &ip[0], &ip[1], &ip[2], &ip[3], &port);
++				if (result != 5) {
++					// Try to resolve DNS -- good for dynamic IP servers
++					wxString serverName(args.BeforeFirst(wxT(':')));
++					long lPort;
++					bool ok = args.AfterFirst(wxT(':')).ToLong(&lPort);
++					port = (unsigned int)lPort;
++					wxIPV4address a;
++					a.Hostname(serverName);
++					a.Service(port);
++					result = sscanf(unicode2char(a.IPAddress()), "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]);
++					if (serverName.IsEmpty() || !ok || (result != 4)) {
++						Show(_("Invalid IP format. Use xxx.xxx.xxx.xxx:xxxx\n"));
++						return 0;
++					}
++				}
++				EC_IPv4_t addr;
++				addr.m_ip[0] = ip[0];
++				addr.m_ip[1] = ip[1];
++				addr.m_ip[2] = ip[2];
++				addr.m_ip[3] = ip[3];
++				addr.m_port = port;
++				request = new CECPacket(EC_OP_SERVER_REMOVE);
++				request->AddTag(CECTag(EC_TAG_SERVER, addr));
++				request_list.push_back(request);
++			}
++			break;
++
+ 		case CMD_ID_CONNECT_ED2K:
+ 			request_list.push_back(new CECPacket(EC_OP_SERVER_CONNECT));
+ 			break;
+@@ -991,6 +1025,9 @@
+    	m_commands.AddCommand(wxT("Cancel"), CMD_ID_CANCEL, wxTRANSLATE("Cancel download."),
+   			      wxEmptyString, CMD_PARAM_ALWAYS);
+ 
++   	m_commands.AddCommand(wxT("Delserver"), CMD_ID_DELSERVER, wxTRANSLATE("Remove server."),
++  			      wxEmptyString, CMD_PARAM_ALWAYS);
++
+ 	tmp = m_commands.AddCommand(wxT("Priority"), CMD_ERR_INCOMPLETE, wxTRANSLATE("Set download priority."),
+ 				    wxTRANSLATE("Set priority of a download to Low, Normal, High or Auto.\n"), CMD_PARAM_ALWAYS);
+ 	tmp->AddCommand(wxT("Low"), CMD_ID_PRIORITY_LOW, wxTRANSLATE("Set priority to low."), wxEmptyString, CMD_PARAM_ALWAYS);

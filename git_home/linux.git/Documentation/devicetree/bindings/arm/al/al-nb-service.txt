@@ -1,0 +1,20 @@
+Annapurna Labs North Bridge Service Registers
+
+Properties:
+- compatible : Should contain "annapurna-labs,al-nb-service".
+- reg : Offset and length of the register set for the device
+- interrupts : The sys fabric interrupts indices
+- dev_ord_relax : enable device-order relaxation. This option
+				will allow relaxing order constraints between
+				reads and writes to different addresses.
+				(int, enabled if !=0)
+
+Example:
+
+nb_service {
+	compatible = "annapurna-labs,al-nb-service";
+	reg = <0xfb070000 0x10000>;
+	interrupts = <0 64 4  0 65 4  0 66 4  0 67 4>;
+	dev_ord_relax = <1>;
+};
+

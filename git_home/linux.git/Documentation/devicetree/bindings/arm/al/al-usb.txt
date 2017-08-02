@@ -1,0 +1,14 @@
+Annapurna Labs USB Controller
+
+Properties:
+- compatible : Should contain "annapurna-labs,al-usb".
+- serdes-group : SerDes group used for USB3.0 phy
+- serdes-lane : SerDes lane used for USB3.0 phy
+
+Example:
+
+usb {
+	compatible = "annapurna-labs,al-usb";
+	serdes-group = <0>;
+	serdes-lane = <2>;
+};

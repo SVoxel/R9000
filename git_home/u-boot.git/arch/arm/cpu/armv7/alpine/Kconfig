@@ -1,0 +1,9 @@
+if ALPINE
+
+config SYS_VENDOR
+	default "annapurna-labs"
+
+config SYS_SOC
+	default "alpine"
+
+endif

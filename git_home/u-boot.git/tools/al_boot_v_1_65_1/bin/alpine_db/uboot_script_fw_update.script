@@ -1,0 +1,19 @@
+\# secure boot script to be used by uboot
+echo Updating boot_mode.fimg..
+tftpboot ${tftpdir}boot_mode.fimg; if test $? -ne 0; then echo Failed!; exit; fi
+flash_contents_obj_update BOOT_MODE $boot_instance_non_active; if test $? -ne 0; then echo Failed!; exit; fi
+flash_contents_obj_validate BOOT_MODE $boot_instance_non_active; if test $? -ne 0; then echo Failed!; exit; fi
+echo Updating u-boot.img..
+tftpboot ${tftpdir}u-boot.img; if test $? -ne 0; then echo Failed!; exit; fi
+flash_contents_obj_update UBOOT $boot_instance_non_active; if test $? -ne 0; then echo Failed!; exit; fi
+flash_contents_obj_validate UBOOT $boot_instance_non_active; if test $? -ne 0; then echo Failed!; exit; fi
+echo Updating u-boot-script.img..
+tftpboot ${tftpdir}u-boot-script.img; if test $? -ne 0; then echo Failed!; exit; fi
+flash_contents_obj_update UBOOT_SCRIPT $boot_instance_non_active; if test $? -ne 0; then echo Failed!; exit; fi
+flash_contents_obj_validate UBOOT_SCRIPT $boot_instance_non_active; if test $? -ne 0; then echo Failed!; exit; fi
+echo Updating dt.img..
+tftpboot ${tftpdir}dt.img; if test $? -ne 0; then echo Failed!; exit; fi
+flash_contents_obj_update DT $boot_instance_non_active; if test $? -ne 0; then echo Failed!; exit; fi
+flash_contents_obj_validate DT $boot_instance_non_active; if test $? -ne 0; then echo Failed!; exit; fi
+echo Marking active image...
+flash_contents_instance_invalidate $boot_instance_active; if test $? -ne 0; then echo Failed!; exit; fi

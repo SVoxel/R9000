@@ -1,0 +1,4 @@
+# !/bin/sh
+
+#echo $(nanddump /dev/mtd0 > /dev/null |grep -c "corrected bitflip(s)") > /tmp/uboot_bitflip_count
+echo $(nanddump /dev/mtd0 -f /tmp/mtd0 2>&1 |grep -c "corrected bitflip(s)") > /tmp/uboot_bitflip_count

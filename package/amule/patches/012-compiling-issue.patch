@@ -1,0 +1,19 @@
+--- aMule-2.3.1/src/ObservableQueue.h.org	2015-11-26 16:06:37.038915358 +0800
++++ aMule-2.3.1/src/ObservableQueue.h	2015-11-26 16:13:14.862901770 +0800
+@@ -331,14 +331,14 @@
+ template <typename ValueType>
+ void CObservableQueue<ValueType>::ObserverAdded( ObserverType* o )
+ {
+-	NotifyObservers( EventType( EventType::STARTING ), o );
++	this->NotifyObservers( EventType( EventType::STARTING ), o );
+ }
+ 
+ 
+ template <typename ValueType>
+ void CObservableQueue<ValueType>::ObserverRemoved( ObserverType* o )
+ {
+-	NotifyObservers( EventType( EventType::STOPPING ), o );
++	this->NotifyObservers( EventType( EventType::STOPPING ), o );
+ }
+ 
+ 

@@ -1,0 +1,4 @@
+if test -n $test; then; else
+	setenv test "echo this is a test!"
+fi
+

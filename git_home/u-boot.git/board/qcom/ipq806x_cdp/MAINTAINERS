@@ -1,0 +1,6 @@
+IPQ806X_CDP BOARD
+#M:      -
+S:      Maintained
+F:      board/qcom/ipq806x_cdp/
+F:      include/configs/ipq806x_cdp.h
+F:      configs/ipq806x_cdp_defconfig

@@ -1,0 +1,48 @@
+<% usb_browser_header("/dtree.js") %>
+<% nobody_header("Netdisk_folder_Browse.htm","file_browser_open") %>
+
+<% save_timestamp("file_browser_open", "browser_close") %>
+
+<input type=hidden name=nodenumber >
+<input type=hidden name=currentpath >
+<input type=hidden name=nodevalue>
+<script>
+<!--
+<% show_tree() %>
+function open_browser(form)
+{
+	form.submit_flag.value="file_browser_open";
+	form.submit();
+}
+function close_browser(form)
+{
+	form.submit_flag.value="browser_close";
+	form.submit();
+}
+
+ var n=0;
+ var selectednode=<% cfg_get("usb_selectedNode") %>;
+
+	//new tree
+ 	d = new dTree('d',selectednode);
+	//add node
+	for( n=0; n<nodeNumber; n++){
+		var str = eval( 'node' + n);
+		
+		echo_info = str.split('*');
+		if(echo_info[0] == '0')
+			d.add(n,echo_info[0],echo_info[1],echo_info[2],echo_info[4],'folder.gif', 'folder.gif');
+		else if(echo_info[5] == 'file')
+			d.add(n,echo_info[0],echo_info[1],echo_info[2],echo_info[4],'page.gif', 'page.gif');
+		else
+			d.add(n,echo_info[0],echo_info[1],echo_info[2],echo_info[4]);
+	}
+
+	document.write(d);
+
+-->
+</script>
+
+</form>
+</body>
+</html>

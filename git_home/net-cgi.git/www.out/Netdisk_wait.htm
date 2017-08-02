@@ -1,0 +1,17 @@
+<% http_header("style/form2.css","/funcs.js") %>
+<body>
+<div id="content">
+	<div align="center"><br /><br /><b>$wait_serv</b><br /><br /></div>
+	<div align="center" class="waiting_img_div"><img alt="wait" src="image/wait30.gif" /></div>
+</div>
+<script>
+var name_conflict = "<% cfg_get("amazon_conflict_name") %>";
+if(name_conflict == ""){
+	setTimeout( function() {parent.formframe.location.href ="Netdisk_wait.htm";}, 5000);
+}else{
+	setTimeout( function() {parent.formframe.location.href ="Netdisk_setting.htm";}, 5000);
+}
+</script>
+</div>
+</body>
+</html>

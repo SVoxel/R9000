@@ -1,0 +1,255 @@
+#!/bin/sh
+
+#[ -f /usr/local/sbin/igmpproxy ] || exit 0
+
+RETVAL=0
+prog="igmpproxy"
+PID_FILE="/var/run/igmpproxy.pid" #if the path/file changes, remember to modify snmp checking function
+CONFIG_FILE="/var/igmpproxy.conf"
+lan_ifname=`config get lan_ifname`
+wan_ifname=`config get wan_ifname`
+wan_hwifname=ethwan
+wan_proto=`config get wan_proto`
+current_language=`config get GUI_Region`
+
+kill_igmpproxy()
+{
+	IGMP_PID=`ps | grep igmpproxy | grep -v 'grep' | awk '{print $1}'`
+	for PID in $IGMP_PID ; do
+		kill -9 $PID
+	done
+}
+
+# Enable IGMP SNOOPING on LAN (0,2,3,4,5) ports
+sw_enable_igmp_snooping() #
+{
+	# IGMP_JOIN_LEAVE_DP : flood IGMP/MLD 0x7f, MILTI_FLOOD_DP: 0x00
+	ssdk_sh_id 0 igmp rp set 0x7f
+	#ssdk_sh_id 0 misc ptUnkMcFilter set 0 enable
+	#ssdk_sh_id 0 misc ptUnkMcFilter set 1 enable
+	#ssdk_sh_id 0 misc ptUnkMcFilter set 2 enable
+	#ssdk_sh_id 0 misc ptUnkMcFilter set 3 enable
+	#ssdk_sh_id 0 misc ptUnkMcFilter set 4 enable
+	#ssdk_sh_id 0 misc ptUnkMcFilter set 5 enable
+	#ssdk_sh_id 0 misc ptUnkMcFilter set 6 enable
+
+	# IGMP_LEAVE_EN & IGMP_JOIN_EN (0,1,2 ports)
+	ssdk_sh_id 0 igmp portJoin set 0 enable
+	ssdk_sh_id 0 igmp portLeave set 0 enable
+	ssdk_sh_id 0 igmp portJoin set 1 enable
+	ssdk_sh_id 0 igmp portLeave set 1 enable
+	ssdk_sh_id 0 igmp portJoin set 2 enable
+	ssdk_sh_id 0 igmp portLeave set 2 enable
+
+	# IGMP_V3_EN, # IGMP_LEAVE_EN & IGMP_JOIN_EN (4,5,6 port)
+	ssdk_sh_id 0 igmp portJoin set 4 enable
+	ssdk_sh_id 0 igmp portLeave set 4 enable
+	ssdk_sh_id 0 igmp portJoin set 5 enable
+	ssdk_sh_id 0 igmp portLeave set 5 enable
+	ssdk_sh_id 0 igmp portJoin set 6 enable
+	ssdk_sh_id 0 igmp portLeave set 6 enable
+
+	ssdk_sh_id 0 igmp version3 set enable
+
+	# IGMP_JOIN_NEW_EN
+	ssdk_sh_id 0 igmp createStatus set enable
+
+	# IGMP_JOIN_LEAVE_DP : flood IGMP/MLD 0x7f, MILTI_FLOOD_DP: 0x00
+	ssdk_sh_id 1 igmp rp set 0x7f
+	#ssdk_sh_id 1 misc ptUnkMcFilter set 0 enable
+	#ssdk_sh_id 1 misc ptUnkMcFilter set 1 enable
+	#ssdk_sh_id 1 misc ptUnkMcFilter set 2 enable
+	#ssdk_sh_id 1 misc ptUnkMcFilter set 3 enable
+	#ssdk_sh_id 1 misc ptUnkMcFilter set 4 enable
+	#ssdk_sh_id 1 misc ptUnkMcFilter set 5 enable
+	#ssdk_sh_id 1 misc ptUnkMcFilter set 6 enable
+
+	# IGMP_LEAVE_EN & IGMP_JOIN_EN (0,1,2,3 ports)
+	ssdk_sh_id 1 igmp portJoin set 0 enable
+	ssdk_sh_id 1 igmp portLeave set 0 enable
+	ssdk_sh_id 1 igmp portJoin set 1 enable
+	ssdk_sh_id 1 igmp portLeave set 1 enable
+	ssdk_sh_id 1 igmp portJoin set 2 enable
+	ssdk_sh_id 1 igmp portLeave set 2 enable
+	ssdk_sh_id 1 igmp portJoin set 3 enable
+	ssdk_sh_id 1 igmp portLeave set 3 enable
+
+	# IGMP_V3_EN, IGMP_LEAVE_EN & IGMP_JOIN_EN (4,5,6 port)
+	ssdk_sh_id 1 igmp portJoin set 4 enable
+	ssdk_sh_id 1 igmp portLeave set 4 enable
+	ssdk_sh_id 1 igmp portJoin set 5 enable
+	ssdk_sh_id 1 igmp portLeave set 5 enable
+	ssdk_sh_id 1 igmp portJoin set 6 enable
+	ssdk_sh_id 1 igmp portLeave set 6 enable
+
+	ssdk_sh_id 1 igmp version3 set enable
+
+	# IGMP_JOIN_NEW_EN
+	ssdk_sh_id 1 igmp createStatus set enable
+}
+
+sw_disable_igmp_snooping() #
+{
+	# IGMP_JOIN_LEAVE_DP : flood IGMP/MLD 0x7f, MILTI_FLOOD_DP: 0x7f
+	ssdk_sh_id 0 igmp rp set 0x7f
+	#ssdk_sh_id 0 misc ptUnkMcFilter set 0 disable
+	#ssdk_sh_id 0 misc ptUnkMcFilter set 1 disable
+	#ssdk_sh_id 0 misc ptUnkMcFilter set 2 disable
+	#ssdk_sh_id 0 misc ptUnkMcFilter set 3 disable
+	#ssdk_sh_id 0 misc ptUnkMcFilter set 4 disable
+	#ssdk_sh_id 0 misc ptUnkMcFilter set 5 disable
+	#ssdk_sh_id 0 misc ptUnkMcFilter set 6 disable
+
+	# IGMP_LEAVE_EN & IGMP_JOIN_EN (0,1,2 ports)
+	ssdk_sh_id 0 igmp portJoin set 0 disable
+	ssdk_sh_id 0 igmp portLeave set 0 disable
+	ssdk_sh_id 0 igmp portJoin set 1 disable
+	ssdk_sh_id 0 igmp portLeave set 1 disable
+	ssdk_sh_id 0 igmp portJoin set 2 disable
+	ssdk_sh_id 0 igmp portLeave set 2 disable
+
+	# IGMP_V3_EN, # IGMP_LEAVE_EN & IGMP_JOIN_EN (4,5,6 port)
+	ssdk_sh_id 0 igmp portJoin set 4 disable
+	ssdk_sh_id 0 igmp portLeave set 4 disable
+	ssdk_sh_id 0 igmp portJoin set 5 disable
+	ssdk_sh_id 0 igmp portLeave set 5 disable
+	ssdk_sh_id 0 igmp portJoin set 6 disable
+	ssdk_sh_id 0 igmp portLeave set 6 disable
+
+	ssdk_sh_id 0 igmp version3 set disable
+
+	# IGMP_JOIN_NEW_EN
+	ssdk_sh_id 0 igmp createStatus set disable
+
+	# IGMP_JOIN_LEAVE_DP : flood IGMP/MLD 0x7f, MILTI_FLOOD_DP: 0x7f
+	ssdk_sh_id 1 igmp rp set 0x7f
+	#ssdk_sh_id 1 misc ptUnkMcFilter set 0 disable
+	#ssdk_sh_id 1 misc ptUnkMcFilter set 1 disable
+	#ssdk_sh_id 1 misc ptUnkMcFilter set 2 disable
+	#ssdk_sh_id 1 misc ptUnkMcFilter set 3 disable
+	#ssdk_sh_id 1 misc ptUnkMcFilter set 4 disable
+	#ssdk_sh_id 1 misc ptUnkMcFilter set 5 disable
+	#ssdk_sh_id 1 misc ptUnkMcFilter set 6 disable
+
+	# IGMP_LEAVE_EN & IGMP_JOIN_EN (0,1,2,3 ports)
+	ssdk_sh_id 1 igmp portJoin set 0 disable
+	ssdk_sh_id 1 igmp portLeave set 0 disable
+	ssdk_sh_id 1 igmp portJoin set 1 disable
+	ssdk_sh_id 1 igmp portLeave set 1 disable
+	ssdk_sh_id 1 igmp portJoin set 2 disable
+	ssdk_sh_id 1 igmp portLeave set 2 disable
+	ssdk_sh_id 1 igmp portJoin set 3 disable
+	ssdk_sh_id 1 igmp portLeave set 3 disable
+
+	# IGMP_V3_EN, IGMP_LEAVE_EN & IGMP_JOIN_EN (4,5,6 port)
+	ssdk_sh_id 1 igmp portJoin set 4 disable
+	ssdk_sh_id 1 igmp portLeave set 4 disable
+	ssdk_sh_id 1 igmp portJoin set 5 disable
+	ssdk_sh_id 1 igmp portLeave set 5 disable
+	ssdk_sh_id 1 igmp portJoin set 6 disable
+	ssdk_sh_id 1 igmp portLeave set 6 disable
+
+	ssdk_sh_id 1 igmp version3 set disable
+
+	# IGMP_JOIN_NEW_EN
+	ssdk_sh_id 1 igmp createStatus set disable
+}
+
+start() {
+	# Start daemons.
+	local igmp_enable=`config get wan_endis_igmp`
+	kill_igmpproxy
+	if [ "$igmp_enable" = "0" ]; then	
+		echo 0 > /proc/igmpsnoop
+		return $RETVAL
+	fi
+	echo $"Starting $prog: "
+	echo "quickleave" > $CONFIG_FILE
+	echo "mode 2" >> $CONFIG_FILE
+	echo "" >> $CONFIG_FILE
+
+        case "$wan_proto" in
+                static|dhcp)
+                        wan_ifname_upstream=$wan_ifname
+                        ;;
+                pppoe|pptp|l2tp)
+                        if [ $current_language = "Russian" ]; then
+			        wan_ifname_upstream=$wan_hwifname
+			 else
+			        wan_ifname_upstream=ppp0
+			 fi
+                        ;;
+                *)
+                        wan_ifname_upstream=$wan_ifname
+        esac
+	
+	echo "phyint $wan_ifname_upstream upstream  ratelimit 0  threshold 1" >> $CONFIG_FILE
+	echo "" >> $CONFIG_FILE
+
+	echo "phyint $lan_ifname downstream  ratelimit 0  threshold 1" >> $CONFIG_FILE
+	echo "" >> $CONFIG_FILE
+
+	if [ "$wan_ifname_upstream" = "$wan_hwifname" ]; then
+		echo "phyint ppp0 disabled" >> $CONFIG_FILE
+	echo "" >> $CONFIG_FILE
+	fi
+
+	touch $PID_FILE
+
+	#ebtables -A OUTPUT -o ethwan -p ipv4 --ip-dst 239.255.255.250 -j ACCEPT
+	#ebtables -A OUTPUT -o ethwan -p ipv4 --ip-dstrange 224.0.1.0-239.255.255.255 -j DROP
+
+	echo 1 > /proc/igmpsnoop
+
+	#enable BT IGMP
+	WAN_PROTO=`/bin/config get wan_proto`
+	ENABLE_BT_IGMP=`/bin/config get enable_bt_igmp`
+	[ "$WAN_PROTO" = "pppoe" -a "$ENABLE_BT_IGMP" = "1" ] && echo 1 > /proc/bt_igmp_group
+
+	sw_enable_igmp_snooping
+	${prog} -c $CONFIG_FILE &
+	RETVAL=$?
+	echo
+	return $RETVAL
+}
+
+stop() {
+	# Stop daemons.
+	echo $"Shutting down $prog: "
+	kill_igmpproxy
+	[ -f $PID_FILE ] && sw_disable_igmp_snooping
+	rm -f ${PID_FILE}
+	#ebtables -D OUTPUT -o ethwan -p ipv4 --ip-dst 239.255.255.250 -j ACCEPT
+        #ebtables -D OUTPUT -o ethwan -p ipv4 --ip-dstrange 224.0.1.0-239.255.255.255 -j DROP
+
+	echo 0 > /proc/igmpsnoop
+
+	# disable BT IGMP
+	echo 0 > /proc/bt_igmp_group
+
+	RETVAL=$?
+	echo
+	return $RETVAL
+}
+
+# See how we were called.
+case "$1" in
+  start)
+	stop
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart|reload)
+	stop
+	start
+	RETVAL=$?
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $RETVAL
+

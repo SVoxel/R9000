@@ -1,0 +1,557 @@
+<% cfg_set("show_netdisk","0") %>
+<% netdisk_detect_USB() %>
+<% http_header("style/form2.css","dtree.css","/funcs.js") %>
+<% body_header("", "Netdisk_setting.htm", "drive_backup_setting") %>
+<div class="qospage_title">$amz_cloud_low</div>
+<style>
+.old_fix_button{width: 100%; height: 30px; position: absolute; top: 20px; left: 0px; background: url(../image/oneline.gif)0 -40px repeat-x; }
+.apply_bt, .cancel_bt, .cancel1_bt, .apply1_bt{ height: 22px; color: #f2f2f2; font-family: Arial; font-weight: Bold; font-size: 14px; background-color: transparent; border: none; cursor: pointer; padding-bottom: 2px; }
+.apply_bt{width: 128px; background: url(../image/buttons.gif) no-repeat top left; }
+.cancel_bt{width: 128px; background: url(../image/buttons.gif) no-repeat 0 -22px; }
+.cancel1_bt{width: 128px; background: url(../image/buttons1.gif) no-repeat -320px -330px; }
+.apply1_bt{width: 128px; background: url(../image/buttons1.gif) no-repeat -192px -330px; }
+</style>
+<div class="old_fix_button">
+<TABLE width=100% border=0 cellpadding=0 cellspacing=2>
+<TR>
+	<TD nowrap colspan=2 align=center>
+	<script>
+		var master="<% cfg_get("http_loginname") %>";
+		if( master == "admin" )
+			document.write('<input class="cancel_bt" type="button" name="Cancel" value="$cancel_mark" onClick=\'location.href="Netdisk_setting.htm";\'> &nbsp;&nbsp;<input class="apply_bt" type="button" name="apply" value="$apply_mark" onClick="return check_drive_backup(document.forms[0])">');
+		else
+			document.write('<input class="cancel1_bt" type="button" name="Cancel" value="$cancel_mark" disabled> &nbsp;&nbsp;<input class="apply1_bt" type="button" name="apply" value="$apply_mark" disabled>');
+	</script>
+	</TD>
+</TR>
+</TABLE>
+</div>
+<div id="main" class="main_no_button" style="top:50px;"> 
+<style>
+.error_link{color:#CA5137;text-decoration:underline; cursor:pointer;}
+.progress_status{width:140px; height:20px; background: url(../image/amazon_status.png);float:left; margin-top:2px; margin-left:5px}
+.bluebar{ z-index:999; display:inline-block; width:20px; *display:inline; zoom:1; height:8px; float:left; background: url(../image/blue_bar.png) no-repeat -10px 0; margin-left:5px; margin-top:6px}
+.status_num{z-index:999; display:inline-block; width:20px; *display:inline; zoom:1;height:20px; float:right; margin-right:8px; margin-top:4px}
+.process_msg{float:left; margin-top:5px; margin-left:5px;color:  #5bb6e5;}
+.process_num{margin-top:5px; margin-left:5px;}
+.err_block{background-color:#F7D9D7;width:300px;height:40px; margin-left:40px;}
+.err_msg{padding-top:12px; color:#CA5137}
+.done_block{background-color:#D1EDD3;width:300px;height:40px; margin-left:40px;}
+.done_msg{padding-top:12px; color:green;}
+.backup_div{margin-left:50px;margin-top:10px;}
+.linktype{cursor:pointer;}
+</style>
+<% refresh_timestamp("drive_backup_setting","drive_sel_dir","drive_logout","drive_backup_now","drive_open_folder", "drive_check_usb", "drive_name_conflict") %>
+<input type="hidden" name="folder" />
+<input type="hidden" name="hid_path" />
+<input type="hidden" name="hid_drive" />
+<input type="hidden" name="hid_hour" />
+<input type="hidden" name="hid_day" />
+<input type="hidden" name="hid_sel_check"  value="0"/>
+<input type="hidden" name="hid_usbcheck" value="" />
+<input type="hidden" name="hid_name_conflict" value="" />
+
+<script>
+var ts= "<% cfg_get("drive_backup_setting") %>";
+var sync_auto="<% cfg_get("sync_auto") %>";
+var sel_hour="<% cfg_get("sync_time_hour") %>";
+var sel_min="<% cfg_get("sync_time_min") %>";
+var sel_day="<% cfg_get("sync_time_day") %>";
+var sel_folder="<% cfg_get("sync_local_folder") %>";
+<% show_devices() %>
+var drive_folder_invalid="<% cfg_get("drive_folder_invalid") %>";
+var drive_show_prompt="<% cfg_get("drive_show_prompt") %>";
+var is_usb_removed= "<% cfg_get("usb_removed") %>"
+var is_name_conflict = "<% cfg_get("amazon_conflict_name") %>";
+<% cfg_set("amazon_conflict_name", "") %>
+<% show_usb_rootdir() %>
+var xmlhttp;
+
+var hid_name="";
+var hid_path="";
+var hid_drive="";
+
+function show_type()
+{
+	var cf = document.forms[0];
+	var i;
+	if(cf.backup_type[1].checked == true)
+	{
+		setDisabled(false,cf.hour,cf.minute,cf.ampm);
+		for(i=0;i<7;i++)
+			cf.day[i].disabled = false;
+	}
+	else
+	{
+		setDisabled(true,cf.hour,cf.minute,cf.ampm);
+		for(i=0;i<7;i++)
+			cf.day[i].disabled = true;
+	}
+}
+
+var nextTimeStatusRefresh = 0;
+function refresh_sync_status()
+{
+	if ( xmlhttp.readyState == 4)
+	{
+	if(xmlhttp.status == 200 ) {
+		var result = xmlhttp.responseText;
+		document.getElementById("sync_status").innerHTML = result;
+		
+		if(result.indexOf("progress") != -1)
+		{
+			document.getElementById("backupbtn").innerHTML='';
+		}
+		else
+		{
+			if(sync_auto == "0")
+			{
+				if(device_num == 0 || drive_folder_invalid =="1")
+					document.getElementById("backupbtn").innerHTML='<input type="button" name="backup_now" class="new_greyspeed_test  ui-corner-all" value="$amz_bak_now" disabled/>';
+				else
+					document.getElementById("backupbtn").innerHTML='<input type="button" name="backup_now" class="new_speed_test  ui-corner-all" value="$amz_bak_now" onclick="click_backup_now();"/>';
+			}
+		}
+
+		if(result.indexOf("process") != -1) {
+			nextTimeStatusRefresh = 1;
+			if(document.getElementById("usbStatus").style.color == "red")
+				location.href = "Netdisk_setting.htm";
+		}
+		else if(result.indexOf("err_msg") != -1 && nextTimeStatusRefresh == 1) {
+			location.href = "Netdisk_setting.htm";
+		}
+	}
+	else
+		location.href="netdisk_change_domain.htm";
+	}
+}
+
+function setTimeout_refresh()
+{
+	xmlhttp.open("GET", "netdisk_status.txt", true);
+	xmlhttp.send();
+	setTimeout("setTimeout_refresh();", 2000);
+}
+
+function loadvalue()
+{
+	var cf = document.forms[0];
+	var selIndex = 0;
+
+	if(is_name_conflict == "-1")
+		alert("$amz_failed_con");
+	else if(is_name_conflict == "1")
+		folder_conflict();
+	else if(is_name_conflict == "0" && drive_show_prompt == "1")
+		check_usb();
+
+	if(sync_auto == "1")
+		cf.backup_type[0].checked = true;
+	else
+		cf.backup_type[1].checked = true;
+	
+	if(sel_hour != "")
+	{
+		selIndex = parseInt(sel_hour,10);
+		if(selIndex >12)
+		{
+			selIndex = selIndex - 12;
+			cf.ampm.options[1].selected = true;
+		}
+		else
+			cf.ampm.options[0].selected = true;
+		cf.hour.value = selIndex.toString();
+	}
+	else
+	{
+		cf.ampm.options[0].selected = true;
+		cf.hour.options[0].seleted = true;
+	}
+	if(sel_min == "")
+		cf.minute.value = "0";
+	else
+		cf.minute.value = sel_min;
+	if(sel_day !="")
+	{
+		var each_info = sel_day.split(',');
+		var i,j;
+		for(i=0;i<each_info.length;i++)
+		{
+			for(j=0;j<7;j++)
+			{
+				if(cf.day[j].value == each_info[i])
+				{
+					cf.day[j].checked = true;
+					break;
+				}
+			}
+		}
+	}
+	show_type();
+	
+	//if(sel_folder!="")
+	//	refresh_sync_status();
+	
+	if ( window.XMLHttpRequest)
+		xmlhttp = new XMLHttpRequest();
+	else
+		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	
+	if(sel_folder!="")	
+		setTimeout_refresh();
+	xmlhttp.onreadystatechange = refresh_sync_status;
+}
+
+function remove_warning()
+{
+		document.body.removeChild(document.getElementById("bgDiv"));
+		document.getElementById("msgDiv").removeChild(document.getElementById("msgTitle"));
+		document.forms[0].removeChild(document.getElementById("msgDiv"));
+}
+
+function check_dir()
+{
+	var message='<table cellpadding=0 cellspacing=2  border=0>'+
+		"<tr><td colspan=3><input type=radio name='selcheck' checked>$amz_resel_del</td></tr>"+
+		"<tr><td colspan=3><input type=radio name='selcheck'>$amz_resel_bak</td></tr>"+
+		'<tr><td colspan=3 height="20px"></td></tr>'+
+	'</table>';
+
+		sAlert(message, function(){location.href='Netdisk_setting.htm';}, function(){click_checkdir();}, 475, 1, "cancel/ok");
+}
+
+function sel_dir()
+{
+	if(sel_folder!="")
+		check_dir();
+	else
+		submit_seldir();
+}
+
+function click_checkdir()
+{
+	var cf = document.forms[0];
+	if(cf.selcheck[0].checked == true)
+		cf.hid_sel_check.value = "1";
+	else
+		cf.hid_sel_check.value = "2";
+	remove_warning();
+	submit_seldir();
+}
+
+var whole_drive = -1;
+function click_drive(num,flag)
+{
+	var i,j;
+	var str='<table width="100%" border="0" cellpadding="0" cellspacing="0" class="dtree" id="usbtree">';
+	for(i=0;i<drive_num;i++)
+	{
+		if(i==num && flag==0)
+		{
+			str=str+'<tr><td colspan="2"><span onclick="click_drive('+i+',1)"><img src="minusbottom.gif"><img src="sda.gif"><a class="node" id="root_drive'+i+'">'+eval("vol_name"+i)+'</a></span></td></tr>';
+			var fnum=parseInt(eval("fcount"+i),10);
+			for(j=0;j<fnum;j++)
+			{
+				if(i==drive_num-1)
+					str=str+'<tr><td colspan="2"><img src="empty.gif">';
+				else
+					str=str+'<tr><td colspan="2"><img src="line.gif">';
+				if(j==fnum-1)
+					str=str+'<img src="joinbottom.gif">';
+				else
+					str=str+'<img src="join.gif">';
+				str=str+'<span  onclick="select_folder('+i+','+j+')"><img src="folder.gif"><a class="node" id="folder'+j+'">'+eval("fname"+i+'_'+j)+'</a></span></td></tr>';
+			}
+		}
+		else
+		{
+			str=str+'<tr><td colspan="2"><span onclick="click_drive('+i+',0)">';
+			if(i==drive_num-1)
+				str=str+'<img src="plusbottom.gif">'
+			else
+				str=str+'<img src="plus.gif">';
+			str=str+'<img src="sda.gif"><a class="node" id="root_drive'+i+'">'+eval("vol_name"+i)+'</a></span></td></tr>';
+		}
+	}
+	str=str+"</table>";
+	document.getElementById("usbcontent").innerHTML=str;
+	document.getElementById("root_drive"+num).className = "nodeSel";
+	hid_path=eval("vol_path"+num);
+	hid_drive=eval("vol_name"+num);
+	whole_drive = num;
+}
+                                 
+function select_folder(num1,num2)
+{
+	var i=0;
+	hid_path=eval("vol_path"+num1);
+	hid_drive=eval("vol_name"+num1);
+	var e=eval('document.getElementById("folder'+num2+'")');
+	if(typeof e.textContent == "string")
+		hid_name=e.textContent;
+	else
+		hid_name=e.innerText;
+
+	while(e=eval('document.getElementById("folder'+i+'")'))
+	{
+		if(i==num2)
+			e.className = "nodeSel";
+		else
+			e.className = "node";
+		i++;
+	}
+	document.getElementById("root_drive"+num1).className = "node";
+	whole_drive = -1;
+}
+
+function apply_seldir()
+{
+	var cf = document.forms[0];
+	if(hid_name == "" && whole_drive == -1)
+	{
+		alert("$amz_sel_tip");
+		return false;
+	}
+	cf.hid_path.value=hid_path;
+	cf.hid_drive.value=hid_drive;
+	if(hid_name == "" && whole_drive != -1)
+		hid_name = "/";
+	cf.folder.value=hid_name;
+	cf.submit();
+	return true;
+}
+function submit_seldir()
+{
+	var cf = document.forms[0];
+
+	cf.submit_flag.value="drive_sel_dir";
+	cf.action = "/apply.cgi?/Netdisk_wait.htm timestamp=" +ts;
+	//window.open('Netdisk_folder.htm','browse','resizable=0,scrollbars=yes,width=400,height=400,left=400,top=300').focus();
+	
+	var i;
+	var str ='<table cellpadding=0 cellspacing=2  border=0>'+
+		'<tr><td colspan="2"><img src="base.gif">$my_router</td></tr>'+
+		'</table>'+
+		'<div id="usbcontent"><table width="100%" border="0" cellpadding="0" cellspacing="0" class="dtree" id="usbtree">';
+		
+	for(i=0;i<drive_num;i++)
+	{
+		str=str+'<tr><td colspan="2"><span onclick="click_drive('+i+',0)">';
+		if(i==drive_num-1)
+			str=str+'<img src="plusbottom.gif">'
+		else
+			str=str+'<img src="plus.gif">';
+		str=str+'<img src="sda.gif"><a class="node" id="root_drive'+i+'">'+eval("vol_name"+i)+'</a></span></td></tr>';
+	}
+	str= str+'<tr><td colspan=3 height="20px"></td></tr></table></div>'; 
+	
+	sAlert(str, function(){location.href='Netdisk_setting.htm';}, function(){return apply_seldir();}, 475, 1, "cancel/ok");
+}
+
+function click_logout()
+{
+	var cf=document.forms[0];
+	
+	if(!confirm("$amz_logout"))
+		return false;
+		
+	cf.submit_flag.value = "drive_logout";
+	cf.action = "/apply.cgi?/Netdisk_login.htm timestamp="+ts;
+	cf.submit();
+	return true;
+}
+
+function click_backup_now()
+{
+	var cf=document.forms[0];
+	cf.submit_flag.value="drive_backup_now";
+	cf.action = "/apply.cgi?/Netdisk_setting.htm timestamp=" +ts;
+	cf.submit();
+}
+
+function check_drive_backup(cf)
+{
+	var tmp_hour = parseInt(cf.hour.value,10);
+	if(cf.ampm.value == "pm")
+		tmp_hour = tmp_hour + 12;	
+	cf.hid_hour.value = tmp_hour;
+	
+	cf.hid_day.value = "";
+	var i;
+	for(i=0; i<7; i++)
+	{
+		if(cf.day[i].checked ==true)
+		{
+			if(cf.hid_day.value == "")
+				cf.hid_day.value = cf.day[i].value;
+			else
+				cf.hid_day.value = cf.hid_day.value+","+cf.day[i].value;
+		}
+	}
+
+	if(cf.backup_type[1].checked == true && cf.hid_day.value == "")
+	{
+		alert("$amz_one_day");
+		return false;
+	}
+	cf.submit_flag.value="drive_backup_setting";
+	cf.action = "/apply.cgi?/Netdisk_setting.htm timestamp=" +ts;
+	cf.submit();
+	return true;
+}
+
+function click_see_details()
+{
+	window.open('Netdisk_details.htm','details','resizable=0,scrollbars=yes,width=400,height=400,left=400,top=300').focus();
+}
+
+function check_usb()
+{
+	var message='<table cellpadding=0 cellspacing=2  border=0>'+
+		"<tr><td colspan=3><h3>$amz_usb_chg</h3></td></tr>"+
+		'<tr><td colspan=3><input type=radio name="usbcheck" checked>$amz_do_no</td></tr>'+
+		"<tr><td colspan=3><input type=radio name='usbcheck'>$amz_rec</td></tr>"+
+		"<tr><td colspan=3><input type=radio name='usbcheck'>$amz_del</td></tr>"+
+		'<tr><td colspan=3 height="20px"></td></tr>'+
+	'</table>';
+
+		sAlert(message, function(){location.href='Netdisk_setting.htm';}, function(){click_check();}, 475, 1, "cancel/ok");
+}
+function click_check()
+{
+	var cf = document.forms[0];
+
+	if(cf.usbcheck[0].checked == true)
+		cf.hid_usbcheck.value = "4";
+	else if(cf.usbcheck[1].checked == true)
+		cf.hid_usbcheck.value = "2";
+	else if(cf.usbcheck[2].checked == true)
+		cf.hid_usbcheck.value = "3";
+
+	cf.submit_flag.value = "drive_check_usb"
+	cf.action = "/apply.cgi?/Netdisk_setting.htm timestamp=" +ts;
+	cf.submit();
+}
+
+function folder_conflict()
+{
+	var cf = document.forms[0];
+	var message='<table cellpadding=0 cellspacing=2 border=0>'+
+		"<tr><td>$amz_data_exist</td></tr>"+
+		'<tr><td><input type="radio" name="samefolder" checked="checked">$amz_rename</td></tr>'+
+		'<tr><td><input type="radio" name="samefolder">$amz_write</td></tr>'+
+		'<tr><td>&nbsp;</td></tr>'
+	'</table>';
+	sAlert(message, function(){location.href='Netdisk_setting.htm';}, function(){
+		if(cf.samefolder[0].checked == true)
+			cf.hid_name_conflict.value = 1;
+		else
+			cf.hid_name_conflict.value = 2;
+		cf.submit_flag.value = "drive_name_conflict"
+		cf.action = "/apply.cgi?/Netdisk_setting.htm timestamp=" +ts;
+		cf.submit();
+	}, 475, 1, "cancel/ok");
+}
+
+</script>
+<table width=100% cellpadding=0 cellspacing=5  border=0>
+<tr><td colspan="2" height="30px">&nbsp;</td></tr>
+<tr><td colspan="2"><b>$amz_acc</b>&nbsp;&nbsp;&nbsp;&nbsp;<a class="linktype" style="cursor:pointer" onclick="return click_logout();">$amz_switch_acc</a></td></tr>
+<tr><td colspan="2">&nbsp;</td></tr>
+<tr><td colspan="2">$amz_your_acc <b><% cfg_get("drive_account") %></b></td></tr>
+<tr><td colspan="2"><a onclick="location.href='FW_email.htm';" class="linktype" style="cursor:pointer">$amz_set_noti</a></td></tr>
+<tr><td colspan="2">&nbsp;</td></tr>
+</table>
+<table width=100% cellpadding=0 cellspacing=5  border=0>
+<TR><TD colspan=2><img src="/liteblue.gif" width="100%" height="12"></TD></TR>
+<script>
+var click_select = "<% cfg_get("amazon_click_select") %>";
+if(sel_folder == "")
+	document.write("<tr><td colspan=\"2\" height=\"40px\"><span style=\"width:auto; padding:5px 8px; color:red; border:1px dotted red;\">$amz_sel_tip</span></td></tr>");
+else if(click_select == "1")
+	document.write('<tr><td colspan="2" height="40px"><span style="width:auto; padding:5px 8px; color:red; border:1px dotted red;">$amz_apply_tip</span></td></tr>');
+else
+	document.write('<tr><td colspan="2">&nbsp;</td></tr>');
+</script>
+<tr><td colspan="2">
+<script>
+if(device_num != 0)
+	document.write('<a style="color:green" id="usbStatus">$amz_sta: $amz_con</a>');
+else
+	document.write('<a style="color:red" id="usbStatus">$amz_sta: $amz_discon</a>');
+</script>
+</td></tr>
+<tr>
+	<td nowrap colspan="2">
+	<script>
+	if(sel_folder !="")
+	{
+		var diskname = "<% cfg_get("sync_root_name") %>";
+		document.write("<a style='text-decoration:underline'>//"+diskname+"/"+sel_folder+"</a> &nbsp;$amz_chg_fold");
+	}
+	else
+	{
+		document.write("$amz_sel_fold");
+	}
+	</script>
+	</td>
+</tr>
+<tr><td colspan="2">&nbsp;</td></tr>
+</table>
+
+<div id="sync_status"></div>
+<div id="backupbtn" class="backup_div"></div>
+<table width=100% cellpadding=0 cellspacing=5  border=0>
+<tr><td colspan="2">&nbsp;</td></tr>
+<tr><td colspan="2"><b>$amz_sel_sche</b></td></tr>
+<tr><td colspan="2"><input type="radio" name="backup_type" value="0" onclick="show_type();">$amz_real_bak
+</td></tr>
+<tr><td colspan="2"><input type="radio" name="backup_type" value="1" onclick="show_type();"><b>$amz_sche_bak</b></td></tr>
+<tr><td colspan="2">
+		<img src=/spacer.gif width=20 height=12 border=0>
+        <select name="hour">
+			<script>
+				var i;
+				for(i=1;i<=9;i++)
+					document.write('<option value="'+i+'">0'+i+'</option>');
+				for(i=10;i<=12;i++)
+					document.write('<option value="'+i+'">'+i+'</option>');
+			</script>
+        </select>&nbsp;:&nbsp;
+        <select name="minute">
+            <script>
+				for(i=0;i<=9;i++)
+					document.write('<option value="'+i+'">0'+i+'</option>');
+				for(i=10;i<60;i++)
+					document.write('<option value="'+i+'">'+i+'</option>');
+			</script>
+        </select>&nbsp;&nbsp;&nbsp;&nbsp;
+		<select name="ampm">
+			<option value="am">AM</option>
+			<option value="pm">PM</option>
+		</select>
+</td></tr>
+<tr>
+	<td colspan="2"><img src=/spacer.gif width=20 height=12 border=0>
+		<input type="checkbox" name="day" id="cbox_monday" value="1">$amz_mon
+		<img src=/spacer.gif width=20 height=12 border=0>
+		<input type="checkbox" name="day" id="cbox_tuesday" value="2">$amz_tue
+		<img src=/spacer.gif width=20 height=12 border=0>
+		<input type="checkbox" name="day" id="cbox_wednesday" value="3">$amz_wed
+		<img src=/spacer.gif width=20 height=12 border=0>
+		<input type="checkbox" name="day" id="cbox_thursday" value="4">$amz_thu
+		<img src=/spacer.gif width=20 height=12 border=0>
+		<input type="checkbox" name="day" id="cbox_friday" value="5">$amz_fri
+		<img src=/spacer.gif width=20 height=12 border=0>
+		<input type="checkbox" name="day" id="cbox_saturday" value="6">$amz_sat
+		<img src=/spacer.gif width=20 height=12 border=0>
+		<input type="checkbox" name="day" id="cbox_sunday" value="0">$amz_sun
+</tr>
+<tr><td colspan="2">&nbsp;</td></tr>
+</table>
+</div>
+<% help_box("0", "_amazon_cloud") %>
+</form>
+</body>
+</html>

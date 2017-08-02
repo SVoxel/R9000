@@ -1,0 +1,289 @@
+<% http_header("style/form2.css", "/funcs.js", "usb_backup.js") %>
+<% body_header("_USB_backup_apply", "USB_backup.htm", "usb_backup_apply") %>
+<style>
+.back_progress { background-color:#E5E5E5; width:85px; height:15px; display:inline; float:left; margin-top:4px;}
+.front_progress { background-color:#00A1E8; width:45px; height:9px; display:inline; float:left; margin-top:3px; margin-left:3px; }
+#progress_num { display:inline; float:right; }
+
+.warn_div { border-style:dotted; border-color:#C55A11; background-color:#FBE5D6; text-align:center; color:#C00000; float:left; border-width:0px 0px 0px 0px; }
+.warn_word, .good_word{ margin:7px 20px 7px 20px; float:left; font-size:1.1em; }
+.warn_word a { color:#C00000; cursor:pointer; text-decoration:underline; }
+.good_div { border-style:dotted; border-color:#548235; background-color:#E2F0D9; text-align:center; color:#548235; float:left; border-width:0px 0px 0px 0px; }
+.dev_sync { width:25px; height:22px; display:inline; float:left; }
+
+#pri_table_div, #bak_table_div { clear:both; position:relative; top: 5px; }
+
+#tip_div { position:absolute; top:80px; left:71%; font-size:1.3em; width:300px; border:solid; border-width:1px 1px 1px 1px; }
+.tip_ques { background:url(../image/backup_ques.png) no-repeat 0px 0px; float:left; width:42px; height:42px; margin:5px 3px 0px 2px; }
+.tip_word { float:left; width:230px; margin:7px 3px 5px 10px; }
+
+.drive_table { width:70%; text-align:left; border:solid #D2DEE9; border-width:2px 0px 2px 0px; }
+.drive_table tr { font-size: 1.2em; height: 23px; }
+.drive_unselected {}
+.drive_selected { background-color:#E6F5FF; }
+.title_line td { border:solid #D2DEE9; border-width:0px 1px 1px 0px; padding:0px; }
+.title_line .no_right { border:solid #D2DEE9; border-width:0px 0px 1px 0px; padding:0px; }
+select{ width:50px;}
+.day_field{ margin-right:10px;}
+</style>
+<div class="fix_button">
+<TABLE width=100% border=0 cellpadding=0 cellspacing=2>
+<TR>
+	<TD nowrap colspan=2 align=center>
+	<script>
+		var master="admin";
+		if( master == "admin" )
+			document.write('<input class="new_cancel_bt ui-corner-all" type="button" name="Cancel" id="cancel" value="Cancel" onClick="location.href=\'/USB_backup.htm\';"> &nbsp;&nbsp;<input class="new_apply_bt ui-corner-all" type="button" id="apply" name="Apply" value="Apply" onClick="return click_apply();">');
+		else
+			document.write('<input class="new_greycancel_bt ui-corner-all" type="button" name="Cancel" id="cancel" value="Cancel" disabled> &nbsp;&nbsp;<input class="new_greyapply_bt ui-corner-all" type="button" id="apply" name="Apply" value="Apply" disabled>');
+	</script>
+	</TD>
+</TR>
+</TABLE>
+</div>
+
+<input type="hidden" name="hid_backup_schedule">
+<input type="hidden" name="hid_backup_hour">
+<input type="hidden" name="hid_backup_minute">
+<input type="hidden" name="hid_backup_ampm">
+<input type="hidden" name="hid_backup_day">
+<input type="hidden" name="hid_enable_auto_clean">
+<input type="hidden" name="hid_clean_day">
+<input type="hidden" name="hid_clean_clock">
+<input type="hidden" name="hid_pri_hdd">
+<input type="hidden" name="hid_pri_hdd_id">
+<input type="hidden" name="hid_bak_hdd">
+<input type="hidden" name="hid_bak_path">
+<input type="hidden" name="hid_bak_hdd_id">
+<input type="hidden" name="hid_usb_change_flag">
+
+<div id="main" class="main_top_button">
+<table width="98%" border="0" cellpadding="0" cellspacing="3">
+<script>
+<% save_timestamp("usb_backup_apply", "usb_backup_clean", "usb_backup_change") %>
+var sche_type = "<% cfg_get("usb_backup_schedule") %>";
+var sche_hour = "<% cfg_get("usb_backup_hour") %>";
+var sche_minute = "<% cfg_get("usb_backup_minute") %>";
+var sche_ampm = "<% cfg_get("usb_backup_ampm") %>";
+var sche_day = "<% cfg_get("usb_backup_weekday") %>";
+
+var pri_hdd = "<% cfg_get("usb_primary_disk") %>";
+var pri_hdd_id = "<% cfg_get("usb_primary_disk_id") %>";
+var bak_hdd = "<% cfg_get("usb_backup_disk") %>";
+var bak_hdd_id = "<% cfg_get("usb_backup_disk_id") %>";
+var bak_path = "<% cfg_get("usb_backup_folder") %>";
+var status = "<% cfg_get("usb_backup_state") %>"; //1:success 2:failed; 3:syncing
+var progress = "<% cfg_get("usb_backup_percent") %>";
+
+var enable_clean = "<% cfg_get("usb_backup_auto_clean") %>";
+var clean_day = "<% cfg_get("usb_backup_clean_day") %>"
+var clean_clock = "<% cfg_get("usb_backup_clean_clock") %>"
+
+var cf = document.forms[0];
+var tableHTML = "";
+var pri_sel_hdd = "";
+var bak_sel_hdd = "";
+var pri_sel_hdd_id = "";
+var bak_sel_hdd_id = "";
+var entered = 0;
+var first_load = 1;
+
+function loadvalue()
+{
+	if(sche_type == "0")
+		cf.backup_sche[0].checked = true;
+	else
+		cf.backup_sche[1].checked = true;
+
+	if(enable_clean == 1)
+		cf.enable_auto_clean.checked = true;
+	
+	if(sche_ampm == "pm")
+		cf.am_pm.options[1].selected = true;
+
+	if(bak_path != "")
+	{
+		cf.backup_path.value = bak_path;
+		cf.backup_path.style.color = "black";
+		entered = 1;
+	}
+}
+</script>
+<TR><TD colspan=2><span style="font-size:1.5em; margin-right:5px;">USB Backup</span><a class="linktype" style="cursor:pointer;" href="FW_email.htm">Set-up Email Notification</a></TD></TR>
+<TR><TD colspan=2>&nbsp;</TD></TR>
+<TR><TD colspan=2 class="spliteline"></TD></TR>
+
+<TR><TD><b>Primary Drive</b></TD></TR>
+<TR>
+	<TD colspan=2 id="pri_drive_td">
+		<div id="pri_warn" class="warn_div" style="display:none">
+			<div class="warn_word">Please select your primary drive.</div>
+		</div>
+		<div id="pri_another" class="warn_div" style="display:none">
+			<div class="warn_word">Please plug another USB drive in for primary drive.</div>
+		</div>
+		<div id="pri_error" class="warn_div" style="display:none">
+			<div class="warn_word">Your Primary Drive has been removed, please plug it back or select another one.</div>
+		</div>
+		<div id="pri_table_div">
+		<!-- list primary drive table -->
+		</div>
+	</TD>
+</TR>
+<TR><TD colspan=2>&nbsp;</TD></TR>
+<TR><TD><b>Backup Drive</b></TD></TR>
+<TR>
+	<TD colspan=2 id="bak_drive_td">
+		<div id="bak_warn" class="warn_div" style="display:none">
+			<div class="warn_word">Please select your backup drive.</div>
+		</div>
+		<div id="bak_another" class="warn_div" style="display:none">
+			<div class="warn_word">Please plug another USB drive in for backup drive.</div>
+		</div>
+		<div id="bak_error" class="warn_div" style="display:none">
+			<div class="warn_word">Your Backup Drive or directory has been removed, please plug it back or select another one.</div>
+		</div>
+		<div id="bak_table_div" style="margin-bottom:8px;">
+		<!-- list backup drive table -->
+		</div>
+	</TD>
+</TR>
+<TR id="input_path">
+	<TD colspan=2><span style="font-size:1.2em;">Please create a new back-up directory:<span>
+		<input type="text" name="backup_path" style="color:gray;" value="Enter directory name" size="30" onfocus="clear_tip(this)" onblur="add_tip(this);" onkeyup="tip_or_not(this);" oninput="tip_or_not(this);">
+	</TD>
+</TR>
+<TR>
+	<TD colspan=2><div style="margin-top:5px;">
+		<div id="bak_faild" class="warn_div" style="display:none;">
+			<div class="warn_word">Backup Failed! <a onclick="open_error();">Error Details >></a></div>
+		</div>
+		<div id="bak_good" class="good_div" style="display:none;">
+			<div class="good_word">Success! Backup Complete</div>
+		</div>
+		<div id="bak_sync" style="float:left; text-align:center; margin-left:30px; display:none;">
+			<div class="dev_sync"><img src="image/process_wait.gif" width="85%" /></div>
+			<div class="back_progress">
+				<div id="progress_bar" class="front_progress"></div>
+				<div id="progress_num">15%</div>
+			</div>
+			<div style="color:#44A4EC; clear:both; font-size:1.2em; margin-top:25px;">Sync in progress ...</div>
+		</div>
+	</div></TD>
+</TR>
+<TR><TD colspan=2>&nbsp;</TD></TR>
+<TR><TD colspan=2 class="spliteline"></TD></TR>
+
+<TR>
+	<TD colspan=2><b>Select Backup Schedule</b></TD>
+</TR>
+<TR><TD colspan=2>&nbsp;</TD></TR>
+<TR>
+	<TD colspan=2><input type="radio" name="backup_sche"><b>Real-time sync</b> - When changes are made to the USB, its contents are automatically backed up to another USB.
+</TD>
+</TR>
+<TR><TD colspan=2>&nbsp;</TD></TR>
+<TR>
+	<TD colspan=2><input type="radio" name="backup_sche">Backup on schedule</TD>
+</TR>
+<TR>
+	<TD colspan=2 style="position:relative; left:20px;">
+		<select name="hour" onchange="cf.backup_sche[1].checked = true;">
+			<script>
+				if(parseInt(sche_hour) >= 12)
+					sche_hour = parseInt(sche_hour) - 12;
+				for(i=0; i<12; i++)
+				{
+					if(i == sche_hour)
+						document.write('<option value="'+i+'" selected>'+i+'</option>');
+					else
+						document.write('<option value="'+i+'">'+i+'</option>');
+				}
+			</script>
+		</select>
+		<span><b> : </b></span>
+		<select name="minute" onchange="cf.backup_sche[1].checked = true;">
+			<script>
+				for(i=0; i<60; i++)
+				{
+					if(i<10)
+						var min_value = "0" + i;
+					else
+						var min_value = i;
+					if(i == sche_minute)
+						document.write('<option value="'+i+'" selected>'+i+'</option>');
+					else
+						document.write('<option value="'+i+'">'+i+'</option>');
+				}
+			</script>
+		</select>
+		<select name="am_pm" style="position:relative; left:20px;" onchange="cf.backup_sche[1].checked = true;">
+			<option value="am">am</option>
+			<option value="pm">pm</option>
+		</select>
+	</TD>
+</TR>
+<TR>
+	<TD colspan=2 style="position:relative; left:20px;">
+		<span>on:</span>
+		<script>
+			var day_word = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+			for(i=1; i<=7; i++)
+			{
+				var each_day = sche_day.split(",");
+				var have_day = false;
+				for(j in each_day)
+				{
+					if(each_day[j] == i)
+						have_day = true;
+				}
+				if(have_day)
+					document.write('<span class="day_field"><input type="checkbox" name="day'+i+'" value="'+i+'" checked onchange="cf.backup_sche[1].checked = true;">'+day_word[i-1]+'</span>');
+				else
+					document.write('<span class="day_field"><input type="checkbox" name="day'+i+'" value="'+i+'" onchange="cf.backup_sche[1].checked = true;">'+day_word[i-1]+'</span>');
+			}
+		</script>
+	</TD>
+</TR>
+<TR><TD colspan=2>&nbsp;</TD></TR>
+<TR><TD colspan=2 class="spliteline"></TD></TR>
+
+<TR><TD colspan=2><b>Trash Can </b><a class="linktype" onclick="click_clean()" onmouseover="this.style.cursor='pointer';">Empty Trash Can Now</a></TD></TR>
+<TR><TD colspan=2>&nbsp;</TD></TR>
+<TR><TD colspan=2>
+	<input type="checkbox" name="enable_auto_clean">Automatically clean after&nbsp;
+	<script>
+		document.write('<select onchange="cf.enable_auto_clean.checked = true;" name="auto_clean_day">');
+		for(i=1; i<=30; i++)
+		{
+			if(i == clean_day)
+				document.write('<option value="'+i+'" selected>'+i+'</option>');
+			else
+				document.write('<option value="'+i+'">'+i+'</option>');
+		}
+		document.write('</select> days, at <select onchange="cf.enable_auto_clean.checked = true;" name="auto_clean_clock">');
+		for(i=1; i<=24; i++)
+		{
+			if(i == clean_clock)
+				document.write('<option value="'+i+'" selected>'+i+'</option>');
+			else
+				document.write('<option value="'+i+'">'+i+'</option>');
+		}
+		document.write("</select> o'clock");
+	</script>
+</TD></TR>
+<TR><TD colspan=2>&nbsp;</TD></TR>
+<TR><TD colspan=2><input class="new_apply_bt ui-corner-all" type="button" name="open_trash" id="open_trash" style="width:auto;" value="Open Trash Can" onclick="location.href='USB_backup_trashcan.htm';"></TD></TR>
+<TR><TD colspan=2>&nbsp;</TD></TR>
+</TABLE>
+
+<div id="tip_div">
+			<div class="tip_ques"></div>
+			<div class="tip_word">Primary drive is the main drive used to store your personal files.</br></br>You must select both Primary drive and Backup drive to initiate the USB backup process.</div>
+</div>
+
+<iframe id="status_iframe" src="USB_backup_status.html" allowtransparency="true" width="100%" frameborder="0" style="display:none;">
+</div>
+</FORM>
+</BODY>
+</HTML>

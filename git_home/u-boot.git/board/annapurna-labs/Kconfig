@@ -1,0 +1,69 @@
+choice
+	prompt "Alpine board select"
+
+config TARGET_ALPINE_DB
+	bool "Alpine development board"
+
+config TARGET_ALPINE_V2_32_DB
+	bool "Alpine V2 development board - 32 bits"
+
+config TARGET_ALPINE_HW29765235P0P512P1024P4X4P4X4_32_DB
+	bool "Alpine hw29765235p0p512p1024p4x4p4x4 development board - 32 bits"
+
+config TARGET_ALPINE_HW29765294P0P128P512P8X8P4X4_32_DB
+	bool "Alpine hw29765294p0p128p512p8x8p4x4 development board - 32 bits"
+
+config TARGET_ALPINE_V2_64_DB
+	bool "Alpine V2 development board - 64 bits"
+
+endchoice
+
+if TARGET_ALPINE_DB
+
+config SYS_BOARD
+	default "alpine_db"
+
+config SYS_CONFIG_NAME
+	default "alpine_db"
+
+endif
+
+if TARGET_ALPINE_V2_32_DB
+
+config SYS_BOARD
+	default "alpine_db"
+
+config SYS_CONFIG_NAME
+	default "alpine_v2_32_db"
+
+endif
+
+if TARGET_ALPINE_HW29765235P0P512P1024P4X4P4X4_32_DB
+
+config SYS_BOARD
+	default "alpine_hw29765235p0p512p1024p4x4p4x4_32_db"
+
+config SYS_CONFIG_NAME
+	default "alpine_hw29765235p0p512p1024p4x4p4x4_32_db"
+
+endif
+
+if TARGET_ALPINE_HW29765294P0P128P512P8X8P4X4_32_DB
+
+config SYS_BOARD
+	default "alpine_hw29765294p0p128p512p8x8p4x4_32_db"
+
+config SYS_CONFIG_NAME
+	default "alpine_hw29765294p0p128p512p8x8p4x4_32_db"
+
+endif
+
+if TARGET_ALPINE_V2_64_DB
+
+config SYS_BOARD
+	default "alpine_db"
+
+config SYS_CONFIG_NAME
+	default "alpine_v2_64_db"
+
+endif

@@ -1,0 +1,36 @@
+<% http_header("style/form.css") %>
+<% body_header("", "sfp_debug.htm", "sfp_mode") %>
+<input type="hidden" name="hid_sfp_mode">
+<script>
+function click_apply()
+{
+	var cf = document.forms[0];
+	if(cf.sfp_mode[0].checked == true)
+		cf.hid_sfp_mode.value = "1";
+	else if(cf.sfp_mode[1].checked == true)
+		cf.hid_sfp_mode.value = "0";
+	else
+	{
+		alert("Please select SFP Mode");
+		return;
+	}
+	cf.submit();
+}
+</script>
+<table>
+<TR>
+	<TD nowrap><B>SFP+ Mode: </B></TD>
+</TR>
+<TR>
+	<TD nowrap><input type="radio" name="sfp_mode">1G Mode</TD>
+</TR>
+<TR>
+	<TD nowrap><input type="radio" name="sfp_mode">10G Mode</TD>
+</TR>
+<TR>
+	<TD nowrap><input class="apply_bt" type="button" name="Apply" id="apply" value="Apply" onClick="click_apply();"></TD>
+<TR>
+</table>
+</FORM>
+</BODY>
+</HTML>

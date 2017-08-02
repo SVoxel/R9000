@@ -1,0 +1,12 @@
+#!/bin/sh /etc/rc.common
+
+START=98
+STOP=1
+
+start() {
+    /sbin/11ad_linkloss_wd.sh &
+}
+
+stop() {
+    killall 11ad_linkloss_wd.sh
+}

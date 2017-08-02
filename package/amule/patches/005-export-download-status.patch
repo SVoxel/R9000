@@ -1,0 +1,32 @@
+diff -Nur aMule-2.3.1.old//src/TextClient.cpp aMule-2.3.1/src/TextClient.cpp
+--- aMule-2.3.1.old//src/TextClient.cpp	2012-05-29 09:08:09.758626310 -0400
++++ aMule-2.3.1/src/TextClient.cpp	2012-05-29 09:59:34.718627046 -0400
+@@ -785,7 +785,12 @@
+ 			break;
+ 		}
+ 		case EC_OP_DLOAD_QUEUE:
++		{
++			std::stringstream str;
++			/* taskname status speed donesize filesize currsrc/allsrc filename * [next task] */
+ 			for (CECPacket::const_iterator it = response->begin(); it != response->end(); it++) {
++				//if(it != response->begin())
++					str<<"*";
+ 				CEC_PartFile_Tag *tag =	(CEC_PartFile_Tag *) & *it;
+ 					uint64 filesize, donesize;
+ 					filesize = tag->SizeFull();
+@@ -809,8 +814,15 @@
+ 						s << wxT(" - ") + CastItoSpeed(tag->Speed());
+ 					}
+ 					s << wxT("\n");
++	
++			str << tag->PartMetName().mb_str()<<" "<<tag->GetFileStatusString().mb_str()<<" "<<filesize<<" "<<CastItoSpeed(tag->Speed()).mb_str()<<" "
++				<<donesize<<" "<<filesize<<" "<<((int)tag->SourceCount() - (int)tag->SourceNotCurrCount())<<" "<<((int)tag->SourceCount())<<" "
++				<<tag->FileName().mb_str();
+ 			}
++			str << "*"<<std::endl;
++			WriteFifo(str.str());
+ 			break;
++		}
+ 		case EC_OP_ULOAD_QUEUE:
+ 			for (CECPacket::const_iterator it = response->begin(); it != response->end(); it++) {
+ 				const CECTag *tag = & *it;

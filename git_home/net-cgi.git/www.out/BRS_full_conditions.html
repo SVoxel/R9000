@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+
+<head>
+<% hijack_title() %>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="style/hijack_style.css" />
+<script language="javascript" type="text/javascript" src="script/brs_hijack.js"></script>
+<% hijack_language() %>
+</head>
+<style>
+.policy{padding-bottom:20px;}
+.p-title{text-align:center; font-size:1.2em;}
+.p-content{overflow:auto; height:220px; text-align:left;}
+.agree-line>div span{margin:10px 20px 10px 20px; line-height:25px;}
+.wizard_buttons_div{margin:auto auto; padding:40px;}
+#new div{margin:10px 0 10px 0;}
+</style>
+<body>
+<% form_submit("apply", "BRS_collect_conditions.html", "full_conditions") %>
+
+<script>
+function checkAgreement(cf) {
+	if(cf.agreement[0].checked == true)
+		cf.hid_agreement.value = "1";
+
+	cf.submit();
+}
+
+function enable_button() {
+	document.getElementById("next").className = "purple_short_btn";
+	document.getElementById("next").disabled = false;
+}
+</script>
+<input type="hidden" name="hid_agreement" value="0">
+<div class="wizard_content_div">
+	<div class="wizard_words_div" style="padding-top:1%">
+		<div class="policy">
+			<div><p class="p-title"><script>document.write(tnc_full_00)</script></p></div>
+			<div class="p-content">
+				<script>
+					document.write("<p>" + tnc_full_01 + "</p>");
+					document.write("<p>" + tnc_full_02 + "</p>");
+					document.write("<p>" + tnc_full_10 + "</p>");
+					document.write("<p>" + tnc_full_11 + "</p>");
+					document.write("<p>" + tnc_full_12 + "</p>");
+					document.write("<p>" + tnc_full_20 + "</p>");
+					document.write("<p>" + tnc_full_21 + "</p>");
+					document.write("<p>" + tnc_full_22 + "</p>");
+					document.write("<p>" + tnc_full_30 + "</p>");
+					document.write("<p>" + tnc_full_31 + "</p>");
+					document.write("<p>" + tnc_full_40 + "</p>");
+				</script>
+			</div>
+		</div>
+		<div style="text-align:center;">
+			<div class="agree-line" id="new" style="display:none">
+				<div><b><script>document.write(tnc_must_agree)</script></b></div>
+			</div>
+			<div class="agree-line" id="exist" style="display:none">
+				<div><b><script>document.write(tnc_must_select)</script></b></div>
+				<div>
+					<span><input type="radio" name="agreement" onclick="enable_button()"><script>document.write(tnc_agree)</script></span>
+					<span><input type="radio" name="agreement" onclick="enable_button()"><script>document.write(tnc_disagree)</script></span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div style="text-align:center;">
+		<img src="/liteblue.gif" width="80%" height="12">
+	</div>
+	<div style="margin-left:12%"><a href="https://www.netgear.com/about/privacy-policy/?cid=wmt_netgear_organic" target="_blank"><script>document.write(tnc_policy)</script></a></div>
+	<div id="allBtns_div" class="wizard_buttons_div" align="right" style="padding-bottom:10px;">
+		<script>
+			if("<% cfg_get("new_sold_board") %>" == "1") {
+				document.getElementById("new").style.display = "";
+				document.write('<input type="button" name="Next" id="next" class="purple_short_btn" value="'+tnc_agree+'" onclick="checkAgreement(document.forms[0])">');
+			}
+			else {
+				document.getElementById("exist").style.display = "";
+				document.write('<input type="button" name="Next" id="next" class="grey_short_btn" value="'+bh_next_mark+'" onclick="checkAgreement(document.forms[0])" disabled>');
+			}
+		</script>
+	</div>
+</div>
+</form>
+</body>
+</html>

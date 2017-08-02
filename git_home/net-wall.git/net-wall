@@ -1,0 +1,26 @@
+#!/bin/sh
+
+/usr/sbin/net-wall-bin $*
+
+if [ "$1" = "rule" ]; then
+	cat /tmp/netwall-rules > /tmp/netwall-rules.tmp
+
+	# Check config file existence, add own rules if exists
+	if [ -f /etc/netwall.conf ]; then
+		cat /etc/netwall.conf > /tmp/netwall-rules
+	elif [ -f /root/netwall-rules ]; then
+		cat /root/netwall-rules > /tmp/netwall-rules
+	else
+		rm -f /tmp/netwall-rules
+	fi
+
+	cat /tmp/netwall-rules.tmp >> /tmp/netwall-rules
+	rm -f /tmp/netwall-rules.tmp
+elif [ "$1" = "start" ] && [ -f /var/run/openvpn-client.pid ]; then
+	iptables -I INPUT -i tun0 -j ACCEPT
+	iptables -I OUTPUT -j ACCEPT
+	iptables -I FORWARD 2 -i tun0 -j ACCEPT
+	iptables -I FORWARD -i br0 -o tun0 -j ACCEPT
+	iptables -I FORWARD -i tun0 -o br0 -j ACCEPT
+	iptables -t nat -A POSTROUTING -o tun0 -j MASQUERADE
+fi

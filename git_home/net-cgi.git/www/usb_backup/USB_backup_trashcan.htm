@@ -1,0 +1,237 @@
+﻿<% http_header("style/form2.css", "ajax2.js") %>
+<% body_header("_USB_backup_trashcan", "USB_backup_trashcan.htm", "usb_backup_trashcan") %>
+<style type="text/css">
+body{ -moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; -khtml-user-select:none; user-select:none; }
+#container { text-align:left; width:100%; height:600px; overflow:scroll; overflow-x:hidden; }
+.skin { height:45px;  border:1px solid gray; padding:2px; visibility:hidden; position:absolute; background-color:white; }
+div.menuitems { margin:1px 0; text-align:left; }
+div.menuitems span { margin:3px 15px 0px 15px; font-size:1.2em; }
+div.menuitems:hover { background-color:#D0D0D0; cursor:pointer; }
+.selected{ background-color:#5BB6E5; color:white; }
+.noselected{ background-color:white; color:black; }
+#tb2 tr { margin: 3px; padding: 0.4em; font-size: 1.2em; height: 18px; }
+#tb1 tr { margin: 3px; padding: 0.4em; font-size: 1.0em; height: 18px; }
+#tb1 tr td{ border-bottom:solid; border-width:0px 0px 3px 0px; padding:0px; border-color:#FAFAFA; }
+#tb1 tr td img{ position:relative; top:1px; width:28px;}
+</style>
+<input type="hidden" name="hid_click_flag">
+<input type="hidden" name="hid_delete_files">
+<input type="hidden" name="hid_recover_files">
+
+<div style="font-size:1.5em; margin:5px 0px 15px 5px;">Trash Can</div>
+<div id="tip" style="font-size:0.8em; margin:5px 0px 10px 5px; display:none;">
+Left click to select the items.<br/>
+Ctrl + mouse left Click can select multiple files.<br/>
+Shift + mouse left Click can select the whole range of files.<br/>
+Right click file will pop-up a menu to do recover or delete forever. 
+</div>
+<div id="wait" style="font-size:1.3em; margin:5px 0px 10px 25px; display:none; color:red;">
+Please wait for sync progress to be done.
+</div>
+<div id="container">
+<table id="tb2" style="width:100%; background-color: #FAFAFA" nowrap>
+<tr>
+	<TD style="width:30%">File name</TD>
+	<TD style="width:30%">Location</TD>
+	<TD style="width:20%">Last Update</TD>
+	<TD style="width:20%">File Size</TD>
+</tr>
+</table>
+<table id="tb1" style="width:100%" cellpadding="0" cellspacing="0">
+<% usb_backup_trashcan() %>
+</table>
+<div id="menu" class="skin">
+        <div class="menuitems" onclick="click_recover();"><span>Recover</span>
+        </div>
+        <div class="menuitems" onclick="click_delete();"><span>Delete Forever</span>
+        </div>
+    </div>
+<script>
+var cf = document.forms[0];
+var first_access = "<% cfg_get("first_access_trashcan") %>";
+var sta = "<% cfg_get("usb_backup_state") %>";
+window.onload = loadvalue();
+
+function loadvalue()
+{
+	multi_select();
+	
+	var container = document.getElementById('container');
+	var menu = document.getElementById('menu');
+	
+	if(first_access != "0")
+		document.getElementById("tip").style.display = "";
+	if(sta == "3")
+		document.getElementById("wait").style.display = "";
+	
+	LTEvent.addListener(container,"contextmenu",LTEvent.cancelBubble);
+	LTEvent.addListener(container,"contextmenu",showMenu);
+	LTEvent.addListener(document,"click",hideMenu);
+}
+
+function multi_select()
+{
+	var keyCode;
+	var rowsIndex = [];
+	var startIndex;
+	var isCtrl = false;
+	document.onkeydown = function (e)
+	{
+		if (!keyCode)
+		{
+			if (window.event)
+				keyCode = event.keyCode;
+			else if (e.which)
+				keyCode = e.which;
+		}
+	};
+
+	document.onkeyup = function ()
+	{
+		if (keyCode)
+		keyCode = undefined;
+	};
+
+	var tb=document.getElementById("tb1");
+	var trs=tb.getElementsByTagName("tr");
+
+	for(var i=0;i<trs.length;i++)
+	{
+		trs[i].onmousedown=function(event)
+		{
+			if(event.button == 2)
+				return;
+			var currentIndex;
+			for(var j=0;j<trs.length;j++)
+			{
+				if(this==trs[j])
+					currentIndex=j;
+			}
+			switch (keyCode)
+			{
+				case 17://ctrl
+					isCtrl = true;
+					var flag = true;
+					for (var k = 0; k < rowsIndex.length; k++)
+					{
+						if (rowsIndex[k].rowIndex == currentIndex)
+						{
+							rowsIndex.splice(k, 1);
+							flag = false;
+							break;
+						}
+					}
+					
+					if (flag)
+						rowsIndex.push({'rowIndex': currentIndex });
+					startIndex = currentIndex;
+					break;
+
+				case 16://shift
+					if (!isCtrl)
+					{
+						for(var k = 0;k < trs.length;k++)
+						{
+							if(trs[k].className == 'selected')
+								startIndex=k;
+						}
+					}
+					var start, end;
+					if (startIndex < currentIndex)
+					{
+						start = startIndex;
+						end = currentIndex;
+					}
+					else
+					{
+						start = currentIndex;
+						end = startIndex;
+					}
+					rowsIndex = [];
+					for(var k=0;k < trs.length;k++)
+					{
+						if(trs[k].className == 'selected')
+							trs[k].className = 'noselected';
+					}
+					for (var k = start; k <= end ; k++)
+						rowsIndex.push({ 'rowIndex': k });
+					isCtrl = false;
+					break;
+					
+				default:
+					rowsIndex = [];
+					for(var k=0;k < trs.length;k++)
+					{
+						if(trs[k].className == 'selected')
+							trs[k].className = 'noselected';
+						if(k==currentIndex)
+							trs[k].className = 'selected';
+					}
+					isCtrl = false;
+					break;
+			}
+
+			for (var k = 0; k < rowsIndex.length; k++)
+				trs[rowsIndex[k].rowIndex].className = 'selected';
+		};
+	}
+};
+
+function hideMenu() {
+        menu.style.visibility = 'hidden';
+}
+
+function showMenu() {
+	if(sta == "3")
+		return false;
+	var evt = window.event || arguments[0];
+	
+	var rightedge = container.clientWidth-evt.clientX;
+	var bottomedge = container.clientHeight-evt.clientY;
+
+	if (rightedge < menu.offsetWidth)
+		menu.style.left = container.scrollLeft + evt.clientX - menu.offsetWidth + "px";
+	else
+		menu.style.left = container.scrollLeft + evt.clientX + "px";
+	
+	if (bottomedge < menu.offsetHeight)
+		menu.style.top = /*container.scrollTop + */evt.clientY - menu.offsetHeight + "px";
+	else
+		menu.style.top = /*container.scrollTop + */evt.clientY + "px";
+
+	menu.style.visibility = "visible";
+	LTEvent.addListener(menu,"contextmenu",LTEvent.cancelBubble);
+}
+
+function get_select_files()
+{
+	var tb=document.getElementById("tb1");
+	var selected_files = "";
+	for(var i=0;i<tb.rows.length; i++)
+	{
+		if(tb.rows[i].className == "selected")
+			selected_files = selected_files + tb.rows[i].cells[4].innerHTML + "\n";
+	}
+	selected_files.length = selected_files.length - 2;
+	console.log(selected_files.toString());
+	return selected_files;
+}
+function click_recover()
+{
+	cf.hid_recover_files.value = get_select_files();
+	cf.hid_click_flag.value = "recover";
+	cf.submit();
+}
+
+function click_delete()
+{
+	cf.hid_delete_files.value = get_select_files();
+	cf.hid_click_flag.value = "delete";
+	cf.submit();
+}
+</script>
+</div>
+</form>
+<% cfg_set("first_access_trashcan", "0") %>
+</body>
+</html>

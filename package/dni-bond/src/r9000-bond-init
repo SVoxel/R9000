@@ -1,0 +1,30 @@
+#!/bin/sh
+
+qca_ssdk_inserted=`lsmod | grep qca_ssdk`
+if [ -z "$qca_ssdk_inserted" ]; then
+	insmod qca-ssdk
+	sleep 1
+fi
+
+# Setup Mgmt Port QCA header for managment packet(mac in reserv ARL)
+/sbin/ssdk_sh_id 0 port hdrtype set enable 0xff3f  > /dev/null
+/sbin/ssdk_sh_id 0 port txhdr set 0 onlymanagement > /dev/null
+/sbin/ssdk_sh_id 0 port rxhdr set 0 onlymanagement > /dev/null
+
+# enable cpu port 
+/sbin/ssdk_sh_id 0 misc cpuPort set enable > /dev/null
+
+#/sbin/ssdk_sh_id 0 port txhdr set 5 onlymanagement > /dev/null
+#/sbin/ssdk_sh_id 0 port rxhdr set 5 onlymanagement > /dev/null
+
+# capture LACP packet
+/sbin/ssdk_sh_id 0 fdb resventry add 01-80-c2-00-00-02 65535 rdtcpu forward null yes no no no no no no no
+
+vport_inserted=`lsmod | grep dni_vport`
+if [ -z "$vport_inserted" ]; then
+        insmod dni-vport
+        sleep 1
+fi
+
+/usr/sbin/bond-set
+

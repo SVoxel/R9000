@@ -1,0 +1,81 @@
+diff -Nur aMule-2.3.1.old//src/TextClient.cpp aMule-2.3.1/src/TextClient.cpp
+--- aMule-2.3.1.old//src/TextClient.cpp	2012-06-21 05:02:30.049097797 -0400
++++ aMule-2.3.1/src/TextClient.cpp	2012-06-21 05:12:38.189097943 -0400
+@@ -840,41 +840,46 @@
+ 		}
+ 		case EC_OP_DLOAD_QUEUE:
+ 		{
+-			std::stringstream str;
+-			/* taskname status speed donesize filesize currsrc/allsrc filename * [next task] */
++			std::fstream  fs;
++			fs.open("/tmp/emule_tasks",ios::out|ios::trunc);
++			
++			/* taskname status speed donesize filesize currsrc/allsrc filename */
+ 			for (CECPacket::const_iterator it = response->begin(); it != response->end(); it++) {
+ 				//if(it != response->begin())
+-					str<<"*";
++				std::stringstream str;
+ 				CEC_PartFile_Tag *tag =	(CEC_PartFile_Tag *) & *it;
+-					uint64 filesize, donesize;
+-					filesize = tag->SizeFull();
+-					donesize = tag->SizeDone();
+-					s <<	tag->FileHashString() << wxT(" ") <<
+-						tag->FileName() <<
+-						(CFormat(wxT("\n\t [%.1f%%] %4i/%4i "))
+-							% ((float)donesize / ((float)filesize)*100.0)
+-							% ((int)tag->SourceCount() - (int)tag->SourceNotCurrCount())
+-							% (int)tag->SourceCount()) <<
+-						((int)tag->SourceCountA4AF() ? wxString(CFormat(wxT("+%2.2i ")) % (int)tag->SourceCountA4AF()) : wxString(wxT("    "))) <<
+-						((int)tag->SourceXferCount() ? wxString(CFormat(wxT("(%2.2i) - ")) % (int)tag->SourceXferCount()) : wxString(wxT("     - "))) <<
+-						tag->GetFileStatusString();
+-					s << wxT(" - ") << tag->PartMetName();
+-                    if (tag->DownPrio() < 10) {
+-                            s << wxT(" - ") << PriorityToStr((int)tag->DownPrio(), 0);
+-                    } else {
+-                            s << wxT(" - ") << PriorityToStr((tag->DownPrio() - 10), 1);
+-                    }
+-					if ( tag->SourceXferCount() > 0) {
+-						s << wxT(" - ") + CastItoSpeed(tag->Speed());
+-					}
+-					s << wxT("\n");
+-	
+-			str << tag->PartMetName().mb_str()<<" "<<tag->GetFileStatusString().mb_str()<<" "<<filesize<<" "<<CastItoSpeed(tag->Speed()).mb_str()<<" "
+-				<<donesize<<" "<<filesize<<" "<<((int)tag->SourceCount() - (int)tag->SourceNotCurrCount())<<" "<<((int)tag->SourceCount())<<" "
+-				<<tag->FileName().mb_str();
++				uint64 filesize, donesize;
++				filesize = tag->SizeFull();
++				donesize = tag->SizeDone();
++				s <<	tag->FileHashString() << wxT(" ") <<
++					tag->FileName() <<
++					(CFormat(wxT("\n\t [%.1f%%] %4i/%4i "))
++					 % ((float)donesize / ((float)filesize)*100.0)
++					 % ((int)tag->SourceCount() - (int)tag->SourceNotCurrCount())
++					 % (int)tag->SourceCount()) <<
++					((int)tag->SourceCountA4AF() ? wxString(CFormat(wxT("+%2.2i ")) % (int)tag->SourceCountA4AF()) : wxString(wxT("    "))) <<
++					((int)tag->SourceXferCount() ? wxString(CFormat(wxT("(%2.2i) - ")) % (int)tag->SourceXferCount()) : wxString(wxT("     - "))) <<
++					tag->GetFileStatusString();
++				s << wxT(" - ") << tag->PartMetName();
++				if (tag->DownPrio() < 10) {
++					s << wxT(" - ") << PriorityToStr((int)tag->DownPrio(), 0);
++				} else {
++					s << wxT(" - ") << PriorityToStr((tag->DownPrio() - 10), 1);
++				}
++				if ( tag->SourceXferCount() > 0) {
++					s << wxT(" - ") + CastItoSpeed(tag->Speed());
++				}
++				s << wxT("\n");
++
++				str << tag->PartMetName().mb_str()<<"*"<<tag->GetFileStatusString().mb_str()<<"*"<<filesize<<"*"<<CastItoSpeed(tag->Speed()).mb_str()<<"*"
++					<<donesize<<"*"<<((int)tag->SourceCount() - (int)tag->SourceNotCurrCount())<<"*"<<((int)tag->SourceCount())
++					<<std::endl;
++				fs.write(str.str().c_str(),strlen(str.str().c_str()));
+ 			}
+-			str << "*"<<std::endl;
++			std::stringstream str;
++			str <<"0 "<<std::endl;
+ 			WriteFifo(str.str());
++			fs.close();
+ 			break;
+ 		}
+ 		case EC_OP_ULOAD_QUEUE:
+Binary files aMule-2.3.1.old//src/.TextClient.cpp.swo and aMule-2.3.1/src/.TextClient.cpp.swo differ

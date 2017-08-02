@@ -1,0 +1,59 @@
+#! /bin/sh
+#echo "[lxx]high_h $1 high_l $2 2g_high $3 2g_low $4 5g_high $5 5g_low $6 mac_high $7 mac_low $8 anten_high $9 anten_low $10 fan_speed $11"
+
+while [ 1 ]; do
+	cpu_temp="$(cat /sys/class/thermal/thermal_zone0/temp)"
+	temp_2g="$(thermaltool -i wifi1 -get | grep "sensor temperature" | cut -d , -f 1 | cut -d : -f 2)"
+	temp_5g="$(thermaltool -i wifi0 -get | grep "sensor temperature" | cut -d , -f 1 | cut -d : -f 2)"
+	temp_11ad="$(cat /sys/kernel/debug/ieee80211/phy0/wil6210/temp | grep "T_mac" |cut -d = -f 2)"
+	temp_antenna="$(cat /sys/kernel/debug/ieee80211/phy0/wil6210/temp | grep "T_radio" |cut -d = -f 2)"
+	
+	fan_start="echo $11 > /sys/bus/i2c/devices/0-003e/fan1_target"
+	fan_stop="echo 0 > /sys/bus/i2c/devices/0-003e/fan1_target"
+	
+	fan_status="$(cat /sys/bus/i2c/devices/0-003e/fan1_target)"
+
+	[ "$temp_antenna" == " N/A" -o "x$temp_antenna" == "x" ] && temp_antenna=0
+	[ "$temp_11ad" == " N/A" -o "x$temp_11ad" == "x" ] && temp_11ad=0
+
+	ad_high=$(echo "$temp_11ad > $7" | bc)
+	antenna_high=$(echo "$temp_antenna > $9" | bc)
+
+	if [ "$cpu_temp" -ge "$1" -o  "$temp_2g" -ge "$3" -o "$temp_5g" -ge "$5" -o "$ad_high" -eq "1" -o "$antenna_high" -eq "1" ]; then
+		 if [ "$11" != "0" -a "$fan_status" != "$11" ];then
+			if [ "$cpu_temp" -ge "$1" ];then
+				chip="cpu"
+			elif [ "$temp_2g" -ge "$3" ];then
+				chip="wifi2g"
+			elif [ "$temp_5g" -ge "$5" ];then
+				chip="wifi5g"
+			elif [ "$ad_high" -eq "1" ];then
+				chip="wifi11ad"
+			elif [ "$antenna_high" -eq "1" ];then
+				chip="antenna"
+			fi
+			echo "current chip high threshold:"
+			echo "cpu: $1 wifi2g: $3 wifi5g: $5 wifi11ad: $7 antenna: $9"
+			echo "current chip temperature:"
+			echo "cpu:$cpu_temp  wifi2g:$temp_2g  wifi5g:$temp_5g  wifi11ad:$temp_11ad  antenna:$temp_antenna"
+			echo "start fan now by [$chip]"
+			eval ${fan_start}
+		 fi
+	fi
+
+	ad_low=$(echo "$temp_11ad < $8" | bc)
+	antenna_low=$(echo "$temp_antenna < $10" | bc)
+
+	if [ "$cpu_temp" -le "$2" -a "$temp_2g" -le "$4" -a "$temp_5g" -le "$6" -a "$ad_low" -eq "1" -a "$antenna_low" -eq "1" ]; then
+		 if [ "$fan_status" != "0" ];then
+			 echo "current chip low threshold:"
+			 echo "cpu: $2 wifi2g: $4 wifi5g: $6 wifi11ad: $8 antenna: $10"
+			 echo "current chip temperature:"
+			 echo "cpu:$cpu_temp  wifi2g:$temp_2g  wifi5g:$temp_5g  wifi11ad:$temp_11ad  antenna:$temp_antenna"
+			 echo "stop fan now"
+		 	eval ${fan_stop}
+		 fi
+	fi
+
+	sleep 5
+done

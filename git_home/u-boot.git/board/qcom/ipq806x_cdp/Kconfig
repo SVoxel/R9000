@@ -1,0 +1,23 @@
+if TARGET_IPQ806X_CDP
+
+config SYS_CPU
+	string
+	default "armv7"
+
+config SYS_BOARD
+	string
+	default "ipq806x_cdp"
+
+config SYS_VENDOR
+	string
+	default "qcom"
+
+config SYS_SOC
+	string
+	default "ipq"
+
+config SYS_CONFIG_NAME
+	string
+	default "ipq806x_cdp"
+
+endif

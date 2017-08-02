@@ -1,0 +1,95 @@
+<% http_header("style/form.css","funcs.js") %>
+<% noload_header("", "hidden_cpu.htm", "plex_set_nice") %>
+<script>
+<% plex_cpu_usage() %>
+</script>
+<% table_header() %>
+<tr><td colspan=2 align=right><input type="button" name="refresh" value="Refresh" class="common_bt" onClick="location.href='hidden_cpu.htm';"></td></tr>
+<tr><td colspan=2 align="center"><b>CPU Usage</b></td></tr>
+</table>
+<table width=60% border=1 cellpadding=0 cellspacing=0 align="center">
+<tr><td><b>CPU</b></td><td><b>Usage</b></td></tr>
+<script>
+var i=0;
+for(i=0;i<5;i++)
+{
+	var str = eval ( 'usage' + i );
+	var each_info = str.split(' ');
+	document.write("<tr><td>"+each_info[0]+"</td><td>"+each_info[1]+"</td></tr>");
+}
+</script>
+</table>
+
+<% table_header() %>
+<tr><td colspan=2>&nbsp;</td></tr>
+</table>
+
+<table width=60% border=1 cellpadding=0 cellspacing=0 align="center">
+<tr><td><b>Total</b></td><td><b>Used</b></td><td><b>Free</b></td></tr>
+<script>
+var each_info= cpu_usage.split(' ');
+document.write("<tr><td>"+each_info[0]+"</td><td>"+each_info[1]+"</td><td>"+each_info[2]+"</td></tr>");
+</script>
+</table>
+
+<% table_header() %>
+<tr><td colspan=2 align="center"><b>Top Usage</b></td></tr>
+</table>
+<table width=60% border=1 cellpadding=0 cellspacing=0 align="center">
+<tr><td><b>Pid</b></td><td><b>NI</b></td><td><b>CPU</b></td><td><b>MEM</b></td><td><b>Command</b></td></tr>
+<script>
+for(i=0;i<10;i++)
+{
+	var str = eval ( 'top' + i );
+	var pid=str.substring(0,5);
+	var ni=str.substring(6,10);
+	var cpu=str.substring(11,15);
+	var mem=str.substring(16,20);
+	var cmd=str.substring(21);
+	document.write("<tr><td>"+pid+"</td><td>"+ni+"</td><td>"+cpu+"</td><td>"+mem+"</td><td>"+cmd+"</td></tr>");
+}
+
+function set_nice()
+{
+	var cf = document.forms[0];
+	cf=document.forms[0];
+	if( cf.nice.value == "")
+	{
+		cf.nice.value = "5";
+		return true;
+	}
+	var val=cf.nice.value;
+
+	for(i=0;i<val.length;i++)
+	{
+		c=val.charAt(i);
+		if("0123456789-".indexOf(c,0)<0)
+		{
+			alert("Please input number between -20 and 19.");
+			return false;
+		}
+	}
+
+	cf.nice.value=parseInt(cf.nice.value,10);
+	if(!(cf.nice.value >=-20 && cf.nice.value<=  19))
+	{
+		alert("Please input number between -20 and 19.");
+		return false;
+	}
+	cf.submit();
+
+	return true;
+}
+</script>
+</table>
+<table width=30% border=0 cellpadding=0 cellspacing=0 align="center">
+<tr><td colspan=2>&nbsp;</td></tr>
+<tr>
+	<td><b>Set Priority:</b>&nbsp;<input name="nice" type="text" maxlength="8" size="4" value="<% cfg_get("plex_nice") %>"/>&nbsp;(-20~19)</td>
+	<td><input type="button" value="Set" name="setnice" class="short_common_bt" onclick="set_nice();"/></td>
+</tr>
+</table>
+</form>
+</BODY>
+</HTML>
+

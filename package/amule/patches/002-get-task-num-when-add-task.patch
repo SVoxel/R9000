@@ -1,0 +1,212 @@
+diff -Nur aMule-2.3.1.old//src/DownloadQueue.cpp aMule-2.3.1/src/DownloadQueue.cpp
+--- aMule-2.3.1.old//src/DownloadQueue.cpp	2012-05-28 09:07:11.648605642 -0400
++++ aMule-2.3.1/src/DownloadQueue.cpp	2012-05-28 09:17:01.108605784 -0400
+@@ -1391,7 +1391,7 @@
+ }
+ 
+ 
+-bool CDownloadQueue::AddLink( const wxString& link, uint8 category )
++bool CDownloadQueue::AddLink( const wxString& link, uint8 category, CECPacket *response )
+ {
+ 	wxString uri(link);
+ 
+@@ -1404,7 +1404,7 @@
+ 	}
+ 
+ 	if (uri.compare(0, 7, wxT("ed2k://")) == 0) {
+-		return AddED2KLink(uri, category);
++		return AddED2KLink(uri, category,response);
+ 	} else {
+ 		AddLogLineC(CFormat(_("Unknown protocol of link: %s")) % link);
+ 		return false;
+@@ -1412,7 +1412,7 @@
+ }
+ 
+ 
+-bool CDownloadQueue::AddED2KLink( const wxString& link, uint8 category )
++bool CDownloadQueue::AddED2KLink( const wxString& link, uint8 category, CECPacket *response )
+ {
+ 	wxASSERT( !link.IsEmpty() );
+ 	wxString URI = link;
+@@ -1425,7 +1425,7 @@
+ 	try {
+ 		CScopedPtr<CED2KLink> uri(CED2KLink::CreateLinkFromUrl(URI));
+ 
+-		return AddED2KLink( uri.get(), category );
++		return AddED2KLink( uri.get(), category,response );
+ 	} catch ( const wxString& err ) {
+ 		AddLogLineC(CFormat( _("Invalid eD2k link! ERROR: %s")) % err);
+ 	}
+@@ -1434,11 +1434,11 @@
+ }
+ 
+ 
+-bool CDownloadQueue::AddED2KLink( const CED2KLink* link, uint8 category )
++bool CDownloadQueue::AddED2KLink( const CED2KLink* link, uint8 category, CECPacket *response )
+ {
+ 	switch ( link->GetKind() ) {
+ 		case CED2KLink::kFile:
+-			return AddED2KLink( dynamic_cast<const CED2KFileLink*>( link ), category );
++			return AddED2KLink( dynamic_cast<const CED2KFileLink*>( link ), category ,response);
+ 			
+ 		case CED2KLink::kServer:
+ 			return AddED2KLink( dynamic_cast<const CED2KServerLink*>( link ) );
+@@ -1453,7 +1453,7 @@
+ 
+ 
+ 
+-bool CDownloadQueue::AddED2KLink( const CED2KFileLink* link, uint8 category )
++bool CDownloadQueue::AddED2KLink( const CED2KFileLink* link, uint8 category , CECPacket *response)
+ {
+ 	CPartFile* file = NULL;
+ 	if (IsFileExisting(link->GetHashKey())) {
+@@ -1496,7 +1496,8 @@
+ 	for (; it != list.end(); ++it) {
+ 		AddToResolve(link->GetHashKey(), it->addr, it->port, it->hash, it->cryptoptions);
+ 	}
+-
++	if(response != NULL)
++		response->AddTag(CECTag(EC_TAG_STRING,CFormat(_("Succeed add %s")) % file->m_filename ));
+ 	return true;	
+ }
+ 
+diff -Nur aMule-2.3.1.old//src/DownloadQueue.h aMule-2.3.1/src/DownloadQueue.h
+--- aMule-2.3.1.old//src/DownloadQueue.h	2012-05-28 09:07:11.648605642 -0400
++++ aMule-2.3.1/src/DownloadQueue.h	2012-05-28 09:17:45.908605794 -0400
+@@ -29,7 +29,7 @@
+ #include "MD4Hash.h"		// Needed for CMD4Hash
+ #include "ObservableQueue.h"	// Needed for CObservableQueue
+ #include "GetTickCount.h" 	// Needed fot GetTickCount
+-
++#include "libs/ec/cpp/ECPacket.h"
+ 
+ #include <deque>
+ 
+@@ -271,11 +271,11 @@
+ 	/**
+ 	 * Adds an ed2k or magnet link to download queue.
+ 	 */
+-	bool	AddLink( const wxString& link, uint8 category = 0 );
++	bool	AddLink( const wxString& link, uint8 category = 0 ,CECPacket *response = NULL);
+ 
+-	bool	AddED2KLink( const wxString& link, uint8 category = 0 );
+-	bool	AddED2KLink( const CED2KLink* link, uint8 category = 0 );
+-	bool	AddED2KLink( const CED2KFileLink* link, uint8 category = 0 );
++	bool	AddED2KLink( const wxString& link, uint8 category = 0 ,CECPacket *response = NULL);
++	bool	AddED2KLink( const CED2KLink* link, uint8 category = 0 ,CECPacket *response = NULL);
++	bool	AddED2KLink( const CED2KFileLink* link, uint8 category = 0 ,CECPacket *response = NULL);
+ 	bool	AddED2KLink( const CED2KServerLink* link );
+ 	bool	AddED2KLink( const CED2KServerListLink* link );
+ 
+diff -Nur aMule-2.3.1.old//src/ExternalConn.cpp aMule-2.3.1/src/ExternalConn.cpp
+--- aMule-2.3.1.old//src/ExternalConn.cpp	2012-05-28 09:07:11.638605642 -0400
++++ aMule-2.3.1/src/ExternalConn.cpp	2012-05-28 09:19:24.988605818 -0400
+@@ -1364,11 +1364,11 @@
+ 					category = cattag->GetInt();
+ 				}
+ 				AddLogLineC(CFormat(_("ExternalConn: adding link '%s'.")) % link);
+-				if ( theApp->downloadqueue->AddLink(link, category) ) {
+-					response = new CECPacket(EC_OP_NOOP);
++				response = new CECPacket(EC_OP_INFO);
++				if ( theApp->downloadqueue->AddLink(link, category,response) ) {
++					AddLogLineC(CFormat(_("ExternalConn: adding link '%s' succeed.")) % link);
+ 				} else {
+ 					// Error messages are printed by the add function.
+-					response = new CECPacket(EC_OP_FAILED);
+ 					response->AddTag(CECTag(EC_TAG_STRING, wxTRANSLATE("Invalid link or already on list.")));
+ 				}
+ 			}
+diff -Nur aMule-2.3.1.old//src/libs/ec/abstracts/ECCodes.abstract aMule-2.3.1/src/libs/ec/abstracts/ECCodes.abstract
+--- aMule-2.3.1.old//src/libs/ec/abstracts/ECCodes.abstract     2012-05-28 08:13:31.198604874 -0400
++++ aMule-2.3.1/src/libs/ec/abstracts/ECCodes.abstract  2012-05-28 08:23:47.658605020 -0400
+@@ -148,6 +148,8 @@
+
+ EC_OP_FRIEND                        0x57
+
++EC_OP_INFO                          0x58
++
+ [/Section]
+
+ [Section Content]
+diff -Nur aMule-2.3.1.old//src/libs/ec/cpp/ECCodes.h aMule-2.3.1/src/libs/ec/cpp/ECCodes.h
+--- aMule-2.3.1.old//src/libs/ec/cpp/ECCodes.h	2012-05-28 09:07:11.638605642 -0400
++++ aMule-2.3.1/src/libs/ec/cpp/ECCodes.h	2012-05-28 09:19:59.848605826 -0400
+@@ -125,7 +125,8 @@
+ 	EC_OP_CLIENT_SWAP_TO_ANOTHER_FILE   = 0x54,
+ 	EC_OP_SHARED_FILE_SET_COMMENT       = 0x55,
+ 	EC_OP_SERVER_SET_STATIC_PRIO        = 0x56,
+-	EC_OP_FRIEND                        = 0x57
++	EC_OP_FRIEND                        = 0x57,
++	EC_OP_INFO                          = 0x58
+ };
+ 
+ enum ECTagNames {
+@@ -568,6 +569,7 @@
+ 		case 0x55: return wxT("EC_OP_SHARED_FILE_SET_COMMENT");
+ 		case 0x56: return wxT("EC_OP_SERVER_SET_STATIC_PRIO");
+ 		case 0x57: return wxT("EC_OP_FRIEND");
++		case 0x58: return wxT("EC_OP_INFO");
+ 		default: return CFormat(wxT("unknown %d 0x%x")) % arg % arg;
+ 	}
+ }
+diff -Nur aMule-2.3.1.old//src/libs/ec/java/ECCodes.java aMule-2.3.1/src/libs/ec/java/ECCodes.java
+--- aMule-2.3.1.old//src/libs/ec/java/ECCodes.java	2012-05-28 09:07:11.638605642 -0400
++++ aMule-2.3.1/src/libs/ec/java/ECCodes.java	2012-05-28 09:20:17.238605830 -0400
+@@ -116,6 +116,7 @@
+ public final static byte EC_OP_SHARED_FILE_SET_COMMENT       = 0x55;
+ public final static byte EC_OP_SERVER_SET_STATIC_PRIO        = 0x56;
+ public final static byte EC_OP_FRIEND                        = 0x57;
++public final static byte EC_OP_INFO                          = 0x58;
+ 
+ public final static short EC_TAG_STRING                             = 0x0000;
+ public final static short EC_TAG_PASSWD_HASH                        = 0x0001;
+diff -Nur aMule-2.3.1.old//src/PartFile.cpp aMule-2.3.1/src/PartFile.cpp
+--- aMule-2.3.1.old//src/PartFile.cpp	2012-05-28 09:07:11.628605642 -0400
++++ aMule-2.3.1/src/PartFile.cpp	2012-05-28 09:20:35.068605834 -0400
+@@ -278,6 +278,7 @@
+ 		m_partmetfilename = CPath(CFormat(wxT("%03i.part.met")) % i);
+ 		m_fullname = thePrefs::GetTempDir().JoinPaths(m_partmetfilename);
+ 	} while (m_fullname.FileExists());
++	m_filename = CFormat(wxT("%03i.part.met")) % i;
+ 
+ 	m_CorruptionBlackBox->SetPartFileInfo(GetFileName().GetPrintable(), m_partmetfilename.RemoveAllExt().GetPrintable());
+ 	
+diff -Nur aMule-2.3.1.old//src/PartFile.h aMule-2.3.1/src/PartFile.h
+--- aMule-2.3.1.old//src/PartFile.h	2012-05-28 09:07:11.638605642 -0400
++++ aMule-2.3.1/src/PartFile.h	2012-05-28 09:21:09.228605844 -0400
+@@ -319,6 +319,7 @@
+ 	float 	kBpsDown;
+ 	CPath	m_fullname;			// path/name of the met file
+ 	CPath	m_partmetfilename;	// name of the met file
++	wxString        m_filename;     // name of the met file
+ 	CPath 	m_PartPath; 		// path/name of the partfile
+ 	bool	m_paused;
+ 	bool	m_stopped;
+@@ -422,6 +423,7 @@
+ 
+ friend class CKnownFilesRem;
+ friend class CPartFileConvert;
++friend class CDownloadQueue;
+ };
+ 
+ #endif // PARTFILE_H
+diff -Nur aMule-2.3.1.old//src/TextClient.cpp aMule-2.3.1/src/TextClient.cpp
+--- aMule-2.3.1.old//src/TextClient.cpp	2012-05-28 09:07:11.638605642 -0400
++++ aMule-2.3.1/src/TextClient.cpp	2012-05-28 09:21:51.258605854 -0400
+@@ -646,6 +646,16 @@
+ 		case EC_OP_NOOP:
+ 			s << _("Operation was successful.");
+ 			break;
++		case EC_OP_INFO:
++			{
++				const CECTag *tag = response->GetFirstTagSafe();
++				if (tag->IsString()) {
++					s <<	CFormat(_("%s")) % wxGetTranslation(tag->GetStringData());
++				} else {
++					s << msgFailedUnknown;
++				}
++			}
++			break;
+ 		case EC_OP_FAILED:
+ 			{
+ 				const CECTag *tag = response->GetFirstTagSafe();

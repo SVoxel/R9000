@@ -1,0 +1,60 @@
+--- cifs-utils-6.6/mount.cifs.c-org	2016-09-02 01:06:33.000000000 +0000
++++ cifs-utils-6.6/mount.cifs.c	2017-01-04 20:25:44.475002911 +0000
+@@ -1732,6 +1732,7 @@
+ 	if (getuid()) {
+ 		if (!(parsed_info->flags & (MS_USERS | MS_USER))) {
+ 			fprintf(stderr, "%s: permission denied\n", thisprogram);
++			system("echo 1 > /tmp/plex_net_result");
+ 			rc = EX_USAGE;
+ 			goto assemble_exit;
+ 		}
+@@ -2016,6 +2017,7 @@
+ 	options = calloc(options_size, 1);
+ 	if (!options) {
+ 		fprintf(stderr, "Unable to allocate memory.\n");
++		system("echo 6 > /tmp/plex_net_result");
+ 		rc = EX_SYSERR;
+ 		goto mount_exit;
+ 	}
+@@ -2028,6 +2030,7 @@
+ mount_retry:
+ 	if (!currentaddress) {
+ 		fprintf(stderr, "Unable to find suitable address.\n");
++		system("echo 3 > /tmp/plex_net_result");
+ 		rc = parsed_info->nofail ? 0 : EX_FAIL;
+ 		goto mount_exit;
+ 	}
+@@ -2079,7 +2082,10 @@
+ 		rc = mount(orig_dev, ".", cifs_fstype, parsed_info->flags, options);
+ 		toggle_dac_capability(0, 0);
+ 		if (rc == 0)
++		{
++			system("echo 0 > /tmp/plex_net_result");
+ 			goto do_mtab;
++		}
+ 
+ 		switch (errno) {
+ 		case ECONNREFUSED:
+@@ -2094,6 +2100,7 @@
+ 		case ENODEV:
+ 			fprintf(stderr,
+ 				"mount error: %s filesystem not supported by the system\n", cifs_fstype);
++			system("echo 2 > /tmp/plex_net_result");
+ 			break;
+ 		case ENXIO:
+ 			if (!already_uppercased &&
+@@ -2107,6 +2114,14 @@
+ 				goto mount_retry;
+ 			}
+ 		}
++		if(errno == 6 || errno == 2 || errno == 5)
++			system("echo 4 > /tmp/plex_net_result");
++		else if(errno == 115)
++			system("echo 5 > /tmp/plex_net_result");
++		else if(errno == 13)
++			system("echo 1 > /tmp/plex_net_result");
++		else if(errno == 16)
++			system("echo 8 > /tmp/plex_net_result");
+ 		fprintf(stderr, "mount error(%d): %s\n", errno,
+ 			strerror(errno));
+ 		fprintf(stderr,

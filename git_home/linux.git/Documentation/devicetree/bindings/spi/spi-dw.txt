@@ -1,0 +1,20 @@
+DesignWare SPI device
+
+Required properties:
+- compatible : should be "snps,dw-spi-mmio" or "snps,dw-spi-pci"
+- reg : offset and length of the register set for the device
+- interrupts: The interrupt number to the cpu. The interrupt specifier format
+  depends on the interrupt controller.
+- num-chipselect: Contains the number of the chipselect
+- bus-num: Bus number
+
+Example:
+		spi: spi@fff00000 {
+				compatible = "snps,dw-spi-mmio";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0xfff00000 0x1000>;
+				interrupts = <0 154 4>;
+				num-chipselect = <4>;
+				bus-num = <0>;
+		};

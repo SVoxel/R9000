@@ -1,0 +1,145 @@
+<% http_header("style/form.css", "/funcs.js") %>
+<% nohelp_header("hidden_11ad_setting.htm", "set_11ad") %>
+<div class="page_title">Basic 11ad Setting</div>
+<div id="main" class="main">
+<% table_header() %>
+$bluebar
+
+<script>
+var str_none="";
+var str_wpa2="";
+function loadvalue()
+{
+	var form=document.forms[0];
+	str_none=getObj("none").innerHTML;
+	str_none=str_none.replace(/\`/g, "&#96;");
+	str_wpa2=getObj("wpa2").innerHTML;
+	str_wpa2=str_wpa2.replace(/\`/g, "&#96;");
+	getObj("none").innerHTML='';
+	getObj("wpa2").innerHTML='';
+	form.channel.value = "<% cfg_get("wig_channel") %>";
+	var sectype="<% cfg_get("wig_sectype") %>"
+	if(sectype=="4")
+	{
+		form.security_type[1].checked=true;
+		setsecurity(4);
+	}
+	else
+	{
+		form.security_type[0].checked=true;
+		setsecurity(1);
+	}
+}
+
+function setsecurity(num)
+{
+	var form=document.forms[0];
+	if(num==4)
+	{
+		getObj("view").innerHTML=str_wpa2;
+	}
+	if(num==1)
+	{
+		getObj("view").innerHTML=str_none;
+	}
+}
+
+function check_setting()
+{
+	var form=document.forms[0];
+	var ssid_wig = document.forms[0].ssid.value;
+	if(ssid_wig == "")
+	{
+		alert("$ssid_null");
+		return false;
+	}
+	for(i=0;i<ssid_wig.length;i++)
+	{
+		if(isValidChar_space(ssid_wig.charCodeAt(i))==false)
+		{
+			alert("$ssid_not_allowed");
+			return false;
+		}
+	}
+	if( checkpsk(form.passphrase, form.wig_sec_wpaphrase_len)== false)
+		return false;
+
+	if(form.security_type[1].checked == true)
+		form.hid_sectype.value="4";
+	else
+		form.hid_sectype.value="1";
+	return true;
+}
+
+</script>
+<input type="hidden" name="hid_sectype">
+<input type="hidden" name="wig_sec_wpaphrase_len">
+<TR>
+	<TD nowrap>SSID</TD>
+	<TD nowrap><input type-"text" name="ssid" maxlength="32" size="20" value="<% cfg_get_ssid_value("wig_ssid") %>"></TD>  
+</TR>
+<TR>
+	<TD nowrap>Channel</TD>
+	<TD nowrap>
+	<select name="channel" size="1" >
+		<option value="1">1</option>
+		<option value="2">2</option>
+		<option value="3">3</option>
+	</select>
+	</TD>
+</TR>
+<TR>
+	<TD nowrap>Security</TD>
+	<TD nowrap>
+	<input type="radio" name="security_type" value="1" onclick="setsecurity(1);">None&nbsp;
+	<input type="radio" name="security_type" value="4" onclick="setsecurity(4);">WPA2-PSK
+	</TD>
+</TR>
+
+$bluebar
+
+<TR>
+</TABLE>
+<div id=view></div>
+
+<div align="center" ID="none" style="position:absolute;top:0;left:0;visibility:hidden">
+	<TABLE cellspacing=5 cellPadding=0 width=100% border=0>
+	<TR>
+		<TD nowrap colspan=2></TD>
+	</TR>
+	</TABLE>
+</div>
+<div align="center" ID="wpa2" style="position:absolute;top:0;left:0;visibility:hidden">
+	<TABLE cellspacing=5 cellPadding=0 width=100% border=0>
+	<TR>
+		<TD nowrap colspan=2><B>Security Options (WPA2-PSK)</B></TD>
+	</TR>
+	<TR>
+		<TD nowrap>
+		<span class="optiondesc" id="wpaPwdPhrasaeText">Password(Network Key) :</span>
+	</TD>
+	<TD nowrap>
+		<input type="text" autocomplete="off" maxlength="64" size="20" name="passphrase" value="<% cfg_sed_passphrase("wig_wpa2_psk") %>">
+		<span class="optiondesc" id="wpaPwdPhrExtText">(8-63 characters or 64 hex digits)</span>
+	</TD>
+	</TR>
+$bluebar
+</TABLE>
+</div>
+
+<TABLE width=100% cellspacing=2 cellpadding=0 border=0>
+<script>
+var master="<% cfg_get("http_loginname") %>";
+if( master == "admin" )
+	document.write('<TD nowrap colspan=2 align=center><input class="cancel_bt" type="button" name="Cancel" value="$cancel_mark" onClick="location.href=\'hidden_11ad_setting.htm\';">&nbsp;&nbsp;<input class="apply_bt" type="submit" name="Apply" value="$apply_mark" onClick="return check_setting();"></TD>');
+else
+	document.write('<TD nowrap colspan=2 align=center><input class="cancel1_bt" type="button" name="Cancel" value="$cancel_mark" disabled>&nbsp;&nbsp;<input class="apply1_bt" type="submit" name="Apply" value="$apply_mark" disabled></TD>');
+</script>
+</TR>
+
+</TABLE>
+</div>
+
+</FORM>
+</BODY>
+</HTML>

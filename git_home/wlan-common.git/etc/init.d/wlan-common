@@ -1,0 +1,47 @@
+#!/bin/sh /etc/rc.common
+#START=80
+
+[ -f /etc/ath/wifi.conf ] && . /etc/ath/wifi.conf
+
+boot() {
+       wlan updateconf
+       wlan down
+       wlan up
+       if [ "x$wig_exist" = "xon" ]; then
+           wigig updateconf
+           wigig down
+           wigig up
+       fi
+}
+
+start()    # don't use this command unless you know what it means
+{
+        wlan updateconf
+        wlan up
+        if [ "x$wig_exist" = "xon" ]; then
+            wigig updateconf
+            wigig up
+        fi
+}
+
+stop()    # don't use this command unless you know what it means
+{
+        wlan updateconf
+        wlan down
+        if [ "x$wig_exist" = "xon" ]; then
+            wigig updateconf
+            wigig down
+        fi
+}
+
+restart()
+{
+        wlan updateconf
+        wlan down
+        wlan up
+        if [ "x$wig_exist" = "xon" ]; then
+            wigig updateconf
+            wigig down
+            wigig up
+        fi
+}

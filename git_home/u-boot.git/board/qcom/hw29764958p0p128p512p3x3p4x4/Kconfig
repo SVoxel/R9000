@@ -1,0 +1,23 @@
+if TARGET_HW29764958P0P128P512P3X3P4X4
+
+config SYS_CPU
+	string
+	default "armv7"
+
+config SYS_BOARD
+	string
+	default "hw29764958p0p128p512p3x3p4x4"
+
+config SYS_VENDOR
+	string
+	default "qcom"
+
+config SYS_SOC
+	string
+	default "ipq"
+
+config SYS_CONFIG_NAME
+	string
+	default "hw29764958p0p128p512p3x3p4x4"
+
+endif

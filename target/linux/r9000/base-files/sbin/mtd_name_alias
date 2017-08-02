@@ -1,0 +1,42 @@
+#!/bin/sh
+
+local Allowed_Partitions="pot config ART firmware language traffic_meter dongle crashdump"
+
+Is_Allowed_Part()
+{
+	local Check_MTD_Name="$1"
+	local TmpN
+
+	for TmpN in $Allowed_Partitions; do
+		if [ "$Check_MTD_Name" = "$TmpN" ]; then
+			echo -n "1"
+			return
+		fi
+	done
+
+	echo -n "0"
+	return
+}
+
+while read line
+do
+	mtd_index="$(echo $line | awk -F ":" '{print $1}')"
+	#echo "mtd_index $mtd_index"
+	if [ "x$(echo $mtd_index | grep ^mtd)" = "x" ]; then
+		continue
+	fi
+
+	mtd_name="$(echo $line | awk -F ":" '{print $2}' | awk -F " " '{print $3}' | sed 's/"//g')"
+	#echo "mtd_name $mtd_name"
+
+	if [ "$(Is_Allowed_Part $mtd_name 2>/dev/null)" != "1" ]; then
+		continue
+	fi
+
+	if [ -c /dev/$mtd_index -a ! -h /dev/mtd_$mtd_name ]; then
+		ln -s /dev/$mtd_index /dev/mtd_$mtd_name
+		#echo "ln -s /dev/$mtd_index /dev/mtd_$mtd_name"
+	fi
+
+done < /proc/mtd
+

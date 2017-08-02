@@ -1,0 +1,3 @@
+kernel/drivers/tty/serial/8250/8250.ko
+kernel/drivers/tty/serial/8250/8250_pci.ko
+kernel/drivers/tty/serial/8250/8250_dw.ko

@@ -1,0 +1,152 @@
+<% http_header("style/form2.css","/funcs.js") %>
+<% noload_header("", "Netdisk_login.htm", "drive_login") %>
+<style>
+a {color: #5bb6e5; cursor:pointer;}
+.cloudpage_title {width:100%; height:20px;font:bold 17px arial; color:#9d98ff; position:absolute; top:20px; left:30px;}
+table tr{ height:28px; }
+table td{ line-height:35px; }
+#pcode{ text-decoration: underline; }
+</style>
+<div class="cloudpage_title">$amz_cloud_low</div>
+<!--div class="fix_button">
+<% table_header() %>
+<TR><TD colspan=2 align="right"><img src=/image/amazon.png height="50px" width="160px"></TD></TR>
+</table>
+</div -->
+<div id="main" class="main" style="top: 60px;">
+<input type="hidden" name="hid_url" />
+<table width="100%" border="0" cellpadding=2 cellspacing=3 id="us" style="display:none;" >
+<tr><td width="20px"></td><td>$amz_log_new</td></tr>
+</table>
+<table width="100%" border="0" cellpadding=2 cellspacing=3 id="other" style="display:none;">
+<tr><td width="20px"></td><td>$amz_log_exi</td></tr>
+</table>
+
+<% get_promotion_code() %>
+<script>
+var wl_country = "<% cfg_get("wl_country") %>";
+var netgear_region = "<% get_firmware_region() %>";
+var cloud_url="<% cat_file("/etc/drive_login_link") %>";
+var free_url="https://www.amazon.com/gp/drive/landing/everything/buy?ref_=cd_asin_ue_buy&asin=B015OX2VDG";
+
+if(netgear_region == "NA"){
+	document.getElementById("us").style.display = "";
+	document.getElementById("other").style.display = "none";
+}else{
+	document.getElementById("us").style.display = "none";
+	document.getElementById("other").style.display = "";
+}
+
+function doRedirect()
+{
+	var cf=document.forms[0];
+	var hrefstr = top.location.href;
+	var pos=hrefstr.indexOf("adv_index.htm");
+	pos == -1? pos=hrefstr.indexOf("index.htm") : pos=pos;
+	cf.hid_url.value = hrefstr.substring(0,pos);
+	cf.submit();
+	window.open(cloud_url,'disk_login','resizable=0,scrollbars=yes,width=800,height=600,left=400,top=300').focus();
+}
+function getFree()
+{
+	var winWidth = window.screen.availWidth-12;
+	var winHight = window.screen.availHeight-40;
+	var cf=document.forms[0];
+	var hrefstr = top.location.href;
+	var pos=hrefstr.indexOf("adv_index.htm");
+	pos == -1? pos=hrefstr.indexOf("index.htm") : pos=pos;
+	cf.hid_url.value = hrefstr.substring(0,pos);
+	cf.submit();
+	window.open(free_url,'disk_login','resizable=yes,scrollbars=yes, width='+ winWidth +',height=' + winHight + ', left=0,top=0').focus();
+}
+
+var xmlhttp;
+var code_http;
+if( window.XMLHttpRequest )
+{
+	xmlhttp = new XMLHttpRequest();
+	code_http = new XMLHttpRequest();
+}
+else
+{
+	xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	code_http = new ActiveXObject("Microsoft.XMLHTTP");
+}
+xmlhttp.onreadystatechange = function() {
+	if( xmlhttp.readyState == 4 && xmlhttp.status == 200 ){
+		var login_status = xmlhttp.responseText;
+		if(login_status == 200 ){
+			setTimeout(function(){
+				location.href = "Netdisk_setting.htm";
+			}, 2000);
+		}else{
+			setTimeout(function(){
+				xmlhttp.open("GET", "netdisk_login_status.htm", true);
+				xmlhttp.send();
+			}, 2000);
+		}
+	}
+}
+xmlhttp.open("GET", "netdisk_login_status.htm", true);
+xmlhttp.send();
+
+function code_request()
+{
+	code_http.onreadystatechange = function() {
+		if( code_http.readyState == 4 && code_http.status == 200 ){
+			var code = code_http.responseText.replace(/\r\n/g, '').replace(/\n/g, '').replace(/\s/g, '');
+			var str = "";
+			if(code == "1")
+				str = "$amz_not_code";
+			else if(code == "2")
+				str = "$amz_net_err";
+			else if(code == "3")
+				str = "$amz_invalid";
+			else if(code == "4")
+				str = "$amz_any_err";
+			else if(code.length > 5)
+				str = code;
+			if(str != "")
+			{
+				retry = 5;
+				document.getElementById("pcode").innerHTML = str;
+				clearTimeout(run);
+			}
+			else if(retry > 2)
+			{
+				clearTimeout(run);
+				document.getElementById("pcode").innerHTML = "$amz_any_err"
+			}
+		}
+	}
+}
+
+code_request();
+
+var retry = 0;
+var run;
+function interval_request()
+{
+	code_http.open("GET", "netdisk_code.txt", true);
+	code_http.send();
+	if(retry < 3)
+	{
+		run = setTimeout("interval_request()", 2000);
+		retry ++;
+	}
+}
+
+function get_pcode()
+{
+	document.getElementById("pcode").innerHTML = ""
+	clearTimeout(run);
+	retry = 0;
+	interval_request();
+}
+</script>
+
+</div>
+<% help_box("0", "_amazon_login") %>
+</form>
+</body>
+</html>

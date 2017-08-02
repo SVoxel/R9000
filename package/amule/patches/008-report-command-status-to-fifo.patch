@@ -1,0 +1,75 @@
+diff -Nur aMule-2.3.1.old//src/DownloadQueue.cpp aMule-2.3.1/src/DownloadQueue.cpp
+--- aMule-2.3.1.old//src/DownloadQueue.cpp	2012-06-19 11:43:41.869062247 -0400
++++ aMule-2.3.1/src/DownloadQueue.cpp	2012-06-19 11:44:39.219062262 -0400
+@@ -1451,7 +1451,7 @@
+ 			return false;
+ 	}
+ 	if(s == true && response != NULL)
+-		response->AddTag(CECTag(EC_TAG_STRING, wxTRANSLATE("Operation was successful.")));
++		response->AddTag(CECTag(EC_TAG_STRING, wxTRANSLATE("Succeed add link.")));
+ 	return s;
+ }
+ 
+diff -Nur aMule-2.3.1.old//src/TextClient.cpp aMule-2.3.1/src/TextClient.cpp
+--- aMule-2.3.1.old//src/TextClient.cpp	2012-06-19 11:43:41.849062247 -0400
++++ aMule-2.3.1/src/TextClient.cpp	2012-06-19 11:48:04.409062309 -0400
+@@ -685,6 +685,12 @@
+ 	wxASSERT(response);
+ 	switch (response->GetOpCode()) {
+ 		case EC_OP_NOOP:
++			{
++				std::stringstream str;
++				str <<"0 Operation was successful."<<std::endl;
++				WriteFifo(str.str());
++				s << _("Operation was successful.");
++			}
+ 			s << _("Operation was successful.");
+ 			break;
+ 		case EC_OP_INFO:
+@@ -712,8 +718,16 @@
+ 			{
+ 				const CECTag *tag = response->GetFirstTagSafe();
+ 				if (tag->IsString()) {
++					wxString succ(wxGetTranslation(tag->GetStringData()));
++					std::stringstream str;
++					str <<"-1 "<<succ.mb_str()<<std::endl;
++					WriteFifo(str.str());
+ 					s <<	CFormat(_("Request failed with the following error: %s")) % wxGetTranslation(tag->GetStringData());
+ 				} else {
++				{
++					std::stringstream str;
++					str <<"-1 "<<msgFailedUnknown.mb_str()<<std::endl;
++					WriteFifo(str.str());}
+ 					s << msgFailedUnknown;
+ 				}
+ 			}
+@@ -747,6 +761,9 @@
+ 					s << CFormat(_("Bandwidth limits: Up: %u kB/s, Down: %u kB/s.\n"))
+ 						% connMaxUL->GetInt() % connMaxDL->GetInt();
+ 				}
++				{std::stringstream str;
++				str <<"0 "<<std::endl;
++				WriteFifo(str.str());}
+ 			}
+ 			break;
+ 		case EC_OP_STRINGS:
+@@ -754,6 +771,9 @@
+ 				const CECTag &tag = *it;
+ 				s << tag.GetStringData() << wxT("\n");
+ 			}
++			{std::stringstream str;
++			str <<"0 "<<std::endl;
++			WriteFifo(str.str());}
+ 			break;
+ 		case EC_OP_STATS: {
+ 			CEC_ConnState_Tag *connState = (CEC_ConnState_Tag*)response->GetTagByName(EC_TAG_CONNSTATE);
+@@ -890,6 +910,9 @@
+ 					s << ip << serverName->GetStringData() << wxT("\n");
+ 				}
+ 			}
++			{std::stringstream str;
++			str <<"0 "<<std::endl;
++			WriteFifo(str.str());}
+ 			break;
+ 		case EC_OP_STATSTREE:
+ 			s << StatTree2Text((CEC_StatTree_Node_Tag*)response->GetTagByName(EC_TAG_STATTREE_NODE), 0);

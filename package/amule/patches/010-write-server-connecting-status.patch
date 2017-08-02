@@ -1,0 +1,123 @@
+diff -Nur aMule-2.3.1.old//src/ExternalConn.cpp aMule-2.3.1/src/ExternalConn.cpp
+--- aMule-2.3.1.old//src/ExternalConn.cpp	2012-06-20 04:28:29.809076657 -0400
++++ aMule-2.3.1/src/ExternalConn.cpp	2012-06-20 04:47:14.939076927 -0400
+@@ -1510,13 +1510,22 @@
+ 					break;
+ 				}
+ 				EC_DETAIL_LEVEL detail_level = request->GetDetailLevel();
++				wxString ss;
+ 				size_t ser_size = theApp->serverlist->GetServerCount();
+ 				CServer * curr = theApp->serverconnect->GetCurrentServer();
+-
+-				wxString ss = CFormat(wxT("%d")) % ser_size;
+-				response->AddTag(CECTag(EC_TAG_STRING, ss));
+-				if(curr!=NULL)
++				CServer * connecting = theApp->serverconnect->GetConnectingServer();
++				if(curr == NULL && connecting == NULL)
++					ss = CFormat(wxT("%d no connecting")) % ser_size;
++				if(curr != NULL){
++					ss = CFormat(wxT("%d connected")) % ser_size;
++					response->AddTag(CECTag(EC_TAG_STRING, ss));
+ 					response->AddTag(CEC_Server_Tag(curr, detail_level));
++				}
++				if(curr == NULL && connecting != NULL){
++					ss = CFormat(wxT("%d connecting")) % ser_size;
++					response->AddTag(CECTag(EC_TAG_STRING, ss));
++					response->AddTag(CEC_Server_Tag(connecting, detail_level));
++				}
+ 				
+ 				std::vector<const CServer*> servers = theApp->serverlist->CopySnapshot();
+ 				for (
+diff -Nur aMule-2.3.1.old//src/ServerConnect.cpp aMule-2.3.1/src/ServerConnect.cpp
+--- aMule-2.3.1.old//src/ServerConnect.cpp	2012-06-20 04:28:29.809076657 -0400
++++ aMule-2.3.1/src/ServerConnect.cpp	2012-06-20 04:39:53.509076821 -0400
+@@ -119,6 +119,7 @@
+ 		}
+ 		if (!anystatic) {
+ 			connecting = false;
++			connectingserver = NULL;
+ 			AddLogLineC(_("No valid servers to which to connect found in server list"));
+ 			return;
+ 		}
+@@ -132,6 +133,7 @@
+ 
+ 	if (used_list->GetServerCount()==0 ) {
+ 		connecting = false;
++		connectingserver = NULL;
+ 		AddLogLineC(_("No valid servers to which to connect found in server list"));
+ 		return;
+ 	}
+@@ -154,6 +156,8 @@
+ 		Disconnect();
+ 	}
+ 	connecting = true;
++	if(server != NULL)
++		connectingserver = server;
+ 	singleconnecting = !multiconnect;
+ 
+ 	CServerSocket* newsocket = new CServerSocket(this, thePrefs::GetProxyData());
+@@ -168,6 +172,7 @@
+ {
+ 	connectionattemps.clear();
+ 	connecting = false;
++	connectingserver = NULL;
+ 	singleconnecting = false;
+ 
+ 	if (m_idRetryTimer.IsRunning()) 
+@@ -189,6 +194,7 @@
+ {
+ 	if (connecting == false)
+ 	{
++		connectingserver = NULL;
+ 		// we are already connected to another server
+ 		DestroySocket(sender);
+ 		return;
+@@ -337,6 +343,7 @@
+ 	if (connecting == false && sender != connectedsocket)
+ 	{
+ 		// just return, cleanup is done by the socket itself
++		connectingserver = NULL;
+ 		return;
+ 	}
+ 	//messages
+@@ -512,6 +519,7 @@
+ : m_idRetryTimer(theApp,ID_SERVER_RETRY_TIMER_EVENT)
+ {
+ 	connectedsocket = NULL;
++	connectingserver = NULL;
+ 	used_list = in_serverlist;
+ 	max_simcons = (thePrefs::IsSafeServerConnectEnabled()) ? 1 : 2;
+ 	connecting = false;
+@@ -550,6 +558,13 @@
+ 	return NULL;
+ }
+ 
++CServer* CServerConnect::GetConnectingServer()
++{
++	if (IsConnecting() && connectingserver) {
++		return connectingserver;
++	}
++	return NULL;
++}
+ 
+ void CServerConnect::SetClientID(uint32 newid)
+ {
+diff -Nur aMule-2.3.1.old//src/ServerConnect.h aMule-2.3.1/src/ServerConnect.h
+--- aMule-2.3.1.old//src/ServerConnect.h	2012-06-20 04:28:29.819076657 -0400
++++ aMule-2.3.1/src/ServerConnect.h	2012-06-20 04:40:04.689076823 -0400
+@@ -82,6 +82,7 @@
+ 	bool	IsConnected()	{ return connected; }
+ 	uint32	GetClientID()	{ return clientid; }
+ 	CServer*GetCurrentServer();
++	CServer*GetConnectingServer();
+ 	uint32	clientid;
+ 	uint8	pendingConnects;
+ 	bool	IsLowID()	{ return ::IsLowID(clientid); }
+@@ -111,6 +112,7 @@
+ 	int8	max_simcons;
+ 	bool	m_bTryObfuscated;
+ 	bool	m_recurseTryAnotherConnectionrequest;
++	CServer * connectingserver;
+ 	CServerSocket*	connectedsocket;
+ 	CServerList*	used_list;
+ 	CServerUDPSocket*	serverudpsocket;

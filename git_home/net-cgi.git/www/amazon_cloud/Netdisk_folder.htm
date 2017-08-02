@@ -1,0 +1,107 @@
+<% http_header("style/form2.css","dtree.css") %>
+<body onLoad="loadvalue();">
+<div class="qospage_title">$browse_for_folder</div>
+<div class="main_no_button">
+<script>
+<% show_usb_rootdir() %>
+
+var hid_name="";
+var hid_path="";
+var hid_drive="";
+function loadvalue()
+{
+	var i;
+	var str="";
+	for(i=0;i<drive_num;i++)
+	{
+		if(i==drive_num-1)
+			str=str+'<tr><td colspan="2"><img src="plusbottom.gif">'
+		else
+			str=str+'<tr><td colspan="2"><img src="plus.gif">';
+		str=str+'<span onclick="click_drive('+i+',0)"><img src="sda.gif"><a class="node">'+eval("vol_name"+i)+'</a></span></td></tr>';
+	}
+	document.getElementById("usbtree").innerHTML=str;
+}
+
+function click_drive(num,flag)
+{
+	var i,j;
+	var str="";
+	for(i=0;i<drive_num;i++)
+	{
+		if(i==num && flag==0)
+		{
+			str=str+'<tr><td colspan="2"><img src="minusbottom.gif"><span onclick="click_drive('+i+',1)"><img src="sda.gif"><a class="node">'+eval("vol_name"+i)+'</a></span></td></tr>';
+			var fnum=parseInt(eval("fcount"+i),10);
+			for(j=0;j<fnum;j++)
+			{
+				if(i==drive_num-1)
+					str=str+'<tr><td colspan="2"><img src="empty.gif">';
+				else
+					str=str+'<tr><td colspan="2"><img src="line.gif">';
+				if(j==fnum-1)
+					str=str+'<img src="joinbottom.gif">';
+				else
+					str=str+'<img src="join.gif">';
+				str=str+'<span  onclick="sel_folder('+i+','+j+')"><img src="folder.gif"><a class="node" id="folder'+j+'">'+eval("fname"+i+'_'+j)+'</a></span></td></tr>';
+			}
+		}
+		else
+		{
+			if(i==drive_num-1)
+				str=str+'<tr><td colspan="2"><img src="plusbottom.gif">'
+			else
+				str=str+'<tr><td colspan="2"><img src="plus.gif">';
+				str=str+'<span onclick="click_drive('+i+',0)"><img src="sda.gif"><a class="node">'+eval("vol_name"+i)+'</a></span></td></tr>';
+		}
+	}
+	document.getElementById("usbtree").innerHTML=str;
+}
+function sel_folder(num1,num2)
+{
+	var i=0;
+	hid_path=eval("vol_path"+num1);
+	hid_drive=eval("vol_name"+num1);
+	var e=eval('document.getElementById("folder'+num2+'")');
+	hid_name=e.innerHTML;
+
+	while(e=eval('document.getElementById("folder'+i+'")'))
+	{
+		if(i==num2)
+			e.className = "nodeSel";
+		else
+			e.className = "node";
+		i++;
+	}
+}
+function click_ok()
+{
+	if(hid_name == "")
+	{
+		alert("Please select one folder to backup.");
+		return false;
+	}
+	window.opener.document.forms[0].hid_path.value=hid_path;
+	window.opener.document.forms[0].hid_drive.value=hid_drive;
+	window.opener.document.forms[0].folder.value=hid_name;
+	window.opener.document.forms[0].submit();
+	window.close();
+	return true;
+}
+</script>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="dtree">
+<tr><td colspan="2"><img src="base.gif">My Router</td></tr>
+</table>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="dtree" id="usbtree">
+
+</table>
+<% table_header() %>
+<TR><TD colspan=2  align=center><input class="new_cancel_bt ui-corner-all" type="button" name="ok" value="OK" onClick="return click_ok();"></TD></TR>
+<tr><td colspan="2">&nbsp;</td></tr>
+<TR><TD colspan=2 class="spliteline"></TD></TR>
+<tr><td colspan="2">&nbsp;</td></tr>
+<TR><TD colspan=2 align=center><input class="new_sel_dir ui-corner-all" type="button" name="close" value="  Close Window" onClick='window.close();'></TD></TR>  
+</table>
+</div>
+</BODY>
+</HTML>

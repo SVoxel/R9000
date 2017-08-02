@@ -1,0 +1,32 @@
+#!/bin/sh
+
+usage()
+{
+	echo "  bond-show <bond-id> "
+	echo "		<bond-id>  --- 1~3"
+	echo " example:"
+	echo " 		bond-show 2"
+	exit 0
+}
+
+[ $# -lt 1 ] && usage
+
+[ ! -e /proc/net/bonding/bond$1 ] && {
+	echo "Invalid bond id"
+	exit 0
+}
+
+bonded_list=$(cat /proc/net/bonding/bond$1 | grep Join_slave_list | awk -F ":" '{print $2}')
+slave_list=$(cat /proc/net/bonding/bond$1 | grep "Slave Interface" | awk -F ":" '{print $2}')
+
+active="active"
+for p in $slave_list
+do
+	bonded=$(echo $bonded_list | grep $p)
+	if [ -z "$bonded" ]; then
+		active="no"
+	fi
+done
+
+echo $active
+

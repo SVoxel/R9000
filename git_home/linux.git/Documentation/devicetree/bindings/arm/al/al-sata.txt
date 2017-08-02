@@ -1,0 +1,32 @@
+Annapurna Labs AHCI Controller
+
+GPIOs used to expose the sata ports presence and activity.
+
+Properties:
+- compatible : Should contain "annapurna-labs,al-sata-sw-leds".
+
+each led represents the GPIO used for each sata port, the port represented
+by the AHCI pci address (domian, bus, dev), host 0 @ 00:00:08, and host 1
+@ 00:00:09.
+and the port number within that host.
+
+sata_sw_leds {
+	compatible = "annapurna-labs,al-sata-sw-leds";
+	led@0 {
+		label = "host 0, port 0 activity&presence led";
+		pci_domain = <0>;
+		pci_bus = <0>;
+		pci_dev = <8>;
+		port = <0>;
+		gpios =<&gpio0 1 0>;
+	};
+	led@1 {
+		label = "host 0, port 1 activity&presence led";
+		pci_domain = <0>;
+		pci_bus = <0>;
+		pci_dev = <8>;
+		port = <1>;
+		gpios =<&gpio0 2 0>;
+	};
+};
+

@@ -1,0 +1,33 @@
+Annapurna Labs PCIe Controller
+
+Properties:
+- compatible : Should contain "annapurna-labs,al-pcie"
+- reg : register space of the conroller
+- device_type : "pci"
+- #size-cells : <2>
+- #address-cells : <3>
+- bus-range: PCI bus numbers covered
+- ranges: ranges for the PCI memory and I/O regions
+
+Example:
+
+pcie-external0 {
+	compatible = "annapurna-labs,al-pci";
+	reg = <0xfd800000 0x00020000>; /* controller 0 registers */
+	device_type = "pci";
+	#size-cells = <2>;
+	#address-cells = <3>;
+
+	/* ranges:
+	 * Controller 0:
+	 * - ECAM - non prefetchable config space: 2MB
+	 * - IO - IO port space 64KB, reserve 64KB from target memory windows
+	 * - 32 bit non prefetchable memory space: 128MB - 64KB
+	 */
+	ranges = <0x00000000 0x0 0xfb600000 0xfb600000 0x0 0x00200000
+		  0x01000000 0x0 0xe0000000 0xe0000000 0x0 0x00010000
+		  0x02000000 0x0 0xe0010000 0xe0010000 0x0 0x07ff0000>;
+
+	bus-range = <0x00 0xff>;
+};
+

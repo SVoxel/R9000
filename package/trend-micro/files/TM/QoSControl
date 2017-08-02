@@ -1,0 +1,194 @@
+#!/bin/sh 
+DNI_CONFIG=/bin/config
+
+LOGGER="/usr/bin/logger -s -p daemon.info -t TM_update"
+
+Trend_micro_enable=$($DNI_CONFIG get trend_micro_enable)
+
+update() {
+	local UPDATE_STATUS=0
+	$LOGGER "start to get info from ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/"
+	curl ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/ 2>/dev/null  > /tmp/Trend_Micro.db
+	line=`cat /tmp/Trend_Micro.db | grep netgear-detection`
+	if [ "x$line" != "x" ] ; then
+		version=`echo $line |awk -F " " '{print $9}'`
+		cur_version=`cat /TM/database_versions | grep version | cut -d ":" -f 2`
+		local vs1=`echo $version | cut -d "-" -f 4 | cut -d "." -f 1 | cut -c 2`
+		local cur_vs1=`echo $cur_version | cut -d "-" -f 4 | cut -c 2`
+		local vs2=`echo $version | cut -d "." -f 2`
+		local cur_vs2=`echo $cur_version | cut -d "." -f 2`
+		local old_date=`cat /TM/database_versions | grep update_data | cut -d ":" -f 2`
+		if [ $vs1 -gt $cur_vs1 ] || [ $vs1 -eq $cur_vs1 ] && [ $vs2 -gt $cur_vs2 ]; then
+			curl ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/$version -o /tmp/$version 2>/dev/null
+			if [ "$?" = "0" ]; then
+				[ "$Trend_micro_enable" = "1" ] && shutdown
+				unzip -o /tmp/$version -d /tm_pattern/
+				if [ -e /tm_pattern/update_date ];then
+				local now_date=`cat /tm_pattern/update_date | grep update_data | cut -d ":" -f 2`
+				sed -i "s/$old_date/$now_date/g" /TM/database_versions
+				fi
+				version_1=`echo $version | cut -d "." -f -2`
+				sed -i "s/$cur_version/$version_1/g" /TM/database_versions
+				rm -f /tmp/$version
+				echo " update success !" > /dev/console
+				[ "$Trend_micro_enable" = "1" ] && start
+				UPDATE_STATUS=0
+			else
+				UPDATE_STATUS=100
+				$LOGGER "fail to download ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/$version.zip"
+			fi
+		else
+			UPDATE_STATUS=11
+			$LOGGER "[ ok ] Everything is up-to-date."
+		fi
+	else
+		UPDATE_STATUS=100
+		$LOGGER "[ FAIL ] Update failed."
+	fi
+	return $UPDATE_STATUS		
+}
+
+auto_update() {
+	ENABLE_AUTO_UPDATE=$($DNI_CONFIG get auto_update)
+	[ "x$ENABLE_AUTO_UPDATE" = "x1" ] || {
+	$LOGGER "Automatic updates are disabled.  Using existing files."
+	return 10
+	}
+update
+ret=$?
+return $ret
+}
+
+setbw()
+{
+	if [ "x$($DNI_CONFIG get bandwidth_type)" = "x1" ]; then
+		ceil_up=$($DNI_CONFIG get uplimit)
+		ceil_down=$($DNI_CONFIG get downlimit)
+	else
+		ceil_up=$($DNI_CONFIG get ookla_uplimit)
+		ceil_down=$($DNI_CONFIG get ookla_downlimit)
+	fi
+	ceil_up=$(echo "$ceil_up/1000"|bc)
+	ceil_down=$(echo "$ceil_down/1000"|bc)
+	if [ "x$ceil_up" != "x" ] && [ "x$ceil_down" != "x" ]; then
+		[ "$Trend_micro_enable" = "1" ] && shutdown
+		olg_ceil_up=`sed -n "s/ceil_up=//p" /TM/qos.conf | sed -n "s/kbps//p"`
+		olg_ceil_down=`sed -n "s/ceil_down=//p" /TM/qos.conf | sed -n "s/kbps//p"`
+
+		sed -i "s/\(ceil_up=\)$olg_ceil_up\(kbps\)/\1$ceil_up\2/g" /TM/qos.conf
+		sed -i "s/\(ceil_down=\)$olg_ceil_down\(kbps\)/\1$ceil_down\2/g" /TM/qos.conf
+
+		[ "$Trend_micro_enable" = "1" ] && boot
+	fi
+
+}
+
+boot() {
+	ret=1
+	if [ "$($DNI_CONFIG get first_boot_qos)" = "1" ] ; then
+		auto_update
+		ret=$?
+		$DNI_CONFIG set first_boot_qos=0
+	fi
+	[ "$ret" != "0" ] && start
+}
+
+shutdown() {
+	cd /TM/
+	./setup.sh stop
+
+	ps -www|grep get_dni_user_info |grep -v grep 2>&-|cut -d ' ' -f 1 |xargs kill -9
+	ps -www|grep get_dni_app_info |grep -v grep 2>&-|cut -d ' ' -f 1 |xargs kill -9
+	[ "x`ps -w|grep sample.bin |grep -v grep 2>/dev/null`" != "x" ] && killall sample.bin
+	config set trend_micro_console_enable=0
+	save_key=`ps | grep save_key | grep -v grep 2>&-`
+	[ "x$save_key" != "x" ] && killall -9 save_key.sh
+
+	cd - &>/dev/null
+}
+
+start() {
+	update_key=0
+
+	# check /etc/config whether have key
+	lickey=`ls /etc/config/ | grep license.key`
+	licbak=`ls /etc/config/ | grep lic_bak.key`
+	licmd5=`ls /etc/config/ | grep keymd5`
+	if [ "x$lickey" != "x" ] && [ "x$licbak" != "x" ] && [ "x$licmd5" != "x" ]; then
+		lic_md5=`md5sum /etc/config/license.key | cut -d " " -f 1`
+		bak_md5=`md5sum /etc/config/lic_bak.key | cut -d " " -f 1`
+		old_lic_md5=`cat /etc/config/keymd5 | grep license.key | cut -d " " -f 1`
+		old_bak_md5=`cat /etc/config/keymd5 | grep lic_bak.key | cut -d " " -f 1`
+		if [ "$lic_md5" = "$old_lic_md5" ] && [ "$bak_md5" = "$old_bak_md5" ]; then
+			cp -r /etc/config/license.key /tm_key/
+			cp -r /etc/config/lic_bak.key /tm_key/
+			update_key=1
+		else
+			echo "fail md5 in /ect/config/lic_bak.key or /etc/config/lickey.key !" > /dev/console
+		fi
+	fi
+
+	cd /TM/
+	./setup.sh start
+	sleep 3
+	config set trend_micro_console_enable=0
+	ps -www|grep get_dni_user_info |grep -v grep 2>&-|cut -d ' ' -f 1 |xargs kill -9
+	ps -www|grep get_dni_app_info |grep -v grep 2>&-|cut -d ' ' -f 1 |xargs kill -9
+	poll=`ps | grep get_dni_user_info | grep -v grep 2>&-`
+	if [ "x$poll" = "x" ] ; then
+		 /TM/poll_get_info.sh &
+	fi
+	# if /etc/config don't have key or error key, resave key to /etc/config
+	save_key=`ps | grep save_key | grep -v grep 2>&-`
+	if [ "$update_key" = "0" ] && [ "x$save_key" = "x" ] ; then
+		/TM/save_key.sh &
+	fi
+
+	cd - &>/dev/null
+}
+
+stop(){
+	shutdown
+}
+
+restart() {
+	[ "$Trend_micro_enable" = "0" ] && return 0
+	 shutdown
+	 boot
+}
+
+get_priority() {
+	#mac=`echo $1 | sed 's/://g'`
+	cat_id=$2
+	fam_id=$3
+	/TM/priority get_info "$1" "cat= $cat_id" "fam= $fam_id"
+	ret=$?
+	return $ret
+}
+
+set_priority() {
+	#mac=`echo $1 | sed 's/://g'`
+	/tm_pattern/sample.bin -a set_qos_off
+	/TM/priority set_info "$1" "$2"
+	ret=$?
+	[ "$ret" = "10" ] && echo "set priority fail!" >/dev/console
+	/tm_pattern/sample.bin -a set_qos_conf -R /TM/qos.conf
+	ret=$?
+	[ "$ret" = "1" ] && echo "set configuration to iqos fail!" >/dev/console && return $ret
+	/tm_pattern/sample.bin -a set_qos_on
+
+}
+
+case "$1" in
+	setbw) setbw ;;
+	auto_update) auto_update;;
+	update) update;;
+	boot) boot;;
+	shutdown) shutdown;;
+	start) start;;
+	stop) stop;;
+	restart) restart;;
+	get_priority) get_priority $2 $3 $4;;
+	set_priority) set_priority $2 $3;;
+esac
+exit $?

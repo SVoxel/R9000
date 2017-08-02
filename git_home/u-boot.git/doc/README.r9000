@@ -1,0 +1,25 @@
+How to build:
+=============
+
+#
+# You can ignore this step if Ubuntu/Debian packages "gcc-arm-linux-gnueabihf"
+# and "g++-arm-linux-gnueabihf" are installed in your system.
+#
+export PATH=${PATH}:/path/to/gcc-linaro-arm-linux-gnueabihf-4.7-2013.04-20130415_linux/bin
+
+( \
+    cd tools/al_boot_v_1_65_1/ && \
+    ./build_alpine_hw29765235p0p512p1024p4x4p4x4.sh; \
+)
+
+Boot image which contains U-Boot, device tree, and boot images of earlier
+stages is tools/al_boot_v_1_65_1/output/boot.img
+
+Steps to upgrade u-boot:
+========================
+
+ALPINE_DB> setenv ipaddr 192.168.1.1 && setenv serverip <TFTP_SERVER_IP>
+ALPINE_DB> tftpboot 0x8000000 boot.img
+ALPINE_DB> crc32 0x8000000 ${filesize}
+ALPINE_DB> nand erase 0x0 0x100000 && nand write 0x8000000 0x0 ${filesize}
+ALPINE_DB> reset

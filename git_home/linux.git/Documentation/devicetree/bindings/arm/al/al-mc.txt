@@ -1,0 +1,13 @@
+Annapurna Labs MC (Memory Controller)
+
+Properties:
+- compatible : Should contain "annapurna-labs,al-mc".
+- reg : Offset and length of the register set for the device.
+
+Example:
+
+mc {
+	compatible = "annapurna-labs,al-mc";
+	reg = <0x0 0xfb080000 0x0 0x00010000>;
+};
+

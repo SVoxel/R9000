@@ -1,0 +1,147 @@
+--- aMule-2.3.1.old/src/ExternalConn.h	2012-05-08 04:46:11.088188845 -0400
++++ aMule-2.3.1/src/ExternalConn.h	2012-05-08 09:11:36.358191090 -0400
+@@ -127,7 +127,7 @@
+ 		
+ 		void SetDirty(CPartFile *file);
+ 		void SetNew(CPartFile *file);
+-		void SetCompleted(CPartFile *file);
++		//void SetCompleted(CPartFile *file);
+ 		void SetRemoved(CPartFile *file);
+ 		
+ 		virtual CECPacket *GetNextPacket();
+@@ -146,7 +146,7 @@
+ 	public:
+ 		ECKnownFileMsgSource();
+ 
+-		void SetDirty(CKnownFile *file);
++		//void SetDirty(CKnownFile *file);
+ 		void SetNew(CKnownFile *file);
+ 		void SetRemoved(CKnownFile *file);
+ 		
+@@ -182,10 +182,10 @@
+ 	public:
+ 		ECSearchMsgSource();
+ 		
+-		void SetDirty(CSearchFile *file);
+-		void SetChildDirty(CSearchFile *file);
++		//void SetDirty(CSearchFile *file);
++		//void SetChildDirty(CSearchFile *file);
+ 	
+-		void FlushStatus();
++		//void FlushStatus();
+ 	
+ 		virtual CECPacket *GetNextPacket();
+ };
+@@ -227,13 +227,13 @@
+ 		//
+ 		void DownloadFile_SetDirty(CPartFile *file);
+ 		void DownloadFile_RemoveFile(CPartFile *file);
+-		void DownloadFile_RemoveSource(CPartFile *file);
++//		void DownloadFile_RemoveSource(CPartFile *file);
+ 		void DownloadFile_AddFile(CPartFile *file);
+-		void DownloadFile_AddSource(CPartFile *file);
++//		void DownloadFile_AddSource(CPartFile *file);
+ 		
+-		void SharedFile_AddFile(CKnownFile *file);
+-		void SharedFile_RemoveFile(CKnownFile *file);
+-		void SharedFile_RemoveAllFiles();
++//		void SharedFile_AddFile(CKnownFile *file);
++//		void SharedFile_RemoveFile(CKnownFile *file);
++//		void SharedFile_RemoveAllFiles();
+ 
+ };
+ 
+--- aMule-2.3.1.old/src/ExternalConn.cpp	2012-05-08 04:46:10.998188845 -0400
++++ aMule-2.3.1/src/ExternalConn.cpp	2012-05-08 09:06:06.738194126 -0400
+@@ -1918,7 +1918,7 @@
+ 	PARTFILE_STATUS status = { true, false, false, false, true, file };
+ 	m_dirty_status[filehash] = status;
+ }
+-
++/*
+ void ECPartFileMsgSource::SetCompleted(CPartFile *file)
+ {
+ 	CMD4Hash filehash = file->GetFileHash();
+@@ -1926,7 +1926,7 @@
+ 
+ 	m_dirty_status[filehash].m_finished = true;
+ }
+-
++*/
+ void ECPartFileMsgSource::SetRemoved(CPartFile *file)
+ {
+ 	CMD4Hash filehash = file->GetFileHash();
+@@ -1973,7 +1973,7 @@
+ 		m_dirty_status[cur_file->GetFileHash()] = status;
+ 	}
+ }
+-
++/*
+ void ECKnownFileMsgSource::SetDirty(CKnownFile *file)
+ {
+ 	CMD4Hash filehash = file->GetFileHash();
+@@ -1981,7 +1981,7 @@
+ 		m_dirty_status[filehash].m_dirty = true;;
+ 	}
+ }
+-
++*/
+ void ECKnownFileMsgSource::SetNew(CKnownFile *file)
+ {
+ 	CMD4Hash filehash = file->GetFileHash();
+@@ -2053,6 +2053,7 @@
+ 	
+ 	return response;
+ }
++/*
+ 
+ void ECSearchMsgSource::FlushStatus()
+ {
+@@ -2075,6 +2076,7 @@
+ {
+ 	m_dirty_status[file->GetFileHash()].m_child_dirty = true;
+ }
++*/
+ 	
+ /*
+  * Notification about uploading clients
+@@ -2145,7 +2147,6 @@
+ 	}
+ 	NextPacketToSocket();
+ }
+-
+ void ECNotifier::DownloadFile_RemoveFile(CPartFile *file)
+ {
+ 	for(std::map<CECServerSocket *, ECUpdateMsgSource **>::iterator i = m_msg_source.begin();
+@@ -2155,12 +2156,12 @@
+ 	}
+ 	NextPacketToSocket();
+ }
+-
++/*
+ void ECNotifier::DownloadFile_RemoveSource(CPartFile *)
+ {
+ 	// per-partfile source list is not supported (yet), and IMHO quite useless
+ }
+-
++*/
+ void ECNotifier::DownloadFile_AddFile(CPartFile *file)
+ {
+ 	for(std::map<CECServerSocket *, ECUpdateMsgSource **>::iterator i = m_msg_source.begin();
+@@ -2170,7 +2171,7 @@
+ 	}
+ 	NextPacketToSocket();
+ }
+-
++/*
+ void ECNotifier::DownloadFile_AddSource(CPartFile *)
+ {
+ 	// per-partfile source list is not supported (yet), and IMHO quite useless
+@@ -2200,6 +2201,7 @@
+ {
+ 	// need to figure out what to do here
+ }
++*/
+ 	
+ void ECNotifier::Add_EC_Client(CECServerSocket *sock)
+ {

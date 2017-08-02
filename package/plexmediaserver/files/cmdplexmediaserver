@@ -1,0 +1,150 @@
+#!/bin/sh
+
+config="/bin/config"
+taskset="/usr/sbin/taskset"
+plexmediaserver_status=$($config get plexmediaserver_enable)
+plexmediaserver_mtd_mount_point="/tmp/plexmediaserver/"
+plexmediaserver_script=`ls $plexmediaserver_mtd_mount_point/*.*.*.*/plexmediaserver.sh 2>/dev/null`
+plexmediaserver_cpu_cores="0,1,2"
+
+scan_disk_exists()
+{
+    disk_exists=0
+    rm -rf /tmp/partition_disk_exists
+    cat /proc/partitions | awk '{print $4}' | grep sd > /tmp/partition_disk_exists
+    while read LINE1
+    do
+        rm -rf /tmp/mount_disk_exists
+        mount | grep "/dev/sd" | awk '{print $1}' | awk -F "/dev/" '{print $2}' > /tmp/mount_disk_exists
+        while read LINE2
+        do
+            if [ "x$LINE1" = "x$LINE2" ];then
+                disk_exists=`expr $disk_exists + 1`
+                break
+            fi
+        done < /tmp/mount_disk_exists
+    done < /tmp/partition_disk_exists
+
+    [ $disk_exists -gt 0 ] && return 0
+    [ $disk_exists -eq 0 ] && return 1
+}
+
+plex_stop()
+{
+    /bin/ps -w|grep cmdplexmediaserver |grep start |grep -v grep | awk '{print $1}' | xargs kill -9 2>/dev/null
+    plex_stop_exist=`/bin/ps -w | grep "./plexmediaserver.sh stop" | grep -v "grep"`
+    [ "x$plex_stop_exist" != "x" ] && return
+    [ "x$plexmediaserver_script" != "x" ] && cd `dirname $plexmediaserver_script` && $taskset -c $plexmediaserver_cpu_cores ./plexmediaserver.sh stop
+    /bin/ps -w | grep "Plex" | grep -v grep | awk '{print $1}' | xargs kill -9 2>/dev/null
+}
+
+plex_start()
+{
+    plex_start_exist=`/bin/ps -w | grep "./plexmediaserver.sh start" | grep -v "grep"`
+    [ "x$plex_start_exist" != "x" ] && return
+	if [ "x`ls /tmp/plex_current_version 2>/dev/null`" = "x" ];then
+		if [ "x`ls $plexmediaserver_mtd_mount_point/plex_current_version 2>/dev/null`" != "x" ];then
+			cp  $plexmediaserver_mtd_mount_point/plex_current_version /tmp/
+		fi
+	fi
+    if [ "$plexmediaserver_status" = "1" ];then
+        scan_disk_exists
+        scan_disk_result=`echo $?`
+        if [ "x$scan_disk_result" = "x1" ];then
+            return
+        fi
+        [ "x$plexmediaserver_script" = "x" ] && exit 0 
+        config set plex_file_path=`config get plex_select_usb|awk -F "," '{print $2}'`
+        [ "x`config get plex_file_path`" = "x" ] && echo "please choose a plex path." && exit 0
+        [ "x$plexmediaserver_script" != "x" ] && cd `dirname $plexmediaserver_script` 
+        if [ ! -s $plexmediaserver_script ];then
+            [ -f $plexmediaserver_mtd_mount_point/plexmediaserver.sh ] || exit 0
+            rm -rf  $plexmediaserver_script
+            cp $plexmediaserver_mtd_mount_point/plexmediaserver.sh $plexmediaserver_mtd_mount_point/*.*.*.*/
+        fi
+        #cat $plexmediaserver_script |grep "PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR"|sed 's/${SCRIPTPATH}/`config get plex_file_path`/g'
+        browser_root=`cat $plexmediaserver_script |grep "PLEX_BROWSER_ROOT="`
+        if [ "x$browser_root" = "x" ];then
+           sed -i -e '/PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=/a\export PLEX_BROWSER_ROOT="/tmp/mnt"' $plexmediaserver_script
+           sed -i '/PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR=/d' $plexmediaserver_script
+           sed -i -e '/PLEX_BROWSER_ROOT=/a\export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR="`config get plex_file_path`/Library/Application Support"' $plexmediaserver_script
+           sync
+        fi
+        #Retry three times to start Plex.
+        retry_times=0
+        while [ $retry_times -lt 3 ]
+        do
+            if [ "x`config get plex_nice`" = "x" -o "x`config get plex_nice`" = "x0" ];then 
+                $taskset -c $plexmediaserver_cpu_cores ./plexmediaserver.sh start
+            else
+                $taskset -c $plexmediaserver_cpu_cores /etc/plexmediaserver/nice.sh 
+            fi
+            sleep 3
+            if [ "x`/bin/ps -w | grep "Plex Media Server" | grep -v grep`" != "x" ];then
+                echo "Start Plex Media Server Sucessfully." > /dev/console
+                [ "x`config get plex_process_run`" != "x1" ] && config set plex_process_run=1
+                break
+            else
+                echo "Retry to Start Plex Media Server..." > /dev/console
+                [ "x`config get plex_process_run`" != "x0" ] && config set plex_process_run=0
+                retry_times=`expr $retry_times + 1`
+            fi
+        done
+    fi
+}
+
+case "$1" in
+    stop)
+        if [ `config get plexmediaserver_enable` -eq 0 ];then
+            plex_stop
+            /etc/plexmediaserver/plexmediaserver_monitor.sh stop
+            killall plex_remote.sh 2>/dev/null
+            /etc/plexmediaserver/plex_usb_info.sh fresh
+            logger -- "[PLEX]Stop Plex Media Server,"
+        elif [ "x$2" = "x1" ];then
+            plex_stop
+            /etc/plexmediaserver/plexmediaserver_monitor.sh stop
+            killall plex_remote.sh 2>/dev/null
+            /etc/plexmediaserver/plex_usb_info.sh fresh
+        else
+            /etc/plexmediaserver/plex_usb_info.sh fresh
+            if [ `config get plex_library_change` -eq 1 ];then
+                library_path=`config get plex_file_path |awk -F"/" '{print $4}'`
+                [ "x$library_path" != "x" ] && fuser -k /dev/$library_path
+                plex_stop
+                /etc/plexmediaserver/plexmediaserver_monitor.sh stop
+            	killall plex_remote.sh 2>/dev/null
+            elif [ ! -f /tmp/plex_curUSB_info ];then
+                /bin/ps -w|egrep "Plex Media Serv|Plex Media Scan|Plex Transcoder|Plex New Transc" |egrep -v egrep |awk '{print $1}' |xargs kill -9 2>/dev/null 
+                library_path=`config get plex_file_path |awk -F"/" '{print $4}'`
+                [ "x$library_path" != "x" ] && fuser -k /dev/$library_path
+                plex_stop
+                /etc/plexmediaserver/plexmediaserver_monitor.sh stop
+                killall plex_remote.sh 2>/dev/null
+            fi
+        fi
+    ;;
+    start)
+        [ "x$2" = "x1" ] && sleep 20
+        /etc/plexmediaserver/plex_usb_info.sh fresh
+        [ ! -f /tmp/plex_curUSB_info -o "x`config get plex_library_change`" = "x1" ] && echo "No USB Drive for plex" && return
+        [ "x`config get plexmediaserver_enable`" != "x1" ] && return
+        [ "x`config get plex_library_change`" = "x1" -o "x`/bin/ps -w|grep "Plex Media Serv" |grep -v grep |awk '{print $1}'`" != "x" ] && return 
+        while true
+        do
+            if [ ! -f /tmp/plex_ntp_updated ];then
+                [ "x`config get plex_process_run`" != "x2" ] && config set plex_process_run=2
+                sleep 10
+            else
+                break
+            fi
+        done
+        logger -- "[PLEX]Start Plex Media Server,"
+        plex_start
+        [ "x`config get plex_process_run`" != "x1" ] && return
+      	/etc/plexmediaserver/plex_remote.sh start &
+      	/etc/plexmediaserver/plexmediaserver_monitor.sh backup
+        /etc/plexmediaserver/plexmediaserver_monitor.sh start &
+    ;;
+esac
+

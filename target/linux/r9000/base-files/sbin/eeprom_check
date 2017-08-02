@@ -1,0 +1,15 @@
+# !/bin/sh
+
+#eeprog -fx -16 /dev/i2c-0 0x57 -r 0x9E -t 5 2>/dev/null | grep -c 50 > /tmp/eeprom_new
+
+local cur_ver="$(eeprog -fx -16 /dev/i2c-0 0x57 -r 0x9E -t 5 2>/dev/null | grep 009e 2>/dev/null | awk -F'|' '{print $2}' 2>/dev/null | sed 's/ //g' 2>/dev/null)"
+
+if [ "$cur_ver" = "50" ]; then
+	echo "Cur EEPROM Ver: 0x50(New)"
+elif [ "$cur_ver" = "51" ]; then
+	echo "Cur EEPROM Ver: 0x51(Old)"
+else
+	echo "Cur EEPROM Ver: null(Unknown)"
+fi
+
+

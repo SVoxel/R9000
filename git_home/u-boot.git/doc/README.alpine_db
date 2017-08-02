@@ -1,0 +1,15 @@
+How to build:
+=============
+
+#
+# You can ignore this step if Ubuntu/Debian packages "gcc-arm-linux-gnueabihf"
+# and "g++-arm-linux-gnueabihf" are installed in your system.
+#
+export PATH=${PATH}:/path/to/gcc-linaro-arm-linux-gnueabihf-4.7-2013.04-20130415_linux/bin
+
+( \
+    export ARCH=arm; \
+    export CROSS_COMPILE=arm-linux-gnueabihf-; \
+    cd tools/al_boot_v_1_65_1/ && \
+    ./release_test.sh; \
+)

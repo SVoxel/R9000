@@ -1,0 +1,14 @@
+<% http_header() %>
+<script>
+var login_status="<% cfg_get("amazon_login_status") %>";
+function loadvalue()
+{
+	if(login_status == "200")
+		this.location.href="Netdisk_setting.htm";
+	else
+		this.location.href="Netdisk_login.htm";
+}
+</script>
+<BODY onLoad="loadvalue();">
+</BODY>
+</HTML>

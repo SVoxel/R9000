@@ -1,0 +1,918 @@
+/*
+Format:
+[package name]
+        Complete package name
+        From Where
+        License
+        Binary or Source code
+*/
+
+User application
+[acl]
+		acl
+		DNI
+		DNI
+		Binary
+[alsa-lib]
+        alsa-lib-1.0.24.1.tar.bz2
+        http://www.alsa-project.org/
+        GPL
+        Source Code
+[amule]
+		aMule-2.3.1.tar.bz2
+		http://amule.en.softonic.com/
+		GPL
+		Source Code
+[artmtd]
+		artmtd
+		DNI
+		DNI
+		Binary
+[avahi]
+        avahi-0.6.31.tar.gz
+        http://avahi.org/download/
+        GPL
+        Source Code
+[libavl]
+        libavl_0.3.5.tar.gz
+        http://avahi.org/download/
+        GPL
+        Source Code
+[base-files]
+		base-files
+		DNI
+		GPL
+		Source Code
+[bc]
+		bc-1.06
+		http://packages.debian.org/bc
+		GPL
+		Source Code
+[bridge-utils]
+        bridge-utils-1.5.tar.gz
+        http://bridge.sourceforge.net/
+        GPL
+        Source Code
+[boxlogin]
+		boxlogin
+		DNI
+		DNI
+		Binary
+[chkntfs]
+		package/base-files/files/sbin/chkntfs
+		Paragon
+		Paragon
+		Binary
+[cifs.util]
+		cifs-utils-6.6.tar.bz2
+		http://www.gnu.org/licenses/
+		GPL
+		Source Code
+[confuse]
+        confuse-2.6.tar.gz
+        http://www.nongnu.org/confuse/
+        GPL
+        Source Code
+[curl]
+        curl-7.29.0.tar.bz2
+        http://curl.haxx.se/
+        GPL
+        Source Code
+[cyassl]
+		cyassl-1.6.5.zip
+        http://www.yassl.com/
+        GPL
+        Source Code
+[db47]
+        db-4.7.25.NC.tar.gz
+        http://download.oracle.com/berkeley-db/
+        GPL
+        Source Code
+[dbus]
+        dbus-1.4.14.tar.gz
+        http://dbus.freedesktop.org/
+        GPL
+        Source Code
+[datalib]
+		datalib
+		DNI
+		DNI
+		Binary
+[detcable]
+		detcable
+		DNI
+		DNI
+		Binary
+[detwan]
+		detwan
+		DNI
+		GPL
+		Source Code
+[disktype]
+		disktype
+		disktype.sourceforge.net
+		GPL
+		Source Code
+[dnibusybox]
+        busybox-1.4.2
+        http://busybox.net/downloads/
+        GPL
+        Source Code
+[dni-mtdoops]
+		dni-mtdoops
+		lists.infradead.org
+		GPL
+		Source Code
+[dni-ntpclient]
+		ntpclient_2003_194
+		http://doolittle.faludi.com/ntpclient
+		GPL
+		Source Code
+[dni-bond]
+		dni-bond
+		DNI
+		DNI
+		Source Code
+[dni-libmtd]
+		dni-libmtd
+		DNI
+		DNI
+		Binary
+[dnippp]
+		ppp-2.4.3
+		ftp://ftp.samba.org/pub/ppp
+		GPL
+		Source Code
+[dni-ripd]
+		dni-ripd
+		DNI
+		DNI
+		Binary
+[dnsmasq]
+		dnsmasq
+		http://www.thekelleys.org.uk/dnsmasq
+		GPL
+		Source Code
+[e2fsprogs]
+        e2fsprogs-1.42.tar.gz
+        http://e2fsprogs.sourceforge.net/
+        GPL
+        Source Code
+[ebtables]
+		ebtables-v2.0.9-1
+		http://ebtables.sourceforge.net
+		GPL
+		Source Code
+[eeprog]
+		eeprog-0.7.6-tear5.tar.gz
+		http://darkswarm.org/eeprog-0.7.6-tear5.tar.gz
+		GPL
+		Source Code
+[ethtool]
+		ethtool-3.4.1.tar.xz
+		http://www.kernel.org/pub/software/network/ethtool/
+		GPL
+		Source Code
+[expat]
+        expat-2.0.1.tar.gz
+        http://downloads.sourceforge.net/expat
+        GPL
+        Source Code
+[ez-ipupdate]
+		ez-ipupdate-3.0.10
+		http://ez-ipupdate.com
+		GPL
+		Source Code
+[factory-tools]
+		factory-tools
+		DNI
+		DNI
+		Binary
+[fcgi]
+        fcgi-2.4.0.tar.gz
+        http://www.fastcgi.com/
+        GPL
+        Source Code
+[ffmpeg]
+        ffmpeg-0.11.2.tar.bz2
+        http://ffmpeg.org/releases
+        GPL
+        Source Code
+[forked-daapd]
+		forked-daapd-23.0-dni1.tar.bz2
+		https://github.com/jasonmc/forked-daapd
+		GPL
+		Source Code
+[fbwifi]
+		fbwifi
+		netgear
+		netgear
+		Binary
+[gdbm]
+        gdbm-1.8.3.tar.gz
+        ftp://ftp.gnu.org/gnu/gdbm
+        GPL
+        Source Code
+[gettext]
+        gettext-0.18.1.1.tar.gz
+        ftp://ftp.gnu.org/gnu/gettext
+        GPL
+        Source Code
+[green-download]
+		green-download
+		DNI
+		DNI
+		Binary
+[hd-idle]
+		hd-idle-1.04.tgz
+		http://hd-idle.sourceforge.net/
+		GPL
+		Source Code
+[hotplug2]
+		hotplug2-201
+		http://isteve.bofh.cz/~isteve/hotplug2
+		GPL
+		Source Code
+[igmpproxy]
+		N/A
+		DNI
+		GPL
+		Source Code
+[inotify-tools]
+		inotify-tools
+		http://www.gnu.org/licenses/gpl.html
+		GPL
+		Source Code
+[iperf]
+		iperf-2.0.5.tar.gz
+		ftp://ftp.gnu.org/gnu/iperf
+		GPL
+		Source Code
+[ipp]
+		ipp, iproute2-2.6.29-1
+		http://developer.osdl.org/dev/iproute2/download
+		GPL
+		Source Code
+[iproute2]
+		iproute2-3.3.0.tar.bz2
+		http://linux-net.osdl.org/index.php/Iproute2
+		GPL
+		Source Code
+[iptables]
+        iptables-1.4.21.tar.bz2
+        http://www.netfilter.org/projects/iptables/files
+        GPL
+        Source Code
+[jansson]
+        jansson-2.4.tar.gz
+        http://www.digip.org/jansson/releases/
+        GPL
+        Source Code
+[jq]
+		jq-1.3.tar.gz
+		openwrt
+		GPL
+		Source Code
+[led-control]
+		led-control
+		DNI
+		DNI
+		Binary
+[libantlr3c]
+        libantlr3c-3.2.tar.gz
+        http://www.antlr.org/
+        GPL
+        Source Code
+[libdaemon]
+        libdaemon-0.14.tar.gz
+        http://0pointer.de/lennart/projects/libdaemon/
+        GPL
+        Source Code
+[libcryptoxx]
+        libcryptoxx-5.6.0.tar.gz
+        http://ftp.de.debian.org/debian/pool/main/libc/libcrypto++/
+        GPL
+        Source Code
+[libevent2]
+        libevent-2.0.19-stable.tar.gz
+        http://www.monkey.org/~provos/
+        GPL
+        Source Code
+[libexif]
+        libexif-0.6.17.tar.bz2
+        http://libexif.sourceforge.net/
+        GPL
+        Source Code
+[libflac]
+        flac-1.2.1.tar.gz
+		http://downloads.xiph.org/releases/flac
+        GPL
+        Source Code
+[libgcrypt]
+        libgcrypt-1.5.0.tar.bz2
+        ftp://ftp.gnupg.org/gcrypt/libgcrypt/
+        GPL
+        Source Code
+[libgpg-error]
+        libgpg-error-1.9.tar.bz2
+        ftp://ftp.gnupg.org/gcrypt/libgpg-error/
+        GPL
+        Source Code
+[libiconv]
+        libiconv-1.11.tar.gz
+        http://www.gnu.org/software/libiconv/
+        GPL
+        Source Code
+[libid3tag]
+        libid3tag-0.15.1b.tar.gz
+        http://www.underbit.com/products/mad/
+        GPL
+        Source Code
+[libjpeg]
+        jpegsrc.v6b.tar.gz
+        http://www.ijg.org/files/
+        GPL
+        Source Code
+[libjson-c]
+		json-c-0.9.tar.gz
+        http://oss.metaparadigm.com/json-c/
+        GPL
+        Source Code
+[libnl-bf]
+		libnl-bf-g7d47666eb3c414feb8901970d35b96461214c2bf.tar.gz
+		git://github.com/tgraf/libnl.git
+		GPL
+		Source Code
+[libogg]
+        libogg-1.1.3.tar.gz
+        http://www.xiph.org
+        GPL
+        Source Code
+[libpcap]
+        libpcap-1.1.1.tar.gz
+        http://www.tcpdump.org/release/
+        GPL
+        Source Code
+[libplist]
+        libplist-1.8.tar.bz2
+        http://www.libimobiledevice.org/
+        GPL
+        Source Code
+[libpng]
+        libpng-1.4.3.tar.gz
+        http://www.libpng.org/pub/png/libpng.html
+        GPL
+        Source Code
+[libreadline]
+        readline-5.2.tar.gz
+        http://cnswww.cns.cwru.edu/php/chet/readline/rltop.html
+        GPL
+        Source Code
+[libnl-tiny]
+		N/A
+		openwrt
+		GPL
+		Source Code
+[libtool]
+		libtool
+		http://www.gnu.org/software/libtool/
+		GPL
+		Source Code
+[libubox]
+        libubox-2013-07-04-11e8afea0f7eb34f8c23a8e589ee659c46f3f8aa.tar.gz
+        git://nbd.name/luci2/libubox.git
+        GPL
+        Source Code
+[libunistring]
+        libunistring-0.9.3.tar.gz
+        http://ftp.gnu.org/gnu/libunistring
+        GPL
+        Source Code
+[libvorbis]
+        libvorbis-1.2.3.tar.gz
+        http://www.xiph.org
+        GPL
+        Source Code
+[libwxWidgets]
+        wxWidgets-2.8.12.tar.gz
+        http://downloads.sourceforge.net/wxwindows
+        GPL
+        Source Code
+[libxml2]
+        libxml2-2.7.8.tar.gz
+        http://xmlsoft.org/
+        GPL
+        Source Code
+[lltd]
+		lltd
+		http://www.microsoft.com/whdc/connect/rally/rallykit.mspx
+		MICROSOFT WINDOWS RALLY PROGRAM LICENSE
+		Binary
+[lua]
+        lua-5.1.4.tar.gz
+        http://www.lua.org/ftp/
+        GPL
+        Source Code
+[lvm2]
+        LVM2.2.02.91.tgz
+        http://sourceware.org/dm/
+        GPL
+        Source Code
+[lzo]
+        lzo-2.06.tar.gz
+        http://www.oberhumer.com/opensource/lzo/
+        GPL
+        Source Code
+[minidlna]
+		minidlna
+		http://sourceforge.net/projects/minidlna
+		GPL
+		Source Code
+[miniupnpd]
+		miniupnpd-20070127
+		http://miniupnp.free.fr
+		BSD
+		Binary
+[mtd-utils]
+		mtd-utils-1.5.0.tar.bz2
+		http://www.linux-mtd.infradead.org/
+		GPL
+		Source Code
+[mxml]
+        mxml-2.6.tar.gz
+        http://www.minixml.org/
+        GPL
+        Source Code
+[ncurses]
+        ncurses-5.7.tar.gz
+        http://www.gnu.org/software/ncurses
+        GPL
+        Source Code
+[net6conf]
+		net6conf
+		DNI
+		GPL
+		Source Code
+[netatalk]
+		netatalk-2.2.1.tar.bz2
+		http://downloads.sourceforge.net/netatalk
+		GPL
+		Source Code
+[netatalk-utility]
+		netatalk-utility-1.0.0
+		Alumnux
+		GPL
+		Source Code
+[netdrive]
+		netdrive
+		DNI
+		DNI
+		Binary
+[netgear-integration-api]
+		netgear-integration-api
+		DNI
+		DNI
+		Binary
+[net-cgi]
+		net-cgi
+		DNI
+		BSD
+		Binary
+[net-scan]
+		net-scan
+		DNI
+		GPL
+		Source Code
+[net-util]
+		net-util
+		DNI
+		DNI
+		Binary
+[net-wall]
+		net-wall
+		DNI
+		DNI
+		Binary
+[iw]
+		iw-3.15.tar.xz
+		https://www.kernel.org/pub/software/network/iw
+		GPL
+		Source Code
+[noip2]
+		noip2
+		http://www.no-ip.com/client/linux/noip-duc-linux.tar.gz
+		GPL
+		Source Code
+[ntgrddns]
+		ntgrddns
+		DNI
+		DNI
+		Binary
+[ookla]
+        Ookla
+        Ookla
+        Ookla
+        Binary
+[openssl]
+        openssl-0.9.8p.tar.gz
+        http://www.openssl.org/source/
+        GPL
+        Source Code
+[openvpn]
+		openvpn-2.3.2.tar.gz
+		http://openvpn.net
+		GPL
+		Source Code
+[openvpn-easy-rsa]
+		openvpn-easy-rsa-2013-01-30-ff5bfd1dd8e548cb24d302742af3894f893ef92f.tar.gz
+		http://openvpn.net
+		GPL
+		Source Code
+[openvpn-miscprogs]
+		openvpn-miscprogs
+		DNI
+		DNI
+		Binary
+[opkg]
+		opkg-618.tar.gz
+		http://wiki.openmoko.org/wiki/Opkg
+		GPL
+		Source Code
+[parted]
+		parted-3.0.tar.gz
+		http://www.gnu.org/software/parted/index.shtml
+		GPL
+		Source Code
+[phddns]
+		phddns
+		http://open.oray.com/doc/phddns-sdk-1.0.4.17314.tar.gz
+		GPL
+		Source Code
+[plexmediaserver]
+        plexmediaserver
+        DNI
+        DNI
+        Binary
+[popt]
+        popt-1.7.tar.gz
+        http://rpm5.org/files/popt/
+        GPL
+        Source Code
+[pot]
+		pot
+		DNI
+		GPL
+		Source Code
+[pciutils]
+		pciutils-3.4.1.tar.gz
+		http://pci-ids.ucw.cz/	
+		GPL
+		Source Code
+[ppp-nas]
+		ppp-nas, iproute2-2.6.29-1
+		http://developer.osdl.org/dev/iproute2/download
+		GPL
+		Source Code
+[proccgi]
+        proccgi
+        www.fpx.de/fp/Software
+        GPL
+        Source Code
+[proftpd]
+		proftpd-1.3.3
+		http://www.proftpd.org
+		GPL
+		Source Code
+[px5g]
+		px5g
+		openwrt
+		GPL
+		Source Code
+[qca-hostap]
+		hostap-10.2.2.39.1
+		Atheros
+		Atheros
+		Binary
+[qca-ssdk]
+		qca-ssdk
+		https://www.codeaurora.org/cgit/quic/qsdk/oss
+		Dual BSD/GPL
+		Binary
+[qca-ssdk-shell]
+		qca-ssdk-shell
+		Atheros
+		Atheros
+		Binary
+[qca-backports]
+		qca-backports
+		Atheros
+		Atheros
+		Binary
+[qca-wifi]
+		qca-wifi
+		Atheros
+		Atheros
+		Binary
+[qsdk-wifi-script]
+		qsdk-wifi-script
+		DNI
+		DNI
+		Binary
+[radardetect]
+		radardetect
+		DNI
+		DNI
+		Binary
+[radvd-1.5]
+		radvd-1.5
+		http://v6web.litech.org/radvd/dist
+		GPL
+		Source Code
+[samba]
+		samba-3.0.24
+		http://www.samba.org
+		GPL
+		Source Code
+[samba-scripts]
+		samba-scripts
+		DNI
+		GPL
+		Source Code
+[ssmtp]
+		ssmtp-2.64
+		http://ftp.debian.org/debian/pool/main/s/ssmtp
+		GPL
+		Source Code
+[sqlite3]
+        sqlite-amalgamation-3.6.16.tar.gz
+        http://www.sqlite.org
+        GPL
+        Source Code
+[strace]
+        strace-4.8.tar.xz
+        http://sourceware.org/strace
+        GPL
+        Source Code
+[sysstat]
+		sysstat-10.1.7.tar.bz2
+		http://pagesperso-orange.fr/sebastien.godard/index.html
+		GPL
+		Source Code
+[tar]
+		tar-1.23.tar.gz
+		http://www.gnu.org/software/tar/
+		GPL
+		Source Code
+[tcpdump]
+		tcpdump
+		http://www.tcpdump.org/release/
+		BSD
+		Source Code
+[telnetenable]
+		telnetenable
+		http://www.opentom.org/Mkttimage; http://www.seattlewireless.net/telnetenable.c
+		GPL
+		Source Code
+[toolchain]
+        toolchain
+        openwrt
+        GPL
+        Source Code
+[trafficmeter]
+		trafficmeter
+		DNI
+		DNI
+		Binary
+[trend-micro]
+        trend-micro
+		TrendMicro
+		TrendMicro
+		Binary
+[transmission]
+		transmission-2.76.tar.bz2
+		http://www.transmissionbt.com
+		GPL
+		Source Code
+[ubus]
+		ubus-2013-01-13-bf566871bd6a633e4504c60c6fc55b2a97305a50.tar.gz
+		git://nbd.name/luci2/ubus.git
+		GPL
+		Source Code
+[uci]
+        uci-2013-01-04.1.tar.gz
+        http://downloads.openwrt.org/sources
+        GPL
+        Source Code
+[uclibc++]
+        uClibc++-0.2.4.tar.bz2
+        http://cxx.uclibc.org/src/
+        GPL
+        Source Code
+[udev]
+		udev-106.tar.bz2
+		ftp://ftp.kernel.org/pub/linux/utils/kernel/hotplug
+		GPL
+		Source Code
+[udevtrigger]
+		udevtrigger
+		http://www.kernel.org/pub/linux/utils/kernel/hotplug/udev.html
+		GPL
+		Source Code
+[udhcp]
+		udhcp-0.9.8
+		http://udhcp.busybox.net/source
+		GPL
+		Source Code
+[uhttpd]
+		uhttpd
+		openwrt
+		Apache
+		Source Code
+[utelnetd]
+		utelnetd-0.1.9.tar.gz
+		http://gentoo.osuosl.org/distfiles
+		GPL
+		Source Code
+[util-linux]
+		util-linux-2.24.1.tar.xz
+		http://www.kernel.org/pub/linux/utils/util-linux/
+		GPL
+		Source Code
+[wget]
+        wget-1.13.4.tar.bz2
+        downloads.openwrt.org/sources/wget-1.13.4.tar.bz2
+        GPL
+        Source Code
+[vmstat]
+		vmstat
+		DNI
+		DNI
+		Binary
+[wide-dhcpv6]
+		wide-dhcpv6-20080615
+		https://sourceforge.net/projects/wide-dhcpv6
+		GPL
+		Source Code
+[wireless-tools]
+		wireless-tools-29.pre1
+		http://hplabs.hp.com/personal/Jean_Tourrilhes/Linux/Tools.html
+		GPL
+		Source Code
+[wlan-common]
+		wlan-common
+		DNI
+		GPL
+		Source Code
+[xfsprogs]
+		xfsprogs-3.1.7.tar.gz
+		http://oss.sgi.com/projects/xfs
+		GPL
+		Source Code
+[xtables-addons]
+        xtables-addons-2.3.tar.xz
+		@SF/xtables-addons	
+		GPL
+		Source Code
+[zebra]
+		zebra-0.95a.tar.gz
+		http://zebra.sourceforge.net
+		GPL
+		Source Code
+[zip]
+		zip232.zip
+		http://infozip.sourceforge.net/Zip.html
+		GPL
+		Source Code
+[zlib]
+        zlib-1.2.7.tar.bz2
+        http://www.zlib.net
+        GPL
+        Source Code
+[zz-dni-sample]
+		zz-dni-sample
+		trend-micro
+		trend-micro
+		binary
+
+Kernel Modules
+[Linux]
+        Linux-3.10.20
+        atm
+        http://www.kernel.org
+        GPL
+        Source Code
+[linux-atm]
+		linux-atm-2.5.2.tar.gz
+		@SF/linux-atm
+		GPL
+		Source Code
+[kmod-dni_enet]
+       	kmod-dni_enet
+       	DNI
+       	DNI
+       	Binary
+[kmod-dni-vport]
+       	kmod-dni-vport
+       	DNI
+       	DNI
+       	Binary
+[kmod-conenat]
+		kmod-conenat
+		DNI
+		DNI
+		Binary
+[kmod-dnih323]
+		netfilter
+		http://www.netfilter.org
+		GPL
+		Source Code
+[kmod-dni-qos]
+		kmod-dni-qos
+		DNI
+		DNI
+		Binary
+[kmod-dnirtsp]
+		netfilter
+		http://www.netfilter.org
+		GPL
+		Source Code
+[kmod-dnisip]
+		netfilter
+		http://www.netfilter.org
+		GPL
+		Source Code
+[kmod-dnshijack]
+		kmod-dnshijack
+		DNI
+		DNI
+		Binary
+[kmod-ftp-alg]
+		netfilter
+		http://www.netfilter.org
+		GPL
+		Source Code
+[kmod-ipsec-alg]
+       	kmod-ipsec-alg
+       	http://www.kernel.org
+       	GPL
+       	Source Code
+[kmod-ipv6-cone]
+		kmod-ipv6-cone
+		DNI
+		DNI
+		Binary
+[kmod-kcode]
+		kmod-kcode
+		kcode
+		kcode
+		Binary
+[kmod-l2tp]
+		linux-2.6.31
+		http://www.kernel.org
+		GPL
+		Source Code
+[kmod-nat2.5]
+		kmod-nat2.5
+		DNI
+		DNI
+		Binary
+[kmod-netgear-reject]
+		kmod-netgear-reject
+		http://www.netfilter.org
+		GPL
+		Source Code
+[kmod-pptp]
+		linux-2.6.31
+		http://www.kernel.org
+		GPL
+		Source Code
+[kmod-pptp-alg]
+		netfilter
+		http://www.netfilter.org
+		GPL
+		Source Code
+[kmod-spiadvdos]
+		kmod-spiadvdos
+		DNI
+		DNI
+		Binary
+[kmod-spidos]
+		kmod-spidos
+		DNI
+		DNI
+		Binary
+[kmod-starcraft]
+		kmod-starcraft
+		DNI
+		DNI
+		Binary
+[kmod-trigger]
+		netfilter
+		http://www.netfilter.org
+		GPL
+		Source Code
+[kmod-urlblock]
+		kmod-urlblock
+		DNI
+		DNI
+		Binary

@@ -1,0 +1,13 @@
+Annapurna Labs CPU resume registers
+
+Properties:
+- compatible : Should contain "annapurna-labs,al-cpu-resume".
+- reg : Offset and length of the register set for the device
+
+Example:
+
+cpu_resume {
+	compatible = "annapurna-labs,al-cpu-resume";
+	reg = <0xfbff5ed0 0x30>;
+};
+

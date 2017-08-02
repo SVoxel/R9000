@@ -1,0 +1,45 @@
+AL-Boot - Annapurna Labs Boot Code - version 1.65.1
+
+=======================================================================
+Overview
+=======================================================================
+The Annapurna Labs boot code release (AL-Boot) includes all that is required
+for fully or partially building the boot image.
+Please refer to Annapurna Labs wiki pages to become familiar with the
+Annapurna Labs boot sequence, boot flash image, and AL-Boot usage.
+
+=======================================================================
+Package Contents
+=======================================================================
+src/
+   full_patch/
+      0001-AL-Annapurna-Labs-Alpine-DB-Support.patch	U-Boot full patch based on the mainline
+      							(Not including the HAL)
+   HAL/							HAL to be used for building U-Boot
+input/
+   alpine_db.dts					Alpine DB Device Tree source (2xSATA sample)
+   alpine_db_pcie.dts					Alpine DB Device Tree source (2xPCIe sample)
+   alpine.dtsi						Device Tree include file
+   skeleton64.dtsi					Device Tree include file
+   preboot.fimg						Pre-boot binary
+   boot_mode						Boot mode
+   uboot_script_init.script				U-Boot initialization script (sample)
+recovery/						Recovery binaries & tools
+   stage3.bin						Pre-boot stage 3 binary for recovery
+   stage2_xmodem_eth3_ram_loader.img			Pre-boot stage 2 binary for recovery
+   stage2.5_xmodem_loader.img				Pre-boot stage 2.5 binary for recovery
+   boot_image_create.sh					Recovery image aid tool
+alpine_db_bin/						Binary files for Alpine DB
+dev-tools/
+   flash_contents/
+      scripts/
+         alpine_db_spi_main/
+	    create.sh					Alpine DB image creation script (sample)
+      flash_img_create					Flash image generation tool (source)
+      flash_img_obj_create				Flash image object generation tool (source)
+      flash_img_print					Flash image info print tool (source)
+RELEASE_NOTES						Release notes
+README							This file
+LICENSE							License terms
+release_test.sh						Release test script
+

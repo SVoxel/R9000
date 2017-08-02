@@ -1,0 +1,193 @@
+# !/bin/sh
+
+IsFirsttime=1
+eth1_last_Tx=0
+eth1_last_Rx=0
+eth2_last_Tx=0
+eth2_last_Rx=0
+
+while [ 1 ] 
+do
+	echo "-----------------------------------"
+	echo lacp status : `/usr/sbin/bond-show 2`
+	
+	eth1_Tx=`ifconfig eth1 | grep "TX bytes" | awk -F ':' '{print $3}' | grep -Eo '[0-9]+'`
+	eth1_Rx=`ifconfig eth1 | grep "RX bytes" | awk -F ':' '{print $2}' | grep -Eo '[0-9]+'`
+	eth2_Tx=`ifconfig eth1 | grep "TX bytes" | awk -F ':' '{print $3}' | grep -Eo '[0-9]+'`
+	eth2_Rx=`ifconfig eth1 | grep "RX bytes" | awk -F ':' '{print $2}' | grep -Eo '[0-9]+'`
+	
+	lan1_mib=`/sbin/ssdk_sh_id 0 mib statistics get 2 | grep -E "TxByte|RxGoodByte"`
+	lan2_mib=`/sbin/ssdk_sh_id 0 mib statistics get 1 | grep -E "TxByte|RxGoodByte"`
+	lan3_mib=`/sbin/ssdk_sh_id 1 mib statistics get 4 | grep -E "TxByte|RxGoodByte"`
+	lan4_mib=`/sbin/ssdk_sh_id 1 mib statistics get 3 | grep -E "TxByte|RxGoodByte"`
+	lan5_mib=`/sbin/ssdk_sh_id 1 mib statistics get 2 | grep -E "TxByte|RxGoodByte"`
+	lan6_mib=`/sbin/ssdk_sh_id 1 mib statistics get 1 | grep -E "TxByte|RxGoodByte"`
+	
+	switchA_trunk1_mib=`/sbin/ssdk_sh_id 0 mib statistics get 4 | grep -E "TxByte|RxGoodByte"`
+	switchA_trunk2_mib=`/sbin/ssdk_sh_id 0 mib statistics get 6 | grep -E "TxByte|RxGoodByte"`
+	switchA_trunk3_mib=`/sbin/ssdk_sh_id 0 mib statistics get 0 | grep -E "TxByte|RxGoodByte"`
+	switchA_trunk4_mib=`/sbin/ssdk_sh_id 0 mib statistics get 5 | grep -E "TxByte|RxGoodByte"`
+	
+	switchB_trunk1_mib=`/sbin/ssdk_sh_id 1 mib statistics get 0 | grep -E "TxByte|RxGoodByte"`
+	switchB_trunk2_mib=`/sbin/ssdk_sh_id 1 mib statistics get 5 | grep -E "TxByte|RxGoodByte"`
+
+	lan1_TxByte=`echo $lan1_mib |awk -F "<" '{print $5}'| awk -F ">" '{print $1}'`
+	lan1_RxByte=`echo $lan1_mib |awk -F "<" '{print $2}'| awk -F ">" '{print $1}'`
+	lan2_TxByte=`echo $lan2_mib |awk -F "<" '{print $5}'| awk -F ">" '{print $1}'`
+	lan2_RxByte=`echo $lan2_mib |awk -F "<" '{print $2}'| awk -F ">" '{print $1}'`
+	#echo $lan2_mib
+	#echo "lan2_TxByte : $lan2_TxByte "
+	#echo "lan2_RxByte : $lan2_RxByte "
+	lan3_TxByte=`echo $lan3_mib |awk -F "<" '{print $5}'| awk -F ">" '{print $1}'`
+	lan3_RxByte=`echo $lan3_mib |awk -F "<" '{print $2}'| awk -F ">" '{print $1}'`
+	lan4_TxByte=`echo $lan4_mib |awk -F "<" '{print $5}'| awk -F ">" '{print $1}'`
+	lan4_RxByte=`echo $lan4_mib |awk -F "<" '{print $2}'| awk -F ">" '{print $1}'`
+	lan5_TxByte=`echo $lan5_mib |awk -F "<" '{print $5}'| awk -F ">" '{print $1}'`
+	lan5_RxByte=`echo $lan5_mib |awk -F "<" '{print $2}'| awk -F ">" '{print $1}'`
+	lan6_TxByte=`echo $lan6_mib |awk -F "<" '{print $5}'| awk -F ">" '{print $1}'`
+	lan6_RxByte=`echo $lan6_mib |awk -F "<" '{print $2}'| awk -F ">" '{print $1}'`
+	
+	switchA_tunk1_TxByte=`echo $switchA_trunk1_mib |awk -F "<" '{print $5}'| awk -F ">" '{print $1}'`
+	switchA_tunk1_RxByte=`echo $switchA_trunk1_mib |awk -F "<" '{print $2}'| awk -F ">" '{print $1}'`
+	switchA_tunk2_TxByte=`echo $switchA_trunk2_mib |awk -F "<" '{print $5}'| awk -F ">" '{print $1}'`
+	switchA_tunk2_RxByte=`echo $switchA_trunk2_mib |awk -F "<" '{print $2}'| awk -F ">" '{print $1}'`
+	switchA_tunk3_TxByte=`echo $switchA_trunk3_mib |awk -F "<" '{print $5}'| awk -F ">" '{print $1}'`
+	switchA_tunk3_RxByte=`echo $switchA_trunk3_mib |awk -F "<" '{print $2}'| awk -F ">" '{print $1}'`
+	switchA_tunk4_TxByte=`echo $switchA_trunk4_mib |awk -F "<" '{print $5}'| awk -F ">" '{print $1}'`
+	switchA_tunk4_RxByte=`echo $switchA_trunk4_mib |awk -F "<" '{print $2}'| awk -F ">" '{print $1}'`
+	
+	switchB_tunk1_TxByte=`echo $switchB_trunk1_mib |awk -F "<" '{print $5}'| awk -F ">" '{print $1}'`
+	switchB_tunk1_RxByte=`echo $switchB_trunk1_mib |awk -F "<" '{print $2}'| awk -F ">" '{print $1}'`
+	switchB_tunk2_TxByte=`echo $switchB_trunk2_mib |awk -F "<" '{print $5}'| awk -F ">" '{print $1}'`
+	switchB_tunk2_RxByte=`echo $switchB_trunk2_mib |awk -F "<" '{print $2}'| awk -F ">" '{print $1}'`
+
+	if [ "$IsFirsttime" != "1" ]; then
+	
+	let "eth1_Tx_speed=$(($((eth1_Tx-eth1_last_Tx))/10))"
+	let "eth1_Rx_speed=$(($((eth1_Rx-eth1_last_Rx))/10))"
+	let "eth2_Tx_speed=$(($((eth1_Tx-eth2_last_Tx))/10))"
+	let "eth2_Rx_speed=$(($((eth1_Rx-eth2_last_Rx))/10))"
+	
+	# let "C=$(($((B-A))/5))"  OR let C=$(($((B-A))/5))
+	
+	let "lan1_Tx_speed=$((lan1_TxByte))/10"
+	let "lan1_Rx_speed=$((lan1_RxByte))/10"
+	let "lan2_Tx_speed=$((lan2_TxByte))/10"
+	let "lan2_Rx_speed=$((lan2_RxByte))/10"
+	let "lan3_Tx_speed=$((lan3_TxByte))/10"
+	let "lan3_Rx_speed=$((lan3_RxByte))/10"
+	let "lan4_Tx_speed=$((lan4_TxByte))/10"
+	let "lan4_Rx_speed=$((lan4_RxByte))/10"
+	let "lan5_Tx_speed=$((lan5_TxByte))/10"
+	let "lan5_Rx_speed=$((lan5_RxByte))/10"
+	let "lan6_Tx_speed=$((lan6_TxByte))/10"
+	let "lan6_Rx_speed=$((lan6_RxByte))/10"
+	
+	let "switchA_tunk1_Tx_speed=$((switchA_tunk1_TxByte))/10"
+	let "switchA_tunk1_Rx_speed=$((switchA_tunk1_RxByte))/10"
+	let "switchA_tunk2_Tx_speed=$((switchA_tunk2_TxByte))/10"
+	let "switchA_tunk2_Rx_speed=$((switchA_tunk2_RxByte))/10"
+	let "switchA_tunk3_Tx_speed=$((switchA_tunk3_TxByte))/10"
+	let "switchA_tunk3_Rx_speed=$((switchA_tunk3_RxByte))/10"
+	let "switchA_tunk4_Tx_speed=$((switchA_tunk4_TxByte))/10"
+	let "switchA_tunk4_Rx_speed=$((switchA_tunk4_RxByte))/10"
+
+	let "switchB_tunk1_Tx_speed=$((switchB_tunk1_TxByte))/10"
+	let "switchB_tunk1_Rx_speed=$((switchB_tunk1_RxByte))/10"
+	let "switchB_tunk2_Tx_speed=$((switchB_tunk2_TxByte))/10"
+	let "switchB_tunk2_Rx_speed=$((switchB_tunk2_RxByte))/10"
+	
+	echo "-------------- debug  -----------------"
+	echo "eth1_Tx_Bytes : $eth1_Tx bytes eth1_Tx_speed : $eth1_Tx_speed byte/s"
+	echo "eth2_Tx_Bytes : $eth2_Tx bytes eth2_Tx_speed : $eth2_Tx_speed byte/s"
+	echo "eth1_Rx_Bytes : $eth1_Rx bytes eth1_Rx_speed : $eth1_Rx_speed byte/s"
+	echo "eth2_Rx_Bytes : $eth2_Rx bytes eth2_Rx_speed : $eth2_Rx_speed byte/s"
+	
+	echo "lan1_TxByte : `echo $((lan1_TxByte))` bytes  Speed $lan1_Tx_speed byte/s"
+	echo "lan1_RxByte : `echo $((lan1_RxByte))` bytes  Speed $lan1_Rx_speed byte/s"
+	echo "lan2_TxByte : `echo $((lan2_TxByte))` bytes  Speed $lan2_Tx_speed byte/s"
+	echo "lan2_RxByte : `echo $((lan2_RxByte))` bytes  Speed $lan2_Rx_speed byte/s"
+	echo "lan3_TxByte : `echo $((lan3_TxByte))` bytes  Speed $lan3_Tx_speed byte/s"
+	echo "lan3_RxByte : `echo $((lan3_RxByte))` bytes  Speed $lan3_Rx_speed byte/s"
+	echo "lan4_TxByte : `echo $((lan4_TxByte))` bytes  Speed $lan4_Tx_speed byte/s"
+	echo "lan4_RxByte : `echo $((lan4_RxByte))` bytes  Speed $lan4_Rx_speed byte/s"
+	echo "lan5_TxByte : `echo $((lan5_TxByte))` bytes  Speed $lan5_Tx_speed byte/s"
+	echo "lan5_RxByte : `echo $((lan5_RxByte))` bytes  Speed $lan5_Rx_speed byte/s"
+	echo "lan6_TxByte : `echo $((lan6_TxByte))` bytes  Speed $lan6_Tx_speed byte/s"
+	echo "lan6_RxByte : `echo $((lan6_RxByte))` bytes  Speed $lan6_Rx_speed byte/s"
+	
+	echo "------------- Port Between Switch -----------------"
+	echo "SwitchA_port1_TxByte : `echo $((switchA_tunk1_TxByte))` bytes  Speed $switchA_tunk1_Tx_speed byte/s"
+	echo "SwitchA_port1_RxByte : `echo $((switchA_tunk1_RxByte))` bytes  Speed $switchA_tunk1_Rx_speed byte/s"
+	echo "SwitchA_port2_TxByte : `echo $((switchA_tunk2_TxByte))` bytes  Speed $switchA_tunk2_Tx_speed byte/s"
+	echo "SwitchA_port2_RxByte : `echo $((switchA_tunk2_RxByte))` bytes  Speed $switchA_tunk2_Rx_speed byte/s"
+	
+	echo "SwitchB_port1_TxByte : `echo $((switchB_tunk1_TxByte))` bytes  Speed $switchB_tunk1_Tx_speed byte/s"
+	echo "SwitchB_port1_RxByte : `echo $((switchB_tunk1_RxByte))` bytes  Speed $switchB_tunk1_Rx_speed byte/s"
+	echo "SwitchB_port2_TxByte : `echo $((switchB_tunk2_TxByte))` bytes  Speed $switchB_tunk2_Tx_speed byte/s"
+	echo "SwitchB_port2_RxByte : `echo $((switchB_tunk2_RxByte))` bytes  Speed $switchB_tunk2_Rx_speed byte/s"
+	
+	echo "------------- Port To Ethernet -------------------"
+	echo "port1_TxByte : `echo $((switchA_tunk3_TxByte))` bytes  Speed $switchA_tunk3_Tx_speed byte/s"
+	echo "port1_RxByte : `echo $((switchA_tunk3_RxByte))` bytes  Speed $switchA_tunk3_Rx_speed byte/s"
+	echo "port2_TxByte : `echo $((switchA_tunk4_TxByte))` bytes  Speed $switchA_tunk4_Tx_speed byte/s"
+	echo "port2_RxByte : `echo $((switchA_tunk4_RxByte))` bytes  Speed $switchA_tunk4_Rx_speed byte/s"
+	
+	else
+	
+	echo "First time show debug infor ,No speed!"
+	
+	echo "eth1_Tx_Bytes : $eth1_Tx bytes"
+	echo "eth2_Tx_Bytes : $eth2_Tx bytes"
+	echo "eth1_Rx_Bytes : $eth1_Rx bytes"
+	echo "eth2_Rx_Bytes : $eth2_Rx bytes"
+	
+	echo "lan1_TxByte : `echo $((lan1_TxByte))` bytes"
+	echo "lan1_RxByte : `echo $((lan1_RxByte))` bytes"
+	echo "lan2_TxByte : `echo $((lan2_TxByte))` bytes"
+	echo "lan2_RxByte : `echo $((lan2_RxByte))` bytes"
+	echo "lan3_TxByte : `echo $((lan3_TxByte))` bytes"
+	echo "lan3_RxByte : `echo $((lan3_RxByte))` bytes"
+	echo "lan4_TxByte : `echo $((lan4_TxByte))` bytes"
+	echo "lan4_RxByte : `echo $((lan4_RxByte))` bytes"
+	echo "lan5_TxByte : `echo $((lan5_TxByte))` bytes"
+	echo "lan5_RxByte : `echo $((lan5_RxByte))` bytes"
+	echo "lan6_TxByte : `echo $((lan6_TxByte))` bytes"
+	echo "lan6_RxByte : `echo $((lan6_RxByte))` bytes"
+	
+	echo "------------ Port Between Switch -----------------"
+	echo "SwitchA_port1_TxByte : `echo $((switchA_tunk1_TxByte))` bytes"
+	echo "SwitchA_port1_RxByte : `echo $((switchA_tunk1_RxByte))` bytes"
+	echo "SwitchA_port2_TxByte : `echo $((switchA_tunk2_TxByte))` bytes"
+	echo "SwitchA_port2_RxByte : `echo $((switchA_tunk2_RxByte))` bytes"
+	
+	echo "SwitchB_port1_TxByte : `echo $((switchB_tunk1_TxByte))` bytes"
+	echo "SwitchB_port1_RxByte : `echo $((switchB_tunk1_RxByte))` bytes"
+	echo "SwitchB_port2_TxByte : `echo $((switchB_tunk2_TxByte))` bytes"
+	echo "SwitchB_port2_RxByte : `echo $((switchB_tunk2_RxByte))` bytes"
+	
+	echo "------------ Port To Ethernet -------------------"
+	echo "port1_TxByte : `echo $((switchA_tunk3_TxByte))` bytes"
+	echo "port1_RxByte : `echo $((switchA_tunk3_RxByte))` bytes"
+	echo "port2_TxByte : `echo $((switchA_tunk4_TxByte))` bytes"
+	echo "port2_RxByte : `echo $((switchA_tunk4_RxByte))` bytes"
+	fi
+	
+	IsFirsttime=0
+
+	eth1_last_Tx=$eth1_Tx
+	eth1_last_Rx=$eth1_Rx
+	eth2_last_Tx=$eth2_Tx
+	eth2_last_Rx=$eth2_Rx
+	
+	#echo "eth1 last Tx $eth1_last_Tx bytes"
+	#echo "eth2 last Tx $eth2_last_Tx bytes"
+	#echo "eth1 last Rx $eth1_last_Rx bytes"
+	#echo "eth2 last Rx $eth2_last_Rx bytes"
+	
+	#echo "num=`echo $((0xf))`"
+	
+sleep 10
+
+done
+

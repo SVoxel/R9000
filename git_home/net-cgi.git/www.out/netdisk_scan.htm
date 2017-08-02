@@ -1,0 +1,139 @@
+<% netdisk_scan() %>
+
+<HTML>
+<HEAD>
+<META http-equiv="content-type" content='text/html; charset=UTF-8'>
+<LINK rel="stylesheet" type="text/css" href="style/form2.css">
+</HEAD>
+<BODY bgcolor=#ffffff onLoad="loadvalue();">
+<style>
+.err_block{background-color:#F7D9D7;width:450px;height:100px; margin-left:150px;margin-top:150px}
+.err_msg{padding-top:40px; color:#CA5137; font-size:16;}
+.done_block{background-color:#D1EDD3;width:450px;height:150px; margin-left:150px;margin-top:150px}
+.done_msg{padding-top:30px; color:green;font-size:16;}
+</style>
+<script>
+var cloud_url="<% cat_file("/etc/drive_login_link") %>";
+function gotoBackup()
+{
+	//window.opener.location.href="Netdisk_setting.htm";
+	window.close();
+	//parent.location.href="Netdisk_setting.htm";
+}
+function gotoLogin()
+{
+	//window.opener.location.href="Netdisk_login.htm";
+	//window.close();
+	//parent.location.href="Netdisk_login.htm";
+	top.location.href=cloud_url;
+}
+
+function login_fail()
+{
+	document.getElementById("pls_wait_div").style.display="none";
+	document.getElementById("error_div").style.display="";
+	document.getElementById("done_div").style.display="none";
+	setTimeout("gotoLogin();",3000);
+}
+
+function loadvalue()
+{
+	var login_status=top.netdisk_status_frame.login_status;
+
+	if(login_status == "200")
+	{
+		document.getElementById("pls_wait_div").style.display="none";
+		document.getElementById("error_div").style.display="none";
+		document.getElementById("done_div").style.display="";
+		setTimeout("gotoBackup();",3000);
+	}
+	else if(login_status == "400")
+	{
+		document.getElementById("msg").innerHTML="$amz_bad";
+		login_fail();
+	}
+	else if(login_status == "401")
+	{
+		document.getElementById("msg").innerHTML="$amz_unauth";
+		login_fail();
+	}
+	else if(login_status == "403")
+	{
+		document.getElementById("msg").innerHTML="$amz_forbid";
+		login_fail();
+	}
+	else if(login_status == "404")
+	{
+		document.getElementById("msg").innerHTML="$amz_not_found";
+		login_fail();
+	}
+	else if(login_status == "405")
+	{
+		document.getElementById("msg").innerHTML="$amz_not_allow";
+		login_fail();
+	}
+	else if(login_status == "409")
+	{
+		document.getElementById("msg").innerHTML="$amz_conflict";
+		login_fail();
+	}
+	else if(login_status == "411")
+	{
+		document.getElementById("msg").innerHTML="Length Required! Please try agian.";
+		login_fail();
+	}
+	else if(login_status == "412")
+	{
+		document.getElementById("msg").innerHTML="Precondition Failed! Please try agian.";
+		login_fail();
+	}
+	else if(login_status == "429")
+	{
+		document.getElementById("msg").innerHTML="$amz_request";
+		login_fail();
+	}
+	else if(login_status == "500")
+	{
+		document.getElementById("msg").innerHTML="$amz_inter_err";
+		login_fail();
+	}
+	else if(login_status == "503")
+	{
+		document.getElementById("msg").innerHTML="$amz_serv_err";
+		login_fail();
+	}
+	else if(login_status == "0")
+	{
+		document.getElementById("msg").innerHTML="$amz_log_fail";
+		login_fail()                                                                                             ;
+	}
+	else
+	{
+		document.getElementById("pls_wait_div").style.display="";
+		document.getElementById("error_div").style.display="none";
+		document.getElementById("done_div").style.display="none";
+		setTimeout("loadvalue();",1000);
+	}
+}
+</script>
+
+<div id="error_div" style="display:none">
+<div class="big-corner-all err_block" align="center">
+<div class="err_msg" id="msg"></div>
+</div>
+</div>
+
+<div id="done_div" style="display:none">
+<div class="big-corner-all done_block" align="center">
+<div class="done_msg">$amz_log_succ_l<br>$amz_close </div>
+</div>
+</div>
+
+<div id="pls_wait_div" style="display:none">
+<div  align="center"><BR><BR><B>$amz_auth</B><BR><BR></div>
+<div class="waiting_img_div" align="center"><img src="image/wait30.gif" /></div>
+</div>
+<iframe name="netdisk_status_frame" src="netdisk_get_status.htm" allowtransparency="true" scrolling="no" frameborder="0" ></iframe>
+</BODY>
+</HTML>
+

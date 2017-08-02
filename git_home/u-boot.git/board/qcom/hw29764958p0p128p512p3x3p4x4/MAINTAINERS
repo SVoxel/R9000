@@ -1,0 +1,7 @@
+hw29764958P0P128P512P3X3P4X4 BOARD
+#M:      -
+S:      Maintained
+F:      board/qcom/hw29764958p0p128p512p3x3p4x4/
+F:      include/configs/hw29764958p0p128p512p3x3p4x4.h
+F:      configs/hw29764958p0p128p512p3x3p4x4_defconfig
+

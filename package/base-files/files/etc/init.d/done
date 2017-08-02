@@ -1,0 +1,62 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=95
+boot() {
+	# process user commands
+	[ -f /etc/rc.local ] && {
+		sh /etc/rc.local
+	}
+
+	# after DUT boot done, enable GRO
+	/usr/sbin/ethtool -K eth1 gro on
+	if [ "x$(/bin/config get factory_mode)" = "x1" ]; then
+		utelnetd_p=`pidof utelnetd`
+		if [ "x${utelnetd_p}" = "x" ]; then
+			/usr/sbin/utelnetd -d -i br0
+		fi
+		if [ "x$(/bin/config get factory_tt3)" = "x1" ]; then
+			ledcontrol -n usb1 -c amber -s on
+		fi
+	fi
+	# set leds to normal state
+	if [ "x$(/bin/config get factory_mode)" = "x1" ]; then
+		/sbin/power_led.sh &
+	else
+		/sbin/ledcontrol -n power -c green -s on
+	fi
+
+	led_option="$($CONFIG get led_blinking_setting)"
+	if [ "$led_option" = "0" ]; then
+		/sbin/ledcontrol -n option_blink -c green -s on
+	elif [ "$led_option" = "1" ]; then
+		/sbin/ledcontrol -n option_on -c green -s on
+	elif [ "$led_option" = "2" ]; then
+		/sbin/ledcontrol -n option_off -c green -s on
+	fi
+
+	telnetenable_pid=`pidof telnetenable`
+	utelnetd_pid=`pidof utelnetd`
+	if [ "x${telnetenable_pid}" != "x" -a "x${utelnetd_pid}" = "x" ]; then
+		echo "restart the daemon telnetenable for Thin client !!!"
+		/bin/kill -9 $telnetenable_pid
+		/usr/sbin/telnetenable
+	fi
+
+	/sbin/cmdftp restart &
+
+	# Start ipmac binding
+	/sbin/ip_mac start
+
+	# Set SFP+ Mode
+	/sbin/sfp_1G_mode > /dev/console
+
+	# Start Plex Media Server
+	/etc/plexmediaserver/cmdplexmediaserver start 1 &
+
+	# Start Plex Net retry 
+	/usr/sbin/plex_net_dev --remount &
+
+	rm -f /tmp/boot_status
+	echo "[R9000]***boot done***" > /dev/console
+}

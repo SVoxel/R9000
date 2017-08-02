@@ -1,0 +1,14 @@
+Annapurna Labs Cache Coherency Unit
+
+Properties:
+- compatible : Should contain "annapurna-labs,al-ccu".
+- reg : Offset and length of the register set for the device.
+- io_coherency : enable io-coherency (int, enabled if !=0)
+
+Example:
+
+ccu {
+	compatible = "annapurna-labs,al-ccu";
+	reg = <0x0 0xfb090000 0x0 0x10000>;
+	io_coherency = <1>;
+};

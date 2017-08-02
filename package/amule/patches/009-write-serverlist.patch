@@ -1,0 +1,67 @@
+diff -Nur aMule-2.3.1.old//src/ExternalConn.cpp aMule-2.3.1/src/ExternalConn.cpp
+--- aMule-2.3.1.old//src/ExternalConn.cpp	2012-06-19 12:03:21.179062529 -0400
++++ aMule-2.3.1/src/ExternalConn.cpp	2012-06-19 13:55:36.499064139 -0400
+@@ -1510,6 +1510,14 @@
+ 					break;
+ 				}
+ 				EC_DETAIL_LEVEL detail_level = request->GetDetailLevel();
++				size_t ser_size = theApp->serverlist->GetServerCount();
++				CServer * curr = theApp->serverconnect->GetCurrentServer();
++
++				wxString ss = CFormat(wxT("%d")) % ser_size;
++				response->AddTag(CECTag(EC_TAG_STRING, ss));
++				if(curr!=NULL)
++					response->AddTag(CEC_Server_Tag(curr, detail_level));
++				
+ 				std::vector<const CServer*> servers = theApp->serverlist->CopySnapshot();
+ 				for (
+ 					std::vector<const CServer*>::const_iterator it = servers.begin();
+diff -Nur aMule-2.3.1.old//src/TextClient.cpp aMule-2.3.1/src/TextClient.cpp
+--- aMule-2.3.1.old//src/TextClient.cpp	2012-06-19 12:03:21.179062529 -0400
++++ aMule-2.3.1/src/TextClient.cpp	2012-06-19 14:11:03.039064359 -0400
+@@ -901,18 +901,35 @@
+ 			}
+ 			break;
+ 		case EC_OP_SERVER_LIST:
+-			for (CECPacket::const_iterator it = response->begin(); it != response->end(); it++) {
+-				const CECTag &tag = *it;
+-				const CECTag *serverName = tag.GetTagByName(EC_TAG_SERVER_NAME);
+-				if (serverName) {
+-					wxString ip = tag.GetIPv4Data().StringIP();
+-					ip.Append(' ', 24 - ip.Length());
+-					s << ip << serverName->GetStringData() << wxT("\n");
++			{
++				std::fstream  fs;
++				fs.open("/tmp/emule_servers",ios::out|ios::trunc);
++				for (CECPacket::const_iterator it = response->begin(); it != response->end(); it++) {
++					const CECTag &tag = *it;
++					if(it ==  response->begin())
++					{
++						std::stringstream str;
++						wxString size = tag.GetStringData();	
++						str << size.mb_str()<<std::endl;
++						fs.write(str.str().c_str(),strlen(str.str().c_str()));	
++						continue;
++					}
++					const CECTag *serverName = tag.GetTagByName(EC_TAG_SERVER_NAME);
++					if (serverName) {
++						std::stringstream str;
++						wxString ip = tag.GetIPv4Data().StringIP();
++						ip.Append(' ', 24 - ip.Length());
++						s << ip << serverName->GetStringData() << wxT("\n");
++
++						str<<ip.mb_str()<<(serverName->GetStringData()).mb_str()<<std::endl;
++						fs.write(str.str().c_str(),strlen(str.str().c_str()));	
++					}
+ 				}
++				std::stringstream str;
++				str <<"0 "<<std::endl;
++				WriteFifo(str.str());
++				fs.close();
+ 			}
+-			{std::stringstream str;
+-			str <<"0 "<<std::endl;
+-			WriteFifo(str.str());}
+ 			break;
+ 		case EC_OP_STATSTREE:
+ 			s << StatTree2Text((CEC_StatTree_Node_Tag*)response->GetTagByName(EC_TAG_STATTREE_NODE), 0);

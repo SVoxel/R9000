@@ -1,0 +1,15 @@
+#! /bin/sh
+
+local sfp_mode="$(/bin/config get sfp_1G_mode)"
+
+if [ "$sfp_mode" = "1" ]; then
+	echo "SFP: Enable the Force 1G Mode"
+	echo 1 >  /sys/devices/soc.0/pcie-internal.3/pci0000:00/0000:00:00.0/force_1000_base_x
+	ifconfig eth0 down
+	ifconfig eth0 up
+else
+	echo "SFP: Disable the Force 1G Mode"
+	echo 0 >  /sys/devices/soc.0/pcie-internal.3/pci0000:00/0000:00:00.0/force_1000_base_x
+	ifconfig eth0 down
+	ifconfig eth0 up
+fi

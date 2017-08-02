@@ -1,0 +1,90 @@
+"Others","Printer",27
+"Network Bootloader","Desktop/Laptop",24
+"Linux","Desktop/Laptop",19
+"Others","Router",10
+"VxWorks","VoIP Phone",50
+"Others","VoIP Phone",50
+"Android","Smartphone",3
+"Linux","SmartTV",25
+"Network Boot Loader","Desktop/Laptop",24
+"Android","Android Device",2
+"Android","SmartTV",43
+"Android","Multimedia Device",8
+"Android","eBook Reader",2
+"Android","Tablet",4
+"ChromeOS","Desktop/Laptop",47
+"OpenBSD","Desktop/Laptop",37
+"Others","UPS",47
+"Others","Wireless Router",10
+"VxWorks","Wireless Router",5
+"Mac OS","Desktop/Laptop",22
+"Apple iOS","Smartphone",17
+"Apple iOS","Apple iOS Device",18
+"Apple iOS","Tablet",14
+"Apple iOS","SmartTV",41
+"Apple iOS","SmartWatch",54
+"Linux","IP Network Camera",9
+"Linux","VoIP Phone",50
+"Linux","Smart Switch",34
+"BeOS","Desktop/Laptop",47
+"Others","Wireless Access Point",7
+"Other","Multimedia Device",23
+"Cisco Native Unix","VoIP Phone",50
+"Cisco IOS","Wireless Access Point",7
+"Cisco IOS","Switch",34
+"Others","IP Network Camera",9
+"Linux","Multimedia Device",23
+"Others","Switch",34
+"Others","Wireless Controller",24
+"Others","Media Link Controller",47
+"Others","Miscellaneous",47
+"Others","Network Diagnostics",47
+"FreeBSD","Desktop/Laptop",37
+"FreeBSD","Thin Client",38
+"Others","Game Console",12
+"Wii system","Game Console",12
+"Haiku","Desktop/Laptop",47
+"Others","NAS",33
+"Windows","Desktop/Laptop",38
+"Windows","Game Console",12
+"Windows","Smartphone",32
+"Xbox","Game Console",12
+"Others","Scanner",30
+"Others","Video Conferencing",30
+"Others","VoIP Gateway",50
+"Others","DVR",11
+"Others","SmartTV",35
+"Linux","PDA",36
+"Others","Workstation",47
+"Solaris","Desktop/Laptop",37
+"Unix","Desktop/Laptop",37
+"OS/2 Warp","Desktop/Laptop",47
+"Others","Video Phone",50
+"Linux","Tablet",1
+"Linux","Game Console",12
+"XMB","Game Console",12
+"XMB","Multimedia Device",23
+"XMB","SmartTV",35
+"Android","Walkman",47
+"Symbian","Smartphone",32
+"BlackBerry","Smartphone",32
+"Others","Smartphone",32
+"Others","Phone",32
+"Others","SmartWatch",54
+"Bada","Smartphone",3
+"Tizen","Smartphone",3
+"Android","Wireless Access Point",40
+"Firefox OS","Smartphone",32
+"Firefox OS","Tablet",36
+"Others","Projector",47
+"Others","Multimedia Device",23
+"Linux","NAS",33
+"Linux","Wireless Router",10
+"Others","Wireless Lighting",47
+"Linux","DVR",11
+"Android","Desktop/Laptop",2
+"Android","SmartWatch",54
+"Others","eBook Reader",40
+"Oxygen","Smartphone",32
+"Linux","Thin Client",3
+"Others","Desktop/Laptop",3

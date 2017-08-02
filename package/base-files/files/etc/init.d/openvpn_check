@@ -1,0 +1,18 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=99
+start() {
+	local openvpn_cert=$($CONFIG get vpn_enable)
+	local cert_time=`cat /tmp/openvpn/client.crt |grep 'Not Before'|cut -d ":" -f 4|cut -d " " -f 2` 
+	local sys_time=2017
+	local sn_router=$(artmtd -r sn | grep sn: | sed 's/sn://g')
+	local sn_vpn=`cat /tmp/openvpn/cert.info`
+	if [ $cert_time -lt $sys_time ] || [ "$sn_router" != "$sn_vpn" ] && [ "x$openvpn_cert" = "x0" ];then
+		echo "1" > /tmp/vpn_on_updating
+		/bin/openvpn_cert_check &
+	fi
+	if [ $cert_time -lt $sys_time ] || [ "$sn_router" != "$sn_vpn" ] && [ "x$openvpn_cert" = "x1" ]; then
+		$CONFIG set openvpn_cert_update=1
+	fi
+}

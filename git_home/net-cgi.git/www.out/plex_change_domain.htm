@@ -1,0 +1,25 @@
+<% cfg_set("show_plex","1") %>
+<html>
+<head>
+</head>
+<script>
+var host= window.location.host;
+if(host.indexOf("www") != -1)
+{
+	if( host.indexOf("net") != -1)
+		top.location.href="http://www.routerlogin.com/index.htm";
+	else
+		top.location.href="http://routerlogin.net/index.htm";
+}
+else
+{
+	if(host.indexOf("net") != -1)
+		top.location.href="http://routerlogin.com/index.htm";
+	else
+		top.location.href="http://www.routerlogin.net/index.htm";
+}
+</script>
+<body>
+</body>
+</html>
+

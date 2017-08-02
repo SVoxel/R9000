@@ -1,0 +1,19 @@
+### Bug fix ####################################################################
+Unit [Bug Fix]: <Feature>: <Short informative description>
+
+<Bug implications>
+
+<Fix description>
+
+Fix-for: <change ID>
+################################################################################
+
+### API Change #################################################################
+Unit [API Change]: <Feature>: <Short informative description>
+
+<Change description>
+
+API changes:
+- func_1(uint32_t a) --> func_1a(uint32_t a, int b)
+################################################################################
+

@@ -1,0 +1,818 @@
+<% http_header("style/form2.css", "/funcs.js") %>
+<% body_header("", "plex_media.htm", "plex_media") %>
+<style>
+.old_fix_button{width: 100%; height: 30px; position: absolute; top: 20px; left: 0px; }
+.apply_bt, .cancel_bt, .cancel1_bt, .apply1_bt, .add_bt, .short_edit_bt, .delete_bt{ height: 22px; color: #f2f2f2; font-family: Arial; font-weight: Bold; font-size: 14px; background-color: transparent; border: none; cursor: pointer; padding-bottom: 2px; }
+.apply_bt{width: 128px; background: url(../image/buttons.gif) no-repeat top left; }
+.cancel_bt{width: 128px; background: url(../image/buttons.gif) no-repeat 0 -22px; }
+.cancel1_bt{width: 128px; background: url(../image/buttons1.gif) no-repeat -320px -330px; }
+.apply1_bt{width: 128px; background: url(../image/buttons1.gif) no-repeat -192px -330px; }
+.add_bt {width: 135px;background: url(../image/buttons.gif) no-repeat 0 -110px}
+.short_edit_bt {width: 150px;background: url(../image/buttons.gif) no-repeat -300px -67px}
+.delete_bt {width: 180px;background: url(../image/buttons.gif) no-repeat -129px 0}
+#plex_run_err{ font-size:1.2em; color:red; margin-left:20px; }
+.new_speed_test{ background-color:#6562AC; }
+.b_main_top_button{ width: 100%; overflow: auto; position: absolute; top: 60px; left: 0px; bottom: 30px;}
+.old_page_title{width: 100%; height: 20px; font: bold 17px arial; color: #9d98ff; position: absolute; top: 0px; left: 0px;}
+a{ color:#5bb6e5; cursor: pointer; }
+code_err { color:red; fond-size:1.2em; margin-left:20px; }
+#code_link a{ text-decoration:underline; font-size:1.3em; }
+#code_err{ color:red; margin-left:20px; fond-size:1.1em; }
+.reset_succ{ color:#70AD47; margin-left:50px; top:4px; position:relative; }
+.reset_fail{ color:red; margin-left:50px; top:4px; position:relative; }
+</style>
+<div class="old_page_title" id="page_title" style="display:none;">$plex_media_ser</div>
+<div class="old_fix_button">
+<TABLE width=100% border=0 cellpadding=0 cellspacing=2>
+<TR>
+	<TD nowrap colspan=2 align=center>
+	<script>
+		var master="<% cfg_get("http_loginname") %>";
+		if( master == "admin" )
+			document.write('<input class="cancel_bt" type="button" name="Cancel" value="$cancel_mark" onClick=\'location.href="plex_media.htm";\'> &nbsp;&nbsp;<input class="apply_bt" type="button" name="Apply" value="$apply_mark" onClick="return click_apply(document.forms[0])">');
+		else
+			document.write('<input class="cancel1_bt" type="button" name="Cancel" value="$cancel_mark" disabled> &nbsp;&nbsp;<input class="apply1_bt" type="button" name="Apply" value="$apply_mark" disabled>');
+	</script>
+	</TD>
+</TR>
+<script>
+	if(top.location.href.indexOf("adv_index.htm") == -1)
+		document.write('<tr><td colspan="2"><img src="/liteblue.gif" width="100%" height="12"></td></tr>');
+</script>
+</TABLE>
+</div>
+<div class="fix_adv_button" id="tab_img">
+<% table_header() %>
+<tr id="labels"><td colspan=2>
+	<script>
+		if(top.location.href.indexOf("adv_index.htm") != -1)
+		{
+			document.write('<div id="media_server" class="label_unclick" onclick="location.href=\'UPNP_media.htm\';"><div class="label_left"></div><div class="label_middle"><b><span>$media_server</span></b></div><div class="label_right"></div></div>');
+			document.write('<div id="wmm" class="label_click" style="cursor:pointer;" onclick="location.href=\'plex_media.htm\';"><div class="label_left"></div><div class="label_middle"><b><span>$plex_media_ser</span></b></div><div class="label_right"></div></div>');
+		}
+	</script>
+</td>
+</tr>
+</table>
+</div>
+<div id="main" class="main_top_button"> 
+<% refresh_timestamp("plex_media","plex_autoupdate","plex_sel_usb","plex_upgrade", "plex_reset", "plex_net_del") %>
+<% plex_check_auto() %>
+<% get_plex_pcode() %>
+<% start_netscan() %>
+<div style="position:absolute;width:100%;z-index:-999">
+	<table width="100%" border="0" cellpadding="0" cellspacing="3">
+		<tr>
+			<td width="70%" id="logo_left"></td>
+			<td width="30%"><img src="plex_logo_new.png" style="width:145px;float:right;margin-right:20px;"></td>
+		</tr>
+	</table>
+</div>
+<table width="100%" border="0" cellpadding="0" cellspacing="3">
+<script>
+<% list_usb_num() %>
+var month_str = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+var ts="<% cfg_get("plex_media") %>";
+var have_binary = <% plex_have_binary() %>;
+var plex_enable = "<% cfg_get("plexmediaserver_enable") %>";
+var auto_enable = "<% cfg_get("plex_auto_upgrade_enable")%>";
+var usb_change = "<% cfg_get("plex_library_change") %>";
+var usb_sel="";
+var usb_msg="";
+var cf = document.forms[0];
+var xmlhttp;
+var reset_status = "<% cat_file("/tmp/plex_reset_result") %>";
+<% echo_set("DNI", "/tmp/plex_reset_result") %>
+<% plex_list_netdev() %>
+
+function goto_pms()
+{
+	var url="http://routerlogin.net/plex";
+	window.open(url,'pms','resizable=1,scrollvars=yes,width=800,height=600,left=400,top=100').focus();
+}
+
+function sel_check()
+{
+	var cf= document.forms[0];
+	if(usb_change!="1" && cf.selectusb[0].checked == true)
+		location.href = 'plex_media.htm';
+	else
+	{
+		for(i=0; i<cf.selectusb.length; i++)
+		{
+			if(cf.selectusb[i].checked == true)
+			{
+				cf.hid_usb_sel.value = cf.selectusb[i].value;
+				break;
+			}
+		}
+		remove_msg();
+		if(plex_enable == "1")
+		{
+			var message='<table cellpadding=0 cellspacing=2  border=0>'+
+				'<tr><td colspan=3>$plex_restart</td></tr>'+
+				'<tr><td colspan=3 height="20px"></td></tr>'+
+			'</table>';
+			sAlert(message, function(){remove_msg();}, function(){
+				if(master == "admin")
+					cf.submit();
+				else
+					remove_msg();
+			}, 475, 1, "cancel/apply");
+		}
+		else
+			cf.submit();
+	}
+}
+
+function remove_msg()
+{
+	document.body.removeChild(document.getElementById("bgDiv"));//delete background div
+	document.getElementById("msgDiv").removeChild(document.getElementById("msgTitle"));//delete title
+	document.forms[0].removeChild(document.getElementById("msgDiv"));//delete warning
+}
+
+function select_device()
+{
+	var cf= document.forms[0];
+	cf.submit_flag.value="plex_sel_usb";
+	cf.action = "/apply.cgi?/plex_media.htm timestamp=" +ts;
+	sAlert(usb_sel, function(){remove_msg();}, function(){
+		if(master == "admin")
+			sel_check();
+		else
+			remove_msg();
+	}, 475, 1, "cancel/apply");
+}
+
+function plex_update()
+{
+	var cf= document.forms[0];
+	cf.submit_flag.value="plex_upgrade";
+	cf.action = "/apply.cgi?/plex_media.htm timestamp=" +ts;
+	if(master == "admin")
+		cf.submit();
+}
+
+function click_update()
+{
+	if(plex_enable == "1")
+	{
+		var message='<table cellpadding=0 cellspacing=2  border=0>'+
+			"<tr><td colspan=3>$plex_continue</td></tr>"+
+			'<tr><td colspan=3 height="20px"></td></tr>'+
+		'</table>';
+		sAlert(message, function(){remove_msg();}, function(){
+			if(master == "admin")
+				plex_update();
+			else
+				remove_msg();
+		}, 475, 1, "cancel/apply");
+	}
+	else
+		plex_update();
+}
+
+function refresh_plex_status()
+{
+	if ( xmlhttp.readyState == 4 && xmlhttp.status == 200 ) {
+		var xmlDoc = xmlhttp.responseXML;
+		var usbs = xmlDoc.getElementsByTagName("usb");
+		var plex_run = xmlDoc.getElementsByTagName("plexrun")[0].childNodes[0].nodeValue;
+		var net_sta = xmlDoc.getElementsByTagName("plexnet")[0].childNodes[0].nodeValue;
+		var i;
+		var sel_num;
+
+		for(var u = 1; u <= net_drive_num; u++) {
+			if(document.getElementById("net_img" + u)) {
+				if(net_sta[u-1] == "1")
+					document.getElementById("net_img" + u).src = "/image/nas_online.png";
+				else
+					document.getElementById("net_img" + u).src = "/image/nas_offline.png";
+			}
+		}
+
+		if(usbs.length == 0)
+		{
+			document.getElementById("plex_status").innerHTML='$plex_no_usb_con &nbsp;&nbsp;<input type="button" value="$plex_con_usb" class="new_greyspeed_test ui-corner-all" disabled/>';
+			document.getElementById("plex_status").style.color = "#ED7D31";
+			document.getElementById("plex_usb").innerHTML="$plex_not_found";
+			document.getElementById("plex_usb").style.color = "#ED7D31";
+			document.getElementById("plex_device").innerHTML='';
+			document.getElementById("usb_alerm").innerHTML = "";
+			//cf.enable_plex.disabled = true;
+			document.getElementById("reset_button").style.display = "none";
+			document.getElementById("plex_run").style.display = "none";
+			document.getElementById("start_alerm").style.display = "none";
+		}
+		else
+		{
+			//cf.enable_plex.disabled = false;
+			if(plex_enable == "1" && plex_run == "1")
+				document.getElementById("plex_status").innerHTML='$plex_usb_con &nbsp;&nbsp;<input type="button" value="$plex_open" name="start_plex" onclick="goto_pms();" class="new_speed_test ui-corner-all"/>';
+			else
+				document.getElementById("plex_status").innerHTML='$plex_usb_con &nbsp;&nbsp;<input type="button" value="$plex_open" name="start_plex" disabled class="new_greyspeed_test ui-corner-all"/>';
+			if(usb_change != "1"){
+				//document.getElementById("reset_button").style.display = "";
+			}else{
+				document.getElementById("reset_button").style.display = "none";
+				document.getElementById("plex_run").style.display = "none";
+			}
+			document.getElementById("plex_status").style.color = "#70AD47";
+			sel_num = parseInt(xmlDoc.getElementsByTagName("selusb")[0].childNodes[0].nodeValue,10);
+			var ids=xmlDoc.getElementsByTagName("id");
+			var paths=xmlDoc.getElementsByTagName("path");
+			var types=xmlDoc.getElementsByTagName("type");
+			var names=xmlDoc.getElementsByTagName("name");
+			var t_size=xmlDoc.getElementsByTagName("totalSize");
+			var f_size=xmlDoc.getElementsByTagName("freeSize");
+			var a_size=xmlDoc.getElementsByTagName("actualSize");
+			
+			if(names[sel_num].childNodes[0].nodeValue == "plex_device_name_null_mark")
+				usb_msg = 'USB'+(sel_num+1)+' , '+types[sel_num].childNodes[0].nodeValue+' , '+'$plex_total'+t_size[sel_num].childNodes[0].nodeValue+' , '+'$plex_free'+f_size[sel_num].childNodes[0].nodeValue;
+			else
+				usb_msg = 'USB'+(sel_num+1)+' , '+types[sel_num].childNodes[0].nodeValue+' , '+names[sel_num].childNodes[0].nodeValue+' , '+'$plex_total'+t_size[sel_num].childNodes[0].nodeValue+' , '+'$plex_free'+f_size[sel_num].childNodes[0].nodeValue;
+			var actual_size = a_size[sel_num].childNodes[0].nodeValue;
+			if(actual_size.indexOf("M") != -1 && parseInt(actual_size) < 200 && plex_enable == "1")
+			{
+				document.getElementById("usb_alerm").innerHTML = "$plex_200m_space";
+				document.getElementById("usb_alerm").style.color = "#f71c1c";
+			}
+			else if(((actual_size.indexOf("G") != -1 && parseInt(actual_size) < 5) || actual_size.indexOf("M") != -1) && plex_enable == "1")
+			{
+				document.getElementById("usb_alerm").innerHTML = "$plex_5g_space";
+				document.getElementById("usb_alerm").style.color = "#ED7D31";
+			}
+			else
+				document.getElementById("usb_alerm").innerHTML = "";
+
+			if(usbs.length > 0)
+			{
+				if(usbs.length > 1)
+					document.getElementById("plex_device").innerHTML='$plex_multi_usb &nbsp;&nbsp;&nbsp;<a class="button_link" onclick="select_device();" name="sel_device">$plex_change_cur</a>';
+				usb_sel='<table cellpadding=0 cellspacing=2  border=0>';
+				usb_sel += "<tr><td colspan=3><b>$plex_sel_usb</b></td></tr>";
+				usb_sel += '<tr><td colspan=3>&nbsp;</td></tr>'
+			
+				usb_sel=usb_sel+'<tr><td colspan=3><input type=radio name="selectusb" value="'+ids[sel_num].childNodes[0].nodeValue+','+paths[sel_num].childNodes[0].nodeValue+'" checked>'+usb_msg;
+			
+				for(i=0;i<usbs.length;i++)
+				{
+					if(i == sel_num)
+						continue;
+					else
+					{
+						usb_sel=usb_sel+'<tr><td colspan=3><input type=radio name="selectusb" value="'+ids[i].childNodes[0].nodeValue+','+paths[i].childNodes[0].nodeValue+'">';
+						if(names[i].childNodes[0].nodeValue == "plex_device_name_null_mark")
+							usb_sel=usb_sel+'USB'+(i+1)+' , '+types[i].childNodes[0].nodeValue+' , '+'$plex_total'+t_size[i].childNodes[0].nodeValue+' , '+'$plex_free'+f_size[i].childNodes[0].nodeValue+'</td></tr>';
+						else
+							usb_sel=usb_sel+'USB'+(i+1)+' , '+types[i].childNodes[0].nodeValue+' , '+names[i].childNodes[0].nodeValue+' , '+'$plex_total'+t_size[i].childNodes[0].nodeValue+' , '+'$plex_free'+f_size[i].childNodes[0].nodeValue+'</td></tr>';
+					}
+				}
+				usb_sel=usb_sel+'<tr><td colspan=3 height="20px"></td></tr>'+'</table>';
+				//if(usbs.length > 1)
+				//	usb_msg = '<input type="radio" disabled name="usbradio">'+usb_msg;
+			}
+			else
+				document.getElementById("plex_device").innerHTML='';
+			document.getElementById("plex_usb").innerHTML=usb_msg;
+			document.getElementById("plex_usb").style.color = "#70AD47";
+		}
+		var cur_ver = xmlDoc.getElementsByTagName("current")[0].childNodes[0].nodeValue;
+		var wan_access = xmlDoc.getElementsByTagName("wanstatus")[0].childNodes[0].nodeValue;
+		have_binary = xmlDoc.getElementsByTagName("havebinary")[0].childNodes[0].nodeValue;
+		document.getElementById("update_image").style.display = "none";
+		if(have_binary == 0)
+		{
+			document.getElementById("enable_text").innerHTML="$plex_down_enable";
+			document.getElementById("current_version").innerHTML='<b>$plex_cur_ver </b><span style="color:#ED7D31" id="curver_info">$email_none</span>';
+			if(document.forms[0].start_plex)
+			{
+				document.forms[0].start_plex.className = "new_greyspeed_test ui-corner-all";
+				document.forms[0].start_plex.disabled = true;
+			}
+			if(wan_access == "0")
+			{
+				document.getElementById("new_version").innerHTML="$plex_net_down";
+				//cf.enable_plex.disabled = true;
+				apply_control("disable");
+			}
+			else
+			{
+				//cf.enable_plex.disabled = false;
+				apply_control("enable");
+				document.getElementById("new_version").innerHTML='';
+
+				if(xmlDoc.getElementsByTagName("havenew")[0].childNodes[0].nodeValue == "1")
+				{
+					var new_name = xmlDoc.getElementsByTagName("newname")[0].childNodes[0].nodeValue;
+					var new_date = xmlDoc.getElementsByTagName("newdate")[0].childNodes[0].nodeValue;
+					var ver_1 = new_name.split("plexmediaserver-r9k-");
+					var ver_2 = ver_1[1].split("-armv7.tgz");
+					var date = new_date.split("-");
+					document.getElementById("new_version").innerHTML='<b>$plex_new </b><span style="color:#0070C0">'+ver_2[0]+'&nbsp;&nbsp;'+month_str[parseInt(date[1])]+' '+date[2]+', '+date[0]+'</span>';
+					document.getElementById("curver_info").style.color = "#ED7D31";
+				}
+				else if(xmlDoc.getElementsByTagName("havenew")[0].childNodes[0].nodeValue == "2")
+				{
+					document.getElementById("new_version").innerHTML = "$plex_very_ver";
+				}
+
+				var down_msg = '';
+				var binary_sta=xmlDoc.getElementsByTagName("status")[0].childNodes[0].nodeValue;
+				var percent=xmlDoc.getElementsByTagName("percent")[0].childNodes[0].nodeValue;
+
+				if(binary_sta == "1")
+				{
+					down_msg += '<span style="color:#70AD47">$plex_down_succ</span>';
+					setTimeout("location.href='plex_media.htm';", 5000);
+				}
+				else if(binary_sta == "0")
+				{
+					var errmsg=xmlDoc.getElementsByTagName("errmsg")[0].childNodes[0].nodeValue;
+					down_msg += '<a class="linktype" style="color:red">'+errmsg+'</a>';
+				}
+				else if(binary_sta == "2" || binary_sta == "3" || binary_sta == "4")
+				{
+					if(binary_sta == "2")
+						document.getElementById("update_tip").innerHTML = "$plex_checking"
+					else if(binary_sta == "3")
+						document.getElementById("update_tip").innerHTML = "$plex_downloading "+ percent + "%";
+					else
+						document.getElementById("update_tip").innerHTML = "$plex_upgrading";
+					down_msg += '<span>$plex_wait_down</span>';
+					document.getElementById("update_image").style.display = "";
+					//document.forms[0].enable_autoupdate.disabled = true;
+					//document.forms[0].enable_plex.disabled = true;
+					apply_control("disable");
+				}
+				document.getElementById("confirm_update").innerHTML = down_msg;
+			}
+		}
+		else if(xmlDoc.getElementsByTagName("curname")[0])
+		{
+			if(plex_enable == "1")
+			{
+				if(plex_run == "0" || plex_run == "3")
+				{
+					if(plex_run == "0"){
+						document.getElementById("plex_run").innerHTML = "$plex_rebuild_button";
+						document.getElementById("reset_button").style.display = "";
+						document.getElementById("plex_run").style.display = "";
+					}else{
+						document.getElementById("start_alerm").innerHTML = "$plex_apply_again";
+					}
+					if(usbs.length > 0)
+					{
+						document.forms[0].start_plex.className = "new_greyspeed_test ui-corner-all";
+						document.forms[0].start_plex.disabled = true;
+						document.forms[0].start_plex.value = "$plex_open"
+					}
+				}
+				else if(plex_run == "2")
+				{
+					document.getElementById("start_alerm").innerHTML = "$plex_not_ntp";
+					if(usbs.length > 0)
+					{
+						document.forms[0].start_plex.className = "new_greyspeed_test ui-corner-all";
+						document.forms[0].start_plex.disabled = true;
+						document.forms[0].start_plex.value = "$plex_check_int"
+					}
+				}
+				else if(usbs.length > 0)
+				{
+					document.getElementById("start_alerm").innerHTML = "";
+					document.forms[0].start_plex.className = "new_speed_test ui-corner-all";
+					document.forms[0].start_plex.disabled = false;
+					document.forms[0].start_plex.value = "$plex_open"
+				}
+			}
+			else
+				document.getElementById("start_alerm").innerHTML = "";
+			if((plex_run == "0" || plex_run == "2") && document.forms[0].start_plex)
+			{
+				document.forms[0].start_plex.className = "new_greyspeed_test ui-corner-all";
+				document.forms[0].start_plex.disabled = true;
+			}
+			document.getElementById("enable_text").innerHTML="$plex_enable";
+			var cur_name = xmlDoc.getElementsByTagName("curname")[0].childNodes[0].nodeValue;
+			var cur_date = xmlDoc.getElementsByTagName("curdate")[0].childNodes[0].nodeValue;
+			var ver_1 = cur_name.split("plexmediaserver-r9k-");
+			var ver_2 = ver_1[1].split("-armv7.tgz");
+			var date = cur_date.split("-");
+			document.getElementById("current_version").innerHTML='<b>$plex_cur_ver </b><span style="color:#70AD47" id="curver_info">'+ver_2[0]+'&nbsp;&nbsp;'+month_str[parseInt(date[1])]+' '+date[2]+', '+date[0]+'</span>';
+			if(wan_access == 0)
+				document.getElementById("new_version").innerHTML="$plex_net_down";
+			else
+			{
+				var update_sta=xmlDoc.getElementsByTagName("status")[0].childNodes[0].nodeValue;
+				var percent=xmlDoc.getElementsByTagName("percent")[0].childNodes[0].nodeValue;
+				if(xmlDoc.getElementsByTagName("havenew")[0].childNodes[0].nodeValue == "0" && update_sta == "-1")
+				{
+					document.getElementById("new_version").innerHTML='$plex_newest';
+					document.getElementById("confirm_update").innerHTML= "";
+				}
+				else
+				{
+					var new_name = xmlDoc.getElementsByTagName("newname")[0].childNodes[0].nodeValue;
+					var new_date = xmlDoc.getElementsByTagName("newdate")[0].childNodes[0].nodeValue;
+					var ver_1 = new_name.split("plexmediaserver-r9k-");
+					var ver_2 = ver_1[1].split("-armv7.tgz");
+					var date = new_date.split("-");
+					document.getElementById("new_version").innerHTML='<b>$plex_new </b><span style="color:#0070C0">'+ver_2[0]+'&nbsp;&nbsp;'+month_str[parseInt(date[1])]+' '+date[2]+', '+date[0]+'</span>';
+					document.getElementById("curver_info").style.color = "#ED7D31";
+					var update_msg = "";
+					if(update_sta == "-1" && cf.enable_autoupdate.checked == false)
+						update_msg = '<b>$plex_ask_up</b>&nbsp;&nbsp;&nbsp;&nbsp;<a class="button_link" onclick="click_update();" name="update">$plex_update_now</a>';
+					if(master != "admin")
+						update_msg = '<b>$plex_ask_up</b>&nbsp;&nbsp;&nbsp;&nbsp;<a class="button_link" style="color:grey;" name="update">$plex_update_now</a>';
+					else if(update_sta == "1")
+					{	
+						update_msg = '<a style="color:#70AD47">$plex_up_succ</a>';
+						setTimeout("this.location.href='plex_media.htm';", 7000);
+					}
+					else if(update_sta == "2" || update_sta == "3" || update_sta == "4")
+					{
+						if(update_sta == "2")
+							document.getElementById("update_tip").innerHTML = "$plex_checking";
+						else if(update_sta == "3")
+							document.getElementById("update_tip").innerHTML = "$plex_downloading "+ percent + "%";
+						else
+							document.getElementById("update_tip").innerHTML = "$plex_upgrading";
+						update_msg = '';
+						document.getElementById("update_image").style.display = "";
+						//document.forms[0].enable_autoupdate.disabled = true;
+					}
+					else if(update_sta == "0")
+					{
+						var errmsg=xmlDoc.getElementsByTagName("errmsg")[0].childNodes[0].nodeValue;
+						update_msg = '<a class="linktype" style="color:red">'+errmsg+'</a>';
+					}
+					document.getElementById("confirm_update").innerHTML=update_msg;
+				}
+			}
+		}
+		if(document.forms[0].start_plex)
+		{
+			if(master != "admin")
+			{
+				document.forms[0].start_plex.className = "new_greyspeed_test ui-corner-all";
+				document.forms[0].start_plex.disabled = true;
+			}
+		}
+	}
+}
+
+function check_usb_change()
+{
+	var message='<table cellpadding=0 cellspacing=2  border=0>'+
+			"<tr><td colspan=3>$plex_resel</td></tr>"+
+			'<tr><td colspan=3 height="20px"></td></tr>'+
+		'</table>';
+		sAlert(message, function(){remove_msg();}, function(){
+			remove_msg();
+			if(master == "admin")
+				select_device();
+		}, 475, 1, "cancel/apply");
+		
+}
+
+function send_http_request()
+{
+	xmlhttp.open("GET", "plex_status.xml", true);
+	xmlhttp.send();
+	setTimeout("send_http_request();", 10000);
+}
+
+function loadvalue()
+{
+	if(top.location.href.indexOf("adv_index.htm") == -1)
+	{
+		document.getElementById("tab_img").className = "";
+		document.getElementById("main").className = "b_main_top_button";
+		document.getElementById("page_title").style.display = "";
+	}
+	var cf=document.forms[0];
+	if(plex_enable == "1")
+		cf.enable_plex.checked = true;
+	else
+	{
+		cf.enable_plex.checked = false;
+		document.getElementById("enable_text").innerHTML="$plex_down_enable";
+	}
+		
+	if(auto_enable == "1")
+		cf.enable_autoupdate.checked =true;
+	else
+		cf.enable_autoupdate.checked =false;
+	
+	if ( window.XMLHttpRequest)
+		xmlhttp = new XMLHttpRequest();
+	else
+		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	xmlhttp.onreadystatechange = refresh_plex_status;
+	
+	xmlhttp.open("GET", "plex_status.xml", true);
+	xmlhttp.send();
+	setTimeout("send_http_request();", 10000);
+	
+	if(usb_change=="1" && usb_num > 0)
+		check_usb_change();
+
+	setTimeout('document.getElementById("logo_left").style.minWidth=Math.floor(document.body.offsetWidth*0.7)+"px"', 100);
+	
+	get_netdev_info()
+	setTimeout('get_netdev_info()', 6000);
+}
+
+function click_apply(cf)
+{
+	cf.submit_flag.value="plex_media";
+	cf.action = "/apply.cgi?/plex_media.htm timestamp=" +ts;
+
+	if(cf.enable_plex.checked ==true)
+		cf.hid_plex_enable.value="1";
+	else
+		cf.hid_plex_enable.value="0";
+
+	if(cf.enable_autoupdate.checked ==true)
+		cf.hid_plex_auto.value="1";
+	else
+		cf.hid_plex_auto.value="0";
+
+	cf.submit();
+}
+
+function apply_control(flag)
+{
+	var cf=document.forms[0];
+	if(flag == "disable" || master != "admin")
+	{
+		cf.Cancel.disabled = true;
+		cf.Apply.disabled = true;
+		cf.Cancel.className = "cancel1_bt";
+		cf.Apply.className = "apply1_bt";
+	}
+	else
+	{
+		cf.Cancel.disabled = false;
+		cf.Apply.disabled = false;
+		cf.Cancel.className = "cancel_bt";
+		cf.Apply.className = "apply_bt";
+	}
+}
+
+var code_http, net_http;
+if( window.XMLHttpRequest ) {
+	code_http = new XMLHttpRequest();
+	net_http = new XMLHttpRequest();
+}
+else {
+	code_http = new ActiveXObject("Microsoft.XMLHTTP");
+	net_http = new ActiveXObject("Microsoft.XMLHTTP");
+}
+function code_request()
+{
+	code_http.onreadystatechange = function() {
+		if( code_http.readyState == 4 && code_http.status == 200 ){
+			var code = code_http.responseText.replace(/\r\n/g, '').replace(/\n/g, '').replace(/\s/g, '');
+			var str = "";
+			if(code == "1")
+				str = "$amz_not_code";
+			else if(code == "2")
+				str = "$amz_net_err";
+			else if(code == "3")
+				str = "$amz_invalid";
+			else if(code == "4")
+				str = "$amz_any_err";
+			else if(code.length > 5)
+				str = code;
+			if(str != "" && str == code)
+			{
+				retry = 5;
+				var url = "https://plex.tv/subscription/new?plan=monthly&promo=netgear&code=" + str
+				try {
+					window.open(url,'plex_pass','resizable=1,scrollvars=yes').focus();
+				}
+				catch(err) {
+					document.getElementById("code_tip").innerHTML = "$plex_get_code_no_pop"
+					document.getElementById("code_link").innerHTML = " <a onclick=\"window.open('"+ url +"','plex_pass','resizable=1,scrollvars=yes')\">" + str + "</a>" + " $plex_code_to_pop";
+				}
+				clearTimeout(run);
+			}
+			else if(retry < 4 && /^[1-4]{1}$$/g.test(code))
+			{
+				clearTimeout(run);
+				document.getElementById("code_err").innerHTML = str;
+			}
+			else if(retry > 3)
+			{
+				clearTimeout(run);
+				document.getElementById("code_err").innerHTML = "$amz_any_err";
+			}
+		}
+	}
+}
+
+code_request();
+
+var retry = 0;
+var run;
+function interval_request()
+{
+	code_http.open("GET", "plex_code.txt", true);
+	code_http.send();
+	if(retry < 3)
+	{
+		run = setTimeout("interval_request()", 2000);
+		retry ++;
+	}
+	else
+		document.getElementById("code_err").innerHTML = "$amz_any_err";
+}
+
+function get_pcode()
+{
+	document.getElementById("code_err").innerHTML = ""
+	clearTimeout(run);
+	retry = 0;
+	interval_request();
+}
+
+function click_reset()
+{
+	var message='<table cellpadding=0 cellspacing=2  border=0>'+
+		"<tr><td colspan=3>$plex_rebuild_confirm</td></tr>"+
+		'<tr><td colspan=3 height="20px"></td></tr>'+
+		'</table>';
+	sAlert(message, function(){remove_msg();}, function(){
+		remove_msg();
+		if(master == "admin")
+		{
+			cf.action = "/apply.cgi?/plex_media.htm timestamp=" + ts;
+			cf.submit_flag.value = "plex_reset";
+			cf.submit();
+		}
+	}, 475, 1, "cancel/ok");
+}
+
+function get_netdev_info() {
+	net_http.onreadystatechange = function() {
+		if(net_http.readyState == 4 && net_http.status == 200) {
+			var info = eval('('+net_http.responseText+')');
+			if(info.device.length < 2)
+				return;
+			window.devList = info.device;
+			devList.pop();
+			for(var i=1; i<=net_drive_num; i++) {
+				var ch_mac = eval("net_drive" + i + "[1]");
+				for(var z in devList) {
+					if(ch_mac.toLowerCase() == devList[z].mac.toLowerCase()) {
+						document.getElementById("net_span"+i).innerHTML = devList[z].ip;
+					}
+				}
+			}
+		}
+	}
+	net_http.open("GET", "plex_netdev_info.htm", true);
+	net_http.send(null);
+}
+
+function export_edit_info() {
+	parent.window.plex_net_flag = "edit";
+	parent.window.plex_net_edit_info = eval("net_drive" + get_radio_value(cf.netdev_index));
+	parent.window.plex_net_edit_index = get_radio_value(cf.netdev_index);
+	document.location.href = "plex_network_drive.htm";
+}
+
+function delete_net_drive() {
+	var del_info = eval("net_drive" + get_radio_value(cf.netdev_index));
+	cf.hidden_net_mac.value = del_info[1];
+	cf.hidden_net_folder.value = del_info[2];
+	cf.action = "/apply.cgi?/plex_media.htm timestamp=" + ts;
+	cf.submit_flag.value = "plex_net_del";
+	cf.submit();
+}
+
+function add_net_drive() {
+	if(net_drive_num == 10) {
+		sAlert("$plex_max_nas");
+		return;
+	}
+	parent.window.plex_net_flag='add';
+	document.location.href='plex_net_scan.htm';
+}
+
+function get_radio_value(obj) {
+	if(typeof obj.value == "undefined") {
+		var valueObj = obj[0];
+	}
+	else {
+		var valueObj = obj;
+	}
+	if(typeof obj.length == "undefined") {
+		if(obj.checked == true)
+			return valueObj.value;
+	}
+	else {
+		if(obj[0].checked == true)
+			return valueObj.value;
+	}
+	for(var i = 1; i<obj.length; i++) {
+		if(obj[i].checked == true)
+			return obj[i].value;
+	}
+}
+</script>
+<input type=hidden name="hid_plex_enable" />
+<input type=hidden name="hid_plex_auto" />
+<input type=hidden name="hid_usb_sel" />
+<input type="hidden" name="hidden_net_mac">
+<input type="hidden" name="hidden_net_folder">
+<tr><td colspan=2><b>$plex_media_ser</b></td></tr>
+<tr><td colspan=2><b>$plex_tip</b></td></tr>
+<tr><td colspan=2>&nbsp;</td></tr>
+<tr><td colspan=2>
+	<input type="checkbox" name="enable_plex"><b id="enable_text">$plex_enable</b>
+</td>
+</tr>
+<tr><td colspan=2>&nbsp;</td></tr>
+<tr><td colspan="2"><b>$stalist_Status :</b>
+	<span id="plex_status"></span>
+</td></tr>
+<tr><td colspan=2><b style="visibility:hidden;">$stalist_Status :</b><span id="start_alerm" style="color:#ED7D31; font-size:1.2em;"></span></td></tr>
+<TR><TD colspan=2>&nbsp;</TD></TR>
+
+<TR><TD colspan=2 style="color:black; font-size:1.1em;"><span id="code_tip">$plex_get_code</span><span id="code_link"></span><span id="code_err"></span></TD></TR>
+
+<TR><TD colspan=2>&nbsp;</TD></TR>
+<TR><TD colspan=2 style="color:black; font-size:1.1em;">Product top support Articles: <a href="https://www.netgear.com/support/product/<% cfg_get("macro_host_name") %>.aspx" target="_blank"><% cfg_get("macro_host_name") %></a></TD></TR>
+
+<TR><TD colspan=2><img src="/liteblue.gif" width="100%" height="12"></TD></TR>
+<tr><td colspan=2><b>$plex_usb_media</b></td></tr>
+<tr><td colspan=2>&nbsp;</td></tr>
+<tr><td colspan=2>
+	<span id="plex_device"></span>
+</td></tr>
+<tr><td colspan=2><span>$plex_cur_usb</span><span id="plex_usb"></span></td></tr>
+<tr><td colspan=2><span style="visibility:hidden;">$plex_cur_usb</span><span id="usb_alerm" style="font-size:1.2em;"></span></td></tr>
+<tr><td colspan=2><span id="reset_button" style="position:relative; left:10px; top:4px; display:none;">
+	<input type="button" class="new_speed_test ui-corner-all" value="Rebuild Database" onclick="click_reset()" style="height:16px;"></span><span id='plex_run' style="color:#ED7D31;margin-left:30px;"></span>
+	<script>
+		if(reset_status == "0"){
+			sAlert("$plex_rebuild_success");
+		}else if(/^[1-4]{1}$/g.test(reset_status)){
+			sAlert("$plex_rebuild_fail");
+		}
+	</script>
+</td></tr>
+<TR><TD colspan=2><img src="/liteblue.gif" width="100%" height="12"></TD></TR>
+<tr><td colspan=2><b>$plex_nas_title</b></td></tr>
+<tr><td colspan=2>&nbsp;</td></tr>
+<script>
+	var first_net_sta = "<% list_netdev_status("first") %>";
+	for(var i=1; i<=net_drive_num; i++) {
+		var dev = eval("net_drive" + i);
+		var checkMsg;
+		i == 1? checkMsg = "checked" : checkMsg = "";
+		document.write('<tr><td colspan=2>');
+		document.write('<input type="radio" name="netdev_index" value="' + i + '"' + checkMsg + '>');
+		if(first_net_sta[i-1] == 1)
+			document.write('<img src="/image/nas_online.png" width="25px" id="net_img' + i + '"> ');
+		else
+			document.write('<img src="/image/nas_offline.png" width="25px" id="net_img' + i + '"> ');
+		document.write(dev[0] + ' (//<span id="net_span' + i + '">0.0.0.0</span>' + dev[2] + ')</td></tr>');
+	}
+	if(net_drive_num > 0)
+		document.write('<tr><td colspan=2>&nbsp;</td></tr>');
+</script>
+<tr><td colspan=2>
+	<input type="button" value="$add_mark" class="add_bt" onclick="add_net_drive()">&nbsp;&nbsp;
+	<input type="button" value="$edit_mark" class="short_edit_bt" onclick="export_edit_info()">&nbsp;&nbsp;
+	<input type="button" value="$delete_mark" class="delete_bt" onclick="delete_net_drive()">
+</td></tr>
+<TR><TD colspan=2><img src="/liteblue.gif" width="100%" height="12"></TD></TR>
+<tr><td colspan=2><b>$plex_ver_up</b></td></tr>
+<tr><td colspan=2>&nbsp;</td></tr>
+<tr>
+<td colspan=2>
+	<input type="checkbox" name="enable_autoupdate"><b>$plex_auto_up </b>
+</td>
+</tr>
+<tr><td colspan=2><span id="current_version" style="position:relative; left:20px; top:5px;"></span></td></tr>
+<tr><td colspan=2><span id="new_version" style="position:relative; left:20px; top:4px;"></span></td></tr>
+<tr><td colspan=2><span id="confirm_update" style="position:relative; left:20px; top:4px;"></span></td></tr>
+<tr><td colspan=2><span id="update_line"></span></td></tr>
+<tr><td colspan=2></td></tr>
+</table>
+<div id="update_image" style="text-align:center; display:none;">
+	<div style="position:relative; left:700px; top:-50px; width:150px;">
+		<div><img src="image/hourglass.gif" width="64px;"></div>
+		<div style="font-size:1.3em; font-weight:blod;" id="update_tip">$plex_updating</div>
+	</div>
+</div>
+</div>
+<% help_box("0", "_plex") %>
+</FORM>
+</BODY>
+</HTML>

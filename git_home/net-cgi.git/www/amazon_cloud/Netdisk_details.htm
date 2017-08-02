@@ -1,0 +1,59 @@
+<% http_header("style/form2.css") %>
+<body>
+<div class="qospage_title">Details</div>
+<div class="main_no_button">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" id="disk_error" style="display:none">
+<tr><td colspan="4">&nbsp;</td></tr>
+<TR class=table_header><TD nowrap >Name</TD><TD nowrap >Time</TD><TD nowrap >Size</TD><TD nowrap >errMsg</TD></TR>
+<% show_sync_detail() %>
+</table>
+<script>
+var errStr = "<% cfg_get("backup_error_other") %>";
+if(errStr == "no_space")
+	errStr = "$amz_not_space";
+else if(errStr == "invalid_folder")
+	errStr = "$amz_folder_invalid"
+else if(errStr == "quota_fail")
+	errStr = "$amz_no_quota"
+else if(errStr == "usb_ro")
+	errStr = "$amz_read_only"
+else if(errStr == "usb_access_fail")
+	errStr = "$amz_not_access"
+else if(errStr == "usb_no_chosen")
+	errStr = "$amz_not_disk"
+else if(errStr == "folder_no_chosen")
+	errStr = "$amz_not_folder"
+else if(errStr == "rootid_fail")
+	errStr = "$amz_no_rootid"
+else if(errStr == "children_fail")
+	errStr = "$amz_no_respon"
+else if(errStr == "dconflict_fail")
+	errStr = "$amz_failed_delete"
+else if(errStr == "createf_fail")
+	errStr = "$amz_failed_create"
+else if(errStr == "lstat_fail")
+	errStr = "$amz_failed_list"
+else if(errStr == "amz_no_internet")
+	errStr = "$amz_net_err"
+</script>
+<table width="100%" border="0" cellpadding="15px" cellspacing="0" id="other_error" style="display:none">
+<tr><td><script>document.write(errStr);</script></td></tr>
+</table>
+<% table_header() %>
+<TR><TD colspan=2 class="spliteline"></TD></TR>
+<tr><td colspan="2">&nbsp;</td></tr>
+<TR><TD colspan=2 align=center><input class="new_sel_dir ui-corner-all" type="button" name="close" value="  Close Window" onClick='window.close();'></TD></TR>  
+</table>
+<script>
+	var amazon_sync = "<% cfg_get("amazon_sync") %>";
+	if( amazon_sync == "-2" ||  amazon_sync == "-3" ){
+		document.getElementById("disk_error").style.display = "none";
+		document.getElementById("other_error").style.display = "";
+	}else{
+		document.getElementById("disk_error").style.display = "";
+		document.getElementById("other_error").style.display = "none";
+	}
+</script>
+</div>
+</BODY>
+</HTML>

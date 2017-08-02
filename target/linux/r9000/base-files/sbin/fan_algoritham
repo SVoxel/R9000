@@ -1,0 +1,59 @@
+#! /bin/sh
+
+stop()
+{
+#	kill `ps|grep fan_on_off|awk -F ' ' '{print $1}'|head -1`
+	ps -w|grep fan_on_off|grep -v grep|awk -F ' ' '{print $1}'|xargs kill -9 2>/dev/null
+}
+
+start()
+{
+	Temp_High_H=$(/bin/config get temp_high_h)
+	Temp_High_L=$(/bin/config get temp_high_l)
+	Temp_Low_H=$(/bin/config get temp_low_h)
+	Temp_Low_L=$(/bin/config get temp_low_l)
+	wlan_2g_high=$(/bin/config get wlan_2g_high)
+	wlan_2g_low=$(/bin/config get wlan_2g_low)
+	wlan_5g_high=$(/bin/config get wlan_5g_high)
+	wlan_5g_low=$(/bin/config get wlan_5g_low)
+	wig_tmac_high=$(/bin/config get wig_tmac_high)
+	wig_tmac_low=$(/bin/config get wig_tmac_low)
+	wig_tradio_high=$(/bin/config get wig_tradio_high)
+	wig_tradio_low=$(/bin/config get wig_tradio_low)
+	Fan_Speed=$(/bin/config get fan_speed)
+
+	# No uboot support or Hardware return
+	[ -d /sys/bus/i2c/drivers/g761 ] || return 
+	[ -d /sys/bus/i2c/drivers/g761/0-003e ] || return 
+
+	/sbin/fan_on_off $Temp_High_H $Temp_Low_L $wlan_2g_high $wlan_2g_low $wlan_5g_high $wlan_5g_low $wig_tmac_high $wig_tmac_low $wig_tradio_high $wig_tradio_low $Fan_Speed >/dev/console 2>&1 &
+
+	sleep 1
+
+	Current_fan_speed=$(cat /sys/bus/i2c/devices/0-003e/fan1_target)
+	
+	if [ $Current_fan_speed -gt 0 -a $Current_fan_speed -lt 2500 ] ;then
+		/bin/config set fan_speed=2000
+	elif [ $Current_fan_speed -gt 3600 ] ;then
+		/bin/config set fan_speed=4000
+	else
+		/bin/config set fan_speed=$Fan_Speed
+	fi
+}
+
+boot()
+{
+	start
+}
+
+restart()
+{
+	stop
+	start
+}
+
+case "$1" in
+	boot) boot;;
+	restart) restart;;
+	*) ;;
+esac

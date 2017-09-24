@@ -430,6 +430,16 @@ define Package/swap-utils/description
  contains: mkswap, swaplabel, swapon, swapoff
 endef
 
+define Package/taskset
+$(call Package/util-linux/Default)
+  TITLE:=Core utilities for embedded Linux
+  SUBMENU=schedutils
+endef
+
+define Package/taskset/description
+ Retrieve or set a processes's CPU affinity.
+endef
+
 define Package/uuidd
 $(call Package/util-linux/Default)
   TITLE:=UUID generation daemon
@@ -656,6 +666,11 @@ define Package/swap-utils/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/.libs/swap{on,off} $(1)/usr/sbin/
 endef
 
+define Package/taskset/install
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/taskset $(1)/usr/sbin/
+endef
+
 define Package/uuidd/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/.libs/uuidd $(1)/usr/sbin/
@@ -713,6 +728,7 @@ $(eval $(call BuildPackage,script-utils))
 $(eval $(call BuildPackage,setterm))
 $(eval $(call BuildPackage,sfdisk))
 $(eval $(call BuildPackage,swap-utils))
+$(eval $(call BuildPackage,taskset))
 $(eval $(call BuildPackage,uuidd))
 $(eval $(call BuildPackage,uuidgen))
 $(eval $(call BuildPackage,wall))

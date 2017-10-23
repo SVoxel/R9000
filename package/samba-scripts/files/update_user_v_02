@@ -28,6 +28,7 @@ echo "guest::10957:0:99999:7:::"                        >> $SMB_CONF_DIR/shadow
 # clear smbpasswd file
 echo -n ""	> $SMB_PASSWD_DIR
 
+(config get http_passwd; config get http_passwd) | /usr/sbin/smbpasswd root -a -s
 (config get http_passwd; config get http_passwd) | /usr/sbin/smbpasswd admin -a -s
 (echo -n ""; echo -n "") | /usr/sbin/smbpasswd guest -a -s
 

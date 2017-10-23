@@ -91,7 +91,7 @@ msgstr ""
 
 #: scanner.c:536
 msgid "Video"
-msgstr "Фильмы"
+msgstr "Видео"
 
 #: scanner.c:537
 msgid "All Video"

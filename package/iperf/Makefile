@@ -8,8 +8,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=iperf
-PKG_VERSION:=2.0.9
-PKG_VERSION_SUFFIX:=a
+PKG_VERSION:=2.0.10
+PKG_VERSION_SUFFIX:=
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)$(PKG_VERSION_SUFFIX).tar.gz
@@ -18,7 +18,7 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)$(PKG_VERSION_SUFFIX).tar.gz
 # conflicts with existing mirrored files.
 # PKG_SOURCE_URL:=@SF/iperf2
 PKG_SOURCE_URL:=http://mirror2.openwrt.org/sources
-PKG_MD5SUM:=351b018b71176b8cb25f20eef6a9e37c
+PKG_MD5SUM:=097cf0754bc1afa165975c06a91e6906
 
 PKG_MAINTAINER:=Felix Fietkau <nbd@nbd.name>
 PKG_LICENSE:=BSD-3-Clause

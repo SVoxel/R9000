@@ -1,3 +1,3 @@
 #!/bin/sh
 
-/sbin/ledcontrol -n wan -c green -s on
+/sbin/ledcontrol -n power -c green -s on

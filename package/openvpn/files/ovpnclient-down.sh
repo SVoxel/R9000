@@ -1,3 +1,3 @@
 #!/bin/sh
 
-/sbin/ledcontrol -n wan -c red -s on
+/sbin/ledcontrol -n upgrade -c green -s on

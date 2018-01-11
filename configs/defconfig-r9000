@@ -1272,6 +1272,8 @@ CONFIG_PACKAGE_zebra=y
 #
 # CONFIG_PACKAGE_sbsaved is not set
 # CONFIG_PACKAGE_irqbalance is not set
+CONFIG_PACKAGE_haveged=y
+CONFIG_PACKAGE_libhavege=y
 
 #
 # Web UI

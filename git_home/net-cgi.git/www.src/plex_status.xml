@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plexinfo>
+<% list_usb_xml() %>
+<% list_update_xml() %>
+	<havebinary><% plex_have_binary() %></havebinary>
+	<plexrun><% cfg_get("plex_process_run") %></plexrun>
+	<plexnet><% list_netdev_status() %></plexnet>
+</plexinfo>

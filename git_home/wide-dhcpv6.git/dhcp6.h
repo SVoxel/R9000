@@ -151,6 +151,19 @@ struct dhcp6_statefuladdr {	/* IA_NA */
 	struct in6_addr addr;
 };
 
+#ifdef NETGEAR_DHCPV6_OPTION16 
+struct dhcp6_option16 {
+	u_int32_t enterprise_no;
+	u_int16_t vendor_class_len;	
+	char vendor_class[1500];
+	//	struct  dhcp6_vbuf vendor_class_data;
+}__attribute__ ((__packed__));
+#endif
+
+struct dhcpv6_opt77 {
+	u_int16_t user_cls_len;
+	char user_cls_data[1500];
+}__attribute__ ((__packed__));
 /* Internal data structure */
 typedef enum { DHCP6_LISTVAL_NUM = 1,
 	       DHCP6_LISTVAL_STCODE, DHCP6_LISTVAL_ADDR6,
@@ -221,9 +234,10 @@ struct dhcp6_optinfo {
 #define relaymsg_len relay_msg.dv_len
 #define relaymsg_msg relay_msg.dv_buf
 
-	struct dhcp6_vbuf user_cls; /* user class */
-#define usercls_len user_cls.dv_len
-#define usercls_data user_cls.dv_buf
+	struct dhcpv6_opt77 opt77; /*User class*/
+//	struct dhcp6_vbuf user_cls; /* user class */
+//#define usercls_len user_cls.dv_len
+//#define usercls_data user_cls.dv_buf
 
 	struct dhcp6_vbuf ifidopt; /* Interface-id */
 #define ifidopt_len ifidopt.dv_len
@@ -236,7 +250,10 @@ struct dhcp6_optinfo {
 
 	int reconfig_flag; /* reconfig accept option flag */
 #endif
-
+#ifdef NETGEAR_DHCPV6_OPTION16
+	struct dhcp6_option16 opt16;
+	char auth_info[100];
+#endif
 	u_int authflags;
 #define DHCP6OPT_AUTHFLAG_NOINFO	0x1
 	int authproto;
@@ -433,6 +450,11 @@ struct dhcp6opt_auth {
 	u_int8_t dh6_auth_rdinfo[8];
 	/* authentication information follows */
 } __attribute__ ((__packed__));
+
+#ifdef NETGEAR_DHCPV6_OPTION16
+	char *dhcp6_duid_mac_addr;
+#endif
+
 
 enum { DHCP6_AUTHPROTO_UNDEF = -1, DHCP6_AUTHPROTO_DELAYED = 2,
        DHCP6_AUTHPROTO_RECONFIG = 3 };

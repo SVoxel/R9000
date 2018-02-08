@@ -350,16 +350,9 @@ service_stop()
 }
 
 
-if [ -f $USB_MAP_TABLE ];then 
-	sd=`echo $1 |cut -b 1-3`
-	usb_mount=$(sed -n "/,sd[a-o],$sd/p" $USB_MAP_TABLE)
-	if [ "x$usb_mount" != "x" ];then
-		mount_point=$(echo $usb_mount |awk -F"," '{print $2}')
-		mount_num=`echo $1 |cut -b 4-`
-		mount_part=$mount_point$mount_num
-	else
-		mount_part=$1
-	fi
+mount_point=$(mount |grep "/dev/$1" |grep "/mnt" |awk '{print $3}' |awk -F"/" '{print $4}')
+if [ "x$mount_point" != "x" ];then
+	mount_part=$mount_point
 else
 	mount_part=$1
 fi

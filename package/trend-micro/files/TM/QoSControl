@@ -5,11 +5,19 @@ LOGGER="/usr/bin/logger -s -p daemon.info -t TM_update"
 
 Trend_micro_enable=$($DNI_CONFIG get trend_micro_enable)
 
+Download_Type="https"
+
 update() {
 	local UPDATE_STATUS=0
-	$LOGGER "start to get info from ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/"
-	curl ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/ 2>/dev/null  > /tmp/Trend_Micro.db
+	$LOGGER "start to get info from $Download_Type://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/"
+	curl $Download_Type://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/ --connect-timeout 5 --retry 1  2>/dev/null  > /tmp/Trend_Micro.db
+	if [ $? -ne 0 ]; then
+		Download_Type="ftp"
+		$LOGGER "start to get info from $Download_Type://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/"
+		curl $Download_Type://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/ 2>/dev/null  > /tmp/Trend_Micro.db
+	fi
 	line=`cat /tmp/Trend_Micro.db | grep netgear-detection`
+
 	if [ "x$line" != "x" ] ; then
 		version=`echo $line |awk -F " " '{print $9}'`
 		cur_version=`cat /TM/database_versions | grep version | cut -d ":" -f 2`
@@ -19,7 +27,7 @@ update() {
 		local cur_vs2=`echo $cur_version | cut -d "." -f 2`
 		local old_date=`cat /TM/database_versions | grep update_data | cut -d ":" -f 2`
 		if [ $vs1 -gt $cur_vs1 ] || [ $vs1 -eq $cur_vs1 ] && [ $vs2 -gt $cur_vs2 ]; then
-			curl ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/$version -o /tmp/$version 2>/dev/null
+			curl $Download_Type://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/$version -o /tmp/$version 2>/dev/null
 			if [ "$?" = "0" ]; then
 				[ "$Trend_micro_enable" = "1" ] && shutdown
 				unzip -o /tmp/$version -d /tm_pattern/
@@ -35,7 +43,7 @@ update() {
 				UPDATE_STATUS=0
 			else
 				UPDATE_STATUS=100
-				$LOGGER "fail to download ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/$version.zip"
+				$LOGGER "fail to download $Download_Type://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/$version.zip"
 			fi
 		else
 			UPDATE_STATUS=11

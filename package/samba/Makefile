@@ -19,7 +19,7 @@ PKG_INSTALL_DIR:=$(PKG_BUILD_DIR)/ipkg-install
 
 include $(INCLUDE_DIR)/package.mk
 
-TARGET_CFLAGS:=-O3 -pipe -mcpu=cortex-a15 -mfpu=neon-vfpv4 -mtune=cortex-a15 -mfloat-abi=hard -fhonour-copts
+TARGET_CFLAGS:=-O3 -pipe -mcpu=cortex-a15 -mfpu=neon-vfpv4 -funsafe-math-optimizations -mtune=cortex-a15 -mfloat-abi=hard -fhonour-copts
 
 define Package/samba
   SECTION:=net

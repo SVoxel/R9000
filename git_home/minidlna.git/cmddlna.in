@@ -210,6 +210,7 @@ get_usb_serial_num()
 		partition_num=`echo $1 | cut -c 3-`
 	fi
 	disk_scsi_id=`ls /sys/block/$disk_name/device/scsi_device* | awk -F: '{print $1}'`
+	last_id=`ls /sys/block/$disk_name/device/scsi_device* | awk -F: '{print $4}'`
 	cat /proc/scsi/usb-storage/$disk_scsi_id > /tmp/disk_scsi_info_dlna
 	while read LINE
         do
@@ -219,7 +220,11 @@ get_usb_serial_num()
                         break
                 fi
         done</tmp/disk_scsi_info_dlna
-	echo "$serial_num"_"$partition_num"
+	if [ "x$last_id" != "x" -a "x$last_id" != "x0" ]; then
+		echo "$serial_num$last_id"_"$partition_num"
+	else
+		echo "$serial_num"_"$partition_num"
+	fi
 }
 
 get_sd_card_serial_num()

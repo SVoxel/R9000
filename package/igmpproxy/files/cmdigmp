@@ -183,6 +183,30 @@ start() {
                         wan_ifname_upstream=$wan_ifname
         esac
 	
+	# Orange IPTV/VOD service with igmpproxy
+	echo "****** start Orange service with igmpproxy ******"
+	local enable_iptv=`config get enable_vlan`
+	local vlan_type=`config get vlan_type`
+	Enable_IPTV=0
+	if [ $vlan_type -eq 1 -a $enable_iptv -eq 1 ]; then
+		for i in 0 1 2 3 4 5 6 7 8 9 10; do
+			tv=`config get vlan_tag_$i`
+			[ -n "$tv" ] || continue
+			set - $(echo $tv)
+			# $1: enable, $2: name, $3: vid, $4: pri, $5:wports, $6:wlports
+			[ "$1" = "1" ] || continue
+			vlan_id=$3
+			if [ "$vlan_id" = "838" -o "$vlan_id" = "840" ]; then
+				Enable_IPTV=1
+			fi
+		done
+		if [ "$Enable_IPTV" = "1" ]; then
+			wan_ifname_upstream="brotv"
+			lan_ifname="br0"
+		fi
+	fi
+	echo "****** igmpproxy end ******"
+
 	echo "phyint $wan_ifname_upstream upstream  ratelimit 0  threshold 1" >> $CONFIG_FILE
 	echo "" >> $CONFIG_FILE
 

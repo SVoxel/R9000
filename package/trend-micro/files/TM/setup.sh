@@ -71,13 +71,13 @@ start)
 	test -c $dev || echo "...Creat $dev failed"
 	test -c $fwdev || echo "...Create $fwdev failed"
 
-	echo "Filter WAN bootp packets..."
-	chain=BWDPI_FILTER
-	iptables -t mangle -N $chain
-	iptables -t mangle -F $chain
-	iptables -t mangle -A $chain -i $dev_wan -p udp --sport 68 --dport 67 -j DROP
-	iptables -t mangle -A $chain -i $dev_wan -p udp --sport 67 --dport 68 -j DROP
-	iptables -t mangle -A PREROUTING -i $dev_wan -p udp -j $chain
+	#echo "Filter WAN bootp packets..."
+	#chain=BWDPI_FILTER
+	#iptables -t mangle -N $chain
+	#iptables -t mangle -F $chain
+	#iptables -t mangle -A $chain -i $dev_wan -p udp --sport 68 --dport 67 -j DROP
+	#iptables -t mangle -A $chain -i $dev_wan -p udp --sport 67 --dport 68 -j DROP
+	#iptables -t mangle -A PREROUTING -i $dev_wan -p udp -j $chain
 	# insmod QoS module
 	insmod cls_u32
 	insmod cls_fw

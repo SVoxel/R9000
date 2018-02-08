@@ -4,6 +4,7 @@ oc () { "$@" >> /dev/console 2>&1 ; } # stdout & stderr to /dev/console
 
 #plex_download_url="https://plex.tv/downloads/details/1?channel=0&build=linux-openwrt-armv7&distro=netgear"
 plex_download_url="ftp://updates1.netgear.com/sw-apps/plex/r9000/"
+plex_download_url_https="https://updates1.netgear.com/sw-apps/plex/r9000/"
 plex_version_name="*.*.*.*"
 plex_filter_name="plexmediaserver-r9k-"$plex_version_name"-armv7.tgz"
 plex_volume_name="plexmediaserver"
@@ -46,8 +47,14 @@ plex_check()
 	fi
     rm -rf $plex_check_result $plex_download_result $plex_upgrade_result 2>/dev/null
     rm -rf $plex_check_tmp $plex_check_tmp2 2>/dev/null
-    curl --insecure --connect-timeout 15 --keepalive-time 30 $plex_download_url"verify_binary.txt" -o $plex_check_tmp2 2>/dev/null 
+    curl --insecure --connect-timeout 30 --keepalive-time 30 --retry 1 $plex_download_url_https"verify_binary.txt" -o $plex_check_tmp2 2>/dev/null 
     plex_echo=`echo $?`
+    if [ $plex_echo -ne 0 ];then
+	curl --insecure --connect-timeout 30 --keepalive-time 30 $plex_download_url"verify_binary.txt" -o $plex_check_tmp2 2>/dev/null 
+	plex_echo=`echo $?`
+    else
+	plex_download_url=$plex_download_url_https
+    fi
     cat $plex_check_tmp2 | grep "$plex_filter_name" |awk -F "fileHash=\"" '{print $2}'> $plex_check_tmp
     if [ $plex_echo -eq 0 ];then
 		oc echo "plex check successful." 
@@ -500,7 +507,7 @@ plex_library_reset()
 	rm -rf /tmp/plex_reset_result
 	local plex_library_path=`config get plex_select_usb |awk -F"," '{print $2}'`
 	[ "x$plex_library_path" = "x" ] && echo "No selected Drive for plex,delete Library fail." && echo 1 > /tmp/plex_reset_result && return 1 
-	sd=`echo $plex_library_path | awk -F"/" '{print $4}'`
+	sd=`mount |grep "$plex_library_path" |grep "/dev/sd" |awk '{print $1}' |awk -F"/" '{print $3}'`
 	[ ! -d $plex_library_path -o "x`vol_id -u /dev/$sd 2>/dev/null`" = "x" ] && echo "Selected Drive not exist or USB Drive broken" && echo 2 > /tmp/plex_reset_result && return 1 
 	rm -rf $plex_library_path/Library/Application\ Support/Plex\ Media\ Server/Plug-in\ Support/Databases/ 2>/dev/null
 	if [ `echo $?` -eq 0 ];then

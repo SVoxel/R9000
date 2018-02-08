@@ -1,5 +1,5 @@
 /*	$KAME: common.c,v 1.129 2005/09/16 11:30:13 suz Exp $	*/
-/*
+/* 
  * Copyright (C) 1998 and 1999 WIDE Project.
  * All rights reserved.
  * 
@@ -1086,27 +1086,37 @@ int get_duid(idfile, duid, if_name, duid_type)
 	struct dhcp6opt_duid_type3 *dp3; /* for support the type3 DUID */
 	char tmpbuf[256];	/* DUID should be no more than 256 bytes */
 
-	if ((fp = fopen(idfile, "r")) == NULL && errno != ENOENT)
-		dprintf(LOG_NOTICE, FNAME, "failed to open DUID file: %s",
-		    idfile);
+	if (dhcp6_duid_mac_addr == NULL)
+	{
+		if ((fp = fopen(idfile, "r")) == NULL && errno != ENOENT)
+			dprintf(LOG_NOTICE, FNAME, "failed to open DUID file: %s",
+			    idfile);
 
-	if (fp) {
-		/* decode length */
-		if (fread(&len, sizeof(len), 1, fp) != 1) {
-			dprintf(LOG_ERR, FNAME, "DUID file corrupted");
-			goto fail;
-		}
-	} else {
-		int l;
+		if (fp) {
+			/* decode length */
+			if (fread(&len, sizeof(len), 1, fp) != 1) {
+				dprintf(LOG_ERR, FNAME, "DUID file corrupted");
+				goto fail;
+			}
+		} else {
+			int l;
 
-		if ((l = gethwid(tmpbuf, sizeof(tmpbuf), if_name, &hwtype)) < 0) {
-			dprintf(LOG_INFO, FNAME,
-			    "failed to get a hardware address");
-			goto fail;
+			if ((l = gethwid(tmpbuf, sizeof(tmpbuf), if_name, &hwtype)) < 0) {
+				dprintf(LOG_INFO, FNAME,
+				    "failed to get a hardware address");
+				goto fail;
+			}
+			len = l + ( duid_type == 3 ? sizeof(*dp3) : sizeof(*dp) );
 		}
-		len = l + ( duid_type == 3 ? sizeof(*dp3) : sizeof(*dp) );
 	}
-
+	else
+	{
+	 	int id_len = 6; //mac address only need 6 byte
+		duid_type = 3;
+	 	len = id_len + sizeof(*dp3);
+		sscanf(dhcp6_duid_mac_addr, "%02x:%02x:%02x:%02x:%02x:%02x", tmpbuf, tmpbuf+1, tmpbuf+2, tmpbuf+3, tmpbuf+4, tmpbuf+5);
+	}
+	
 	memset(duid, 0, sizeof(*duid));
 	duid->duid_len = len;
 	if ((duid->duid_id = (char *)malloc(len)) == NULL) {
@@ -1114,17 +1124,16 @@ int get_duid(idfile, duid, if_name, duid_type)
 		goto fail;
 	}
 
-	/* copy (and fill) the ID */
-	if (fp) {
+/* copy (and fill) the ID */
+	if ( (dhcp6_duid_mac_addr == NULL) && fp) {
 		if (fread(duid->duid_id, len, 1, fp) != 1) {
 			dprintf(LOG_ERR, FNAME, "DUID file corrupted");
 			goto fail;
 		}
-
 		dprintf(LOG_DEBUG, FNAME,
 		    "extracted an existing DUID from %s: %s",
 		    idfile, duidstr(duid));
-	} else {
+		} else {
 		if (duid_type == 3) {
 			dp3 = (struct dhcp6opt_duid_type3 *)duid->duid_id;
 			dp3->dh6_duid3_type = htons(3); /* type 3 */
@@ -1478,12 +1487,15 @@ dhcp6_clear_options(optinfo)
 	if (optinfo->relaymsg_msg != NULL)
 		free(optinfo->relaymsg_msg);
 
-	if (optinfo->usercls_data != NULL)
-		free(optinfo->usercls_data);
+//	if (optinfo->usercls_data != NULL)
+//		free(optinfo->usercls_data);
 
 	if (optinfo->ifidopt_id != NULL)
 		free(optinfo->ifidopt_id);
-
+#ifdef NETGEAR_DHCPV6_OPTION16
+//	if (optinfo->opt16_vendor_data != NULL)
+//		free(optinfo->opt16_vendor_data);
+#endif
 #ifdef NETGEAR_reconfig
 	if (optinfo->recmsg_msg != NULL)
 		free(optinfo->recmsg_msg);
@@ -1844,7 +1856,8 @@ dhcp6_get_options(p, ep, optinfo)
 				dprintf(LOG_INFO, FNAME,
 				    "unsupported authentication protocol: %d",
 				    *cp);
-				goto fail;
+			//	goto fail;
+				break;
 			}
 			break;
 		case DH6OPT_RAPID_COMMIT:
@@ -1853,10 +1866,12 @@ dhcp6_get_options(p, ep, optinfo)
 			optinfo->rapidcommit = 1;
 			break;
 		case DH6OPT_USER_CLASS:
-			if ((optinfo->usercls_data = malloc(optlen)) == NULL)
-				goto fail;
-			memcpy(optinfo->usercls_data, cp, optlen);
-			optinfo->usercls_len = optlen;
+			memcpy(optinfo->opt77.user_cls_data, cp, optlen);
+			optinfo->opt77.user_cls_len = strlen(cp);
+			//if ((optinfo->usercls_data = malloc(optlen)) == NULL)
+			//	goto fail;
+			//memcpy(optinfo->usercls_data, cp, optlen);
+			//optinfo->usercls_len = optlen;
 			break;
 		case DH6OPT_INTERFACE_ID:
 			if ((optinfo->ifidopt_id = malloc(optlen)) == NULL)
@@ -1864,6 +1879,18 @@ dhcp6_get_options(p, ep, optinfo)
 			memcpy(optinfo->ifidopt_id, cp, optlen);
 			optinfo->ifidopt_len = optlen;
 			break;
+#ifdef NETGEAR_DHCPV6_OPTION16
+		case DH6OPT_VENDOR_CLASS:
+		//	memcpy(&val32, cp, sizeof(val32));
+		//	val32 = ntohl(val32);
+		//	optinfo->opt16_enterprise_no = val32;
+		//	cp += sizeof(val32);
+		//	optinfo->opt16_vendor_len = optlen - sizeof(val32);
+		//	if((optinfo->opt16_vendor_data = malloc(optinfo->opt16_vendor_len)) == NULL )
+		//		goto fail;
+		//	memcpy(optinfo->opt16_vendor_data, cp, optinfo->opt16_vendor_len);
+			break;
+#endif
 #ifdef NETGEAR_reconfig
 		case DH6OPT_RECONF_MSG:
 			if ((optinfo->recmsg_msg = malloc(optlen)) == NULL)
@@ -2462,6 +2489,34 @@ dhcp6_set_options(type, optbp, optep, optinfo)
 		}
 	}
 
+#ifdef NETGEAR_DHCPV6_OPTION16
+	if (strlen(optinfo->auth_info))
+	{
+		 struct dhcp6opt_auth *auth = NULL;   
+		 int authlen = 0;
+		 char *authinfo = NULL;
+
+		 authlen = sizeof(*auth); 
+		 authlen += strlen(optinfo->auth_info);  
+		 if ((auth = malloc(authlen)) == NULL)  
+		 {
+		 	goto fail;
+		 }
+		 memset(auth, 0, authlen); 
+		 auth->dh6_auth_proto = 0;  
+		 auth->dh6_auth_alg = 0; 
+		 auth->dh6_auth_rdm = 0;
+		 authinfo = (char *)(auth + 1);
+		 memcpy(authinfo, optinfo->auth_info, strlen(optinfo->auth_info));  
+		 if (copy_option(DH6OPT_AUTH, authlen - 4, &auth->dh6_auth_proto, &p, optep, &len) != 0)
+		 {
+		 	free(auth);     
+			goto fail;
+		 }
+		 free(auth);
+	}
+#endif
+
 	for (op = TAILQ_FIRST(&optinfo->iana_list); op;
 	    op = TAILQ_NEXT(op, link)) {
 		int optlen;
@@ -2687,12 +2742,26 @@ dhcp6_set_options(type, optbp, optep, optinfo)
 		}
 	}
 
-	if (optinfo->usercls_len) {
-		if (copy_option(DH6OPT_USER_CLASS, optinfo->usercls_len,
-		                optinfo->usercls_data, &p, optep, &len) != 0) {
-			goto fail;
+	if (strlen(optinfo->opt77.user_cls_data)) { 
+		int op_len = sizeof(u_int16_t) + strlen(optinfo->opt77.user_cls_data); 
+		if (strlen(optinfo->opt77.user_cls_data)) { 
+			if (copy_option(DH6OPT_USER_CLASS, op_len, &optinfo->opt77, &p, optep, &len) != 0)
+				goto fail;
 		}
 	}
+//	if (optinfo->usercls_len) {
+//		if (copy_option(DH6OPT_USER_CLASS, optinfo->usercls_len,
+//		                optinfo->usercls_data, &p, optep, &len) != 0) {
+//			goto fail;
+//		}
+//	}
+#ifdef NETGEAR_DHCPV6_OPTION16
+	int op_len = sizeof(u_int32_t) + sizeof(u_int16_t) + strlen(optinfo->opt16.vendor_class);
+	if (strlen(optinfo->opt16.vendor_class)) {
+	 if (copy_option(DH6OPT_VENDOR_CLASS, op_len, &optinfo->opt16, &p, optep, &len) != 0)
+		 goto fail;
+	}
+#endif
 
 	if (optinfo->ifidopt_id) {
 		if (copy_option(DH6OPT_INTERFACE_ID, optinfo->ifidopt_len,
@@ -2879,6 +2948,29 @@ dnsencode(name, buf, buflen)
 	return (-1);
 }
 
+void set_orange_default_t1_t2(u_int32_t *dh6_ia_t1, u_int32_t *dh6_ia_t2, struct dhcp6_listval *optval)
+{
+	u_int32_t orange_default_t1 = 3600;
+	u_int32_t orange_default_t2 = 5400;
+	u_int32_t *iaid_data = &optval->val_ia.iaid;
+
+	//96295f2a 
+	if ((*((u_int8_t *)iaid_data) == 0x2a) &&
+	    (*((u_int8_t *)iaid_data + 1) == 0x5f) &&
+	    (*((u_int8_t *)iaid_data + 2) == 0x39) &&
+	    (*((u_int8_t *)iaid_data + 3) == 0x96))
+	{
+		*dh6_ia_t1 = htonl(orange_default_t1); 
+		*dh6_ia_t2 = htonl(orange_default_t2);
+	}
+	else
+	{
+		*dh6_ia_t1 = htonl(optval->val_ia.t1);
+		*dh6_ia_t2 = htonl(optval->val_ia.t2);
+	}
+}
+
+
 /*
  * Construct a DHCPv6 option along with sub-options in the wire format.
  * If the packet buffer is NULL, just calculate the length of the option
@@ -2998,13 +3090,15 @@ copyout_option(p, ep, optval)
 	switch(optval->type) {
 	case DHCP6_LISTVAL_IAPD:
 		ia.dh6_ia_iaid = htonl(optval->val_ia.iaid);
-		ia.dh6_ia_t1 = htonl(optval->val_ia.t1);
-		ia.dh6_ia_t2 = htonl(optval->val_ia.t2);
+		//ia.dh6_ia_t1 = htonl(optval->val_ia.t1);
+		//ia.dh6_ia_t2 = htonl(optval->val_ia.t2);
+		set_orange_default_t1_t2(&(ia.dh6_ia_t1), &(ia.dh6_ia_t2), optval);
 		break;
 	case DHCP6_LISTVAL_IANA:
 		ia.dh6_ia_iaid = htonl(optval->val_ia.iaid);
-		ia.dh6_ia_t1 = htonl(optval->val_ia.t1);
-		ia.dh6_ia_t2 = htonl(optval->val_ia.t2);
+		//ia.dh6_ia_t1 = htonl(optval->val_ia.t1);
+		//ia.dh6_ia_t2 = htonl(optval->val_ia.t2);
+		set_orange_default_t1_t2(&ia.dh6_ia_t1, &ia.dh6_ia_t2, optval);
 		break;
 #ifdef NETGEAR_dhcp6s_iata
 	case DHCP6_LISTVAL_IATA:

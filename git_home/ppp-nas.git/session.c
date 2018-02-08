@@ -205,11 +205,6 @@ static void config_primary_options()
 
 	fprintf(fp, "lcp-echo-interval 20\n");
 	fprintf(fp, "lcp-echo-failure 3\n");
-
-	val = nvram_get("wan_mulpppoe1_service");
-	if (strcmp(val, ""))
-		fprintf(fp, "remotename %s\n", val);
-
 	fprintf(fp, "defaultroute\n");
 	fprintf(fp, "ip-up-script %s\n", ip_up);
 	fprintf(fp, "ip-down-script %s\n", ip_down);
@@ -221,6 +216,9 @@ static void config_primary_options()
 	sprintf(user, "%s", nvram_get("wan_mulpppoe1_username"));
 	sprintf(passwd, "%s", nvram_get("wan_mulpppoe1_passwd"));
 	config_ppp_options(fp, mtu, user, "0");
+	val = nvram_get("wan_mulpppoe1_service");
+	if (strcmp(val, ""))
+		fprintf(fp, "rp_pppoe_service %s\n", val);
 	fclose(fp);
 
 	if ((fp = fopen(ip_up, "w")) != NULL) {
@@ -255,11 +253,6 @@ static void config_second_options()
 	
 	if ((fp = fopen("/etc/ppp/peers/pppoe-session2", "w")) == NULL)
 		return;
-	
-	val = nvram_get("wan_mulpppoe2_servicename");
-	if (strcmp(val, ""))
-		fprintf(fp, "remotename %s\n", val);
-	
 	fprintf(fp, "nodefaultroute\n");
 	fprintf(fp, "persist\n");
 	fprintf(fp, "lcp-echo-interval 20\n");
@@ -276,7 +269,11 @@ static void config_second_options()
 	sprintf(user, "%s", nvram_get("wan_mulpppoe2_username"));
 	sprintf(passwd, "%s", nvram_get("wan_mulpppoe2_password")); 
 	config_ppp_options(fp, mtu, user, "1");
+	val = nvram_get("wan_mulpppoe2_servicename");
+	if (strcmp(val, ""))
+		fprintf(fp, "rp_pppoe_service %s\n", val);
 	fclose(fp);
+
 	
 	if ((fp = fopen(ip_up, "w")) != NULL) {
 		fprintf(fp, "#!/bin/sh\n");

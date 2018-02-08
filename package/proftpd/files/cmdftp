@@ -315,6 +315,13 @@ mount1()
         	
 		if [ $? -ne 0 ];then
 			rmdir /tmp/$4/shares/"$3"
+		else
+			case "$5" in
+				0)chmod -R 777 /tmp/$4/shares/"$3";;
+				1)[ "$4" = "ftpadmin" ] && chmod -R 777 /tmp/$4/shares/"$3";;
+				2)chmod -R 777 /tmp/$4/shares/"$3";;
+				*);;
+			esac
 		fi
 	fi
 }
@@ -488,10 +495,16 @@ get_usb_serial_num()
         do
 		tag=`echo $LINE | awk -F: '{print $1}'`
                 if [ "$tag" = "Serial Number" ];then
-                        serial_num=`echo $LINE | awk -F: '{print $2}' | sed 's/[[:space:]]*$//g' | sed 's/^[ ]*//'`  
+                        serial_num0=`echo $LINE | awk -F: '{print $2}' | sed 's/[[:space:]]*$//g' | sed 's/^[ ]*//'`  
                         break
                 fi
         done</tmp/disk_scsi_info_ftp
+	last_num=`ls /sys/block/$disk_name/device/scsi_device |awk -F ":" '{print $4}'`
+	serial_num=$serial_num0
+	if [ "x$last_num" != "x" -a "x$last_num" != "x0" ];then
+		serial_num=$serial_num0$last_num
+	fi
+
 	echo "$serial_num"_"$partition_num"
 }
 
@@ -704,7 +717,12 @@ scan_sharefoler_in_this_disk() #$1: dev $2: vendor $3: volume $4:label $5:disk_i
 		                #map_usb_to_ftp "$1" "$relative_path" "$sharename" "$access" "$j"
 		                sd=`echo $1 |cut -b 1-3`
 		                usb_num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $1}'`
-		                usb_serial="`cat /proc/scsi/usb-storage/$usb_num |grep "Serial" |awk '{print $NF}'`"
+		                last_num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $4}'`
+		                usb_serial0="`cat /proc/scsi/usb-storage/$usb_num |grep "Serial" |awk '{print $NF}'`"
+				usb_serial=$usb_serial0
+				if [ "x$last_num" != "x" -a "x$last_num" != "x0" ];then
+					usb_serial=$usb_serial0$last_num
+				fi
 		                usb_map_info=$(sed -n "/^$usb_serial,sd[a-o],sd[a-o]$/p" $USB_MAP_TABLE)
 		                if [ "x$usb_map_info" = "x" ];then
 		                    continue

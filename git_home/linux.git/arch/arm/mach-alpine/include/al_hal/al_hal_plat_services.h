@@ -51,6 +51,7 @@ met:
 #include <linux/io.h>
 #include <linux/printk.h>
 #include <linux/delay.h>
+#include <linux/string.h>
 
 #include <linux/errno.h>
 

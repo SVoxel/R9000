@@ -84,11 +84,13 @@ SUBSYSTEM == button, BUTTON == wps_pbc, BUTTONACTION == released {
 SUBSYSTEM == button, BUTTON == reset, BUTTONACTION == reboot {
 	exec /sbin/detect_factory reboot
 	break_if_failed
+	exec /sbin/save_reboot
 	exec /sbin/reboot
 }
 
 SUBSYSTEM == button, BUTTON == reset, BUTTONACTION == default {
 	break_if_failed
+	exec /sbin/save_reset
 	exec /bin/config default
 	exec /bin/rm -f /usr/lib/sbsaved/sb.redis
 	exec /sbin/reboot

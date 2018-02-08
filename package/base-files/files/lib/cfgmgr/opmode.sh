@@ -340,6 +340,8 @@ iptv_create_brs_and_vifs()
 	local landefmac=$($CONFIG get lan_factory_mac)
 	local wandefmac=$($CONFIG get wan_factory_mac)
 	local sfpdefmac=$($CONFIG get sfp_factory_mac)
+	local iptv_vlan_enable=$($CONFIG get iptv_vlan_enable)
+	local iptv_vlan=$($CONFIG get iptv_vlan)
 
 	if [ -n "$RawEth" ]; then
 		ifconfig $RawEth hw ether $landefmac
@@ -356,10 +358,18 @@ iptv_create_brs_and_vifs()
 		if [ "$WanIndepPhy" = "0" ]; then
 			ifconfig $RawEthLan up
 			ifconfig $RawEthWan up
-			vconfig add $RawEthLan 1 && ifconfig $RawEthLan.1 down
-			vconfig add $RawEthWan 2 && ifconfig $RawEthWan.2 down
-			ip link set dev $RawEthLan.1 name ethlan
-			ip link set dev $RawEthWan.2 name ethwan
+
+			if [ "$iptv_vlan_enable" = "1" ]; then
+				vconfig add $RawEthLan 1 && ifconfig $RawEthLan.1 down
+				vconfig add $RawEthWan $iptv_vlan && ifconfig $RawEthWan.$iptv_vlan down
+				ip link set dev $RawEthLan.1 name ethlan
+				#ip link set dev $RawEthWan.$iptv_vlan name ethwan
+			else
+				vconfig add $RawEthLan 1 && ifconfig $RawEthLan.1 down
+				vconfig add $RawEthWan 2 && ifconfig $RawEthWan.2 down
+				ip link set dev $RawEthLan.1 name ethlan
+				ip link set dev $RawEthWan.2 name ethwan
+			fi
 		else
 			ifconfig $RawEthLan up
 			vconfig add $RawEthLan 0 && ifconfig $RawEthLan.0 down
@@ -379,7 +389,12 @@ iptv_create_brs_and_vifs()
 	ifconfig eth0 up
 
 	ifconfig br0 hw ether $landefmac
-	brctl addif brwan ethwan
+	#brctl addif brwan ethwan
+	if [ "$iptv_vlan_enable" = "1" ]; then
+		vlan_create_internet_vif 10 0 
+	else
+		brctl addif brwan ethwan
+	fi
 	sw_configvlan "iptv" $($CONFIG get iptv_mask)
 }
 
@@ -495,6 +510,23 @@ vlan_create_intranet_vif() # $1: vid, $2: pri
 	ifconfig $brx up
 }
 
+vlan_create_org_iptv_vif() # $1: vid, $2: pri
+{
+	local vid=$1
+	local pri=$2
+	local brx="brotv"
+
+	if nif_existed $brx; then
+		echo "*** brotv is existed."
+	else
+		br_create $brx
+	fi
+
+	vconfig add $RawEthWan $vid && ifconfig $RawEthWan.$vid up
+	vlan_set_vif_pri $RawEthWan.$vid $pri
+	brctl addif $brx $RawEthWan.$vid
+}
+
 vlan_get_freevid() # $1: up / down
 {
 	local updown=$1
@@ -540,6 +572,8 @@ vlan_create_brs_and_vifs()
 	local firmware_region=`cat /tmp/firmware_region | awk '{print $1}'`
 	local ru_feature=0
 
+	local vlan_enable_bridge=$($CONFIG get enable_orange)
+
 	if [ "x$firmware_region" = "xWW" ] || [ "x$firmware_region" = "x" ] ;then
 		if [ "x$($CONFIG get GUI_Region)" = "xRussian" ] ;then
 			ru_feature=1
@@ -571,9 +605,14 @@ vlan_create_brs_and_vifs()
 		#if [ "$WanIndepPhy" = "0" ]; then
 		#	ip link set dev $RawEthLan name ethlan
 		#else
-			ifconfig $RawEthLan up
+		ifconfig $RawEthLan up
+		if [ "$vlan_enable_bridge" = "1" ]; then
+			vconfig add $RawEthLan 1 && ifconfig $RawEthLan.1 down
+			ip link set dev $RawEthLan.1 name ethlan
+		else
 			vconfig add $RawEthLan $lanvid && ifconfig $RawEthLan.$lanvid down
 			ip link set dev $RawEthLan.$lanvid name ethlan
+		fi
 		#fi
 		ifconfig $RawEthWan up
 	fi
@@ -601,8 +640,21 @@ vlan_create_brs_and_vifs()
 				sw_configvlan "vlan" "add" "br" "$3" "0" "$4"
 		else
 			used_wports=$(($used_wports | $5))
-			vlan_create_br_and_vif $3 $4
-			sw_configvlan "vlan" "add" "vlan" $3 $5 $4
+			if [ "$vlan_enable_bridge" = "1" ]; then
+				# FREE ISP: VLAN ID 100
+				if [ "$3" = "100" ]; then
+					sw_configvlan "vlan" "add" "iptv" $3 $5 $4
+				# Orange VOD: VLAN ID 838; IPTV: VLAN ID 840
+				elif [ "$3" = "838" -o "$3" = "840" ]; then
+					 vlan_create_org_iptv_vif "838" "4"
+					 sw_configvlan "vlan" "add" "br" "838" "0" "4"
+					 vlan_create_org_iptv_vif "840" "5"
+					 sw_configvlan "vlan" "add" "br" "840" "0" "5"
+				fi
+			else
+				vlan_create_br_and_vif $3 $4
+				sw_configvlan "vlan" "add" "vlan" $3 $5 $4
+			fi
 		fi
 	done
 	if [ "$i_vid" = "0" ]; then

@@ -14,7 +14,7 @@ export CP:=cp -fpR
 export TOUCH:=touch
 
 CUR_PATH=${shell pwd}
-export WWW_OUT_DIR:=$(CUR_PATH)/www.out
+export WWW_OUT_DIR:=$(CUR_PATH)/www.src
 
 export INS_DIR_PRE:=
 export INS_BIN_DIR:=$(INS_DIR_PRE)/usr/sbin
@@ -31,6 +31,7 @@ WWW_DIR:="www"
 
 all %::
 	$(MAKE) -C $(SOURCE_DIR) $@
-	$(MAKE) -C $(WWW_DIR) $@
 	$(MAKE) -C $(SCRIPT_DIR) $@
 	$(MAKE) -C $(FILES_DIR) $@
+	$(INSTALL_DIR)		$(INS_WWW_DIR)
+	$(CP) $(WWW_OUT_DIR)/*	$(INS_WWW_DIR)

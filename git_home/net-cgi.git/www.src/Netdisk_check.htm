@@ -1,0 +1,48 @@
+<% netdisk_detect_USB() %>
+<% http_header("style/form2.css","/funcs.js") %>
+<% body_header("", "Netdisk_setting.htm", "drive_check_usb") %>
+<div class="qospage_title">Cloud Backup</div>
+<div class="main">
+
+<script>
+var drive_folder_invalid="<% cfg_get("drive_folder_invalid") %>";
+function loadvalue()
+{
+	var is_usb_removed= "<% cfg_get("usb_removed") %>"
+	if(is_usb_removed == "1" || drive_folder_invalid == "1")
+		check_usb();
+	else
+		location.href = "Netdisk_setting.htm";
+}
+
+function check_usb()
+{
+	var message='<table cellpadding=0 cellspacing=2  border=0>'+
+		"<tr><td colspan=3><h3>It seems your USB backup disk's has been modified or periodically detached from the router. What would you like to do?</h3></td></tr>"+
+		'<tr><td colspan=3><input type=radio name="usbcheck" checked>Do nothing</td></tr>'+
+		'<tr><td colspan=3><input type=radio name="usbcheck">Recover file from Amazon Cloud</td></tr>'+
+		'<tr><td colspan=3><input type=radio name="usbcheck">Delete the files on Amazon Cloud</td></tr>'+
+		'<tr><td colspan=3 height="20px"></td></tr>'+
+	'</table>';
+
+		sAlert(message, function(){location.href='Netdisk_setting.htm';}, function(){click_check();}, 475, 1, "cancel/ok");
+}
+function click_check()
+{
+	var cf = document.forms[0];
+
+	if(cf.usbcheck[0].checked == true)
+		cf.hid_usbcheck.value = "4";
+	else if(cf.usbcheck[1].checked == true)
+		cf.hid_usbcheck.value = "2";
+	else if(cf.usbcheck[2].checked == true)
+		cf.hid_usbcheck.value = "3";
+
+	cf.submit();
+}
+</script>
+<input type="hidden" name="hid_usbcheck"/>
+</div>
+</form>
+</body>
+</html>

@@ -12,7 +12,9 @@
 #define INIT_REBOOT	5
 #define RENEW_REQUESTED 6
 #define RELEASED	7
-
+#define SUPPORT_OPTION_60
+#define SUPPORT_OPTION_77
+#define SUPPORT_OPTION_90
 
 struct client_config_t {
 	char foreground;		/* Do not fork */
@@ -30,6 +32,13 @@ struct client_config_t {
 #ifdef SUPPORT_OPTION_60
 	unsigned char *vendor;		/* option 60, identify the vendor's ID */
 #endif
+#ifdef SUPPORT_OPTION_77
+	unsigned char *user_class;		/* option 60, identify the vendor's ID */
+#endif
+#ifdef SUPPORT_OPTION_90
+	unsigned char *authentication;		/* option 60, identify the vendor's ID */
+#endif
+
 	unsigned char apmode;		/* 1 if DUT is running in AP mode, 0 if DUT is running in Router mode */
 };
 

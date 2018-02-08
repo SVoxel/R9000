@@ -53,6 +53,9 @@
  */
 #undef SUPPORT_OPTION_60
 
+#undef SUPPORT_OPTION_77
+
+#undef SUPPORT_OPTION_90
 /*
  * NETGEAR Router Spec V1.8, chapter 16.2.3 TR-69
  * ...

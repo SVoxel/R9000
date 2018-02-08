@@ -923,7 +923,7 @@ void show_arp_table(void)
 	struct device_list head_node, *sb_device_list, *sb_dlp;
 	char  netgear_priority[32];
 
-	get_streamboost_nodes_info(SB_INFO_STATE_2);
+	//get_streamboost_nodes_info(SB_INFO_STATE_2);
 	sb_device_list = &head_node;
 	read_device_list(sb_device_list);
 	sb_fp = fopen("/tmp/netscan/attach_device_streamboost", "w");
@@ -1115,14 +1115,14 @@ void reset_arp_table()
 		}
 	}
 #ifdef SUPPORT_STREAMBOOST
-	get_streamboost_nodes_info(SB_INFO_STATE_1);
+	//get_streamboost_nodes_info(SB_INFO_STATE_1);
 #endif
 }
 
 void scan_arp_table(int sock, struct sockaddr *me)
 {
 	int i;
-	int count = 0;
+	int count = 0, sum = 0;
 	struct itimerval tv;
 	struct arpmsg *req;
 	struct arp_struct *u;
@@ -1130,14 +1130,24 @@ void scan_arp_table(int sock, struct sockaddr *me)
 	char buffer[512];
 	struct in_addr addr;
 	FILE *fp;
-	
-	while (count != 3) {
+	pid_t pid;
+
+	pid = fork();
+	if(pid < 0)
+		DEBUGP("[%s][%d]error in fork!\n", __FILE__, __LINE__);
+	else if(pid == 0) {
+	while (count != 2) {
 		count++;
 		req = &arpreq;
 		for (i = 0; i < (NEIGH_HASHMASK + 1); i++) {
 			for (u = arp_tbl[i]; u; u = u->next) {
 				memcpy(req->ar_tip, &u->ip, 4);
 				sendto(sock, req, sizeof(struct arpmsg), 0, me, sizeof(struct sockaddr));
+				sum++;
+				if(sum == 128) {
+					usleep(500000);
+					sum = 0;
+				}
 			}
 		}
 		/**
@@ -1158,16 +1168,23 @@ void scan_arp_table(int sock, struct sockaddr *me)
 					if (u) continue;
 					memcpy(req->ar_tip, &addr, 4);
 					sendto(sock, req, sizeof(struct arpmsg), 0, me, sizeof(struct sockaddr));
+					sum++;
+					if(sum == 128) {
+						usleep(500000);
+						sum = 0;
+					}
 				}
 			}
 			fclose(fp);
 		}
-		if(count < 3)
-			usleep(500000);
+	//	if(count < 3)
+	//		usleep(500000);
+	}
+		 _exit(0);
 	}
 	
 	/* show the result after 3s */
-	tv.it_value.tv_sec = 1;
+	tv.it_value.tv_sec = 3;
 	tv.it_value.tv_usec = 0;
 	tv.it_interval.tv_sec = 0;
 	tv.it_interval.tv_usec = 0;

@@ -25,6 +25,8 @@ config-$(CONFIG_UDHCP_RFC2132_33_SUPPORT)		+= --enable-rfc2132_33_support
 config-$(CONFIG_UDHCP_RFC3442_249_SUPPORT)		+= --enable-rfc3442_249_support
 config-$(CONFIG_UDHCP_DHCPD_CHECK_SERVER_IP)		+= --enable-dhcpd_check_server_ip
 config-$(CONFIG_UDHCP_SUPPORT_OPTION_60)		+= --enable-support_option_60
+config-$(CONFIG_UDHCP_SUPPORT_OPTION_77)		+= --enable-support_option_77
+config-$(CONFIG_UDHCP_SUPPORT_OPTION_90)		+= --enable-support_option_90
 config-$(CONFIG_UDHCP_SUPPORT_OPTION_43)		+= --enable-support_option_43
 config-$(CONFIG_UDHCP_DHCPC_CHOOSE_OLDIP)		+= --enable-dhcpc_choose_oldip
 config-$(CONFIG_UDHCP_DHCP_PACKET_RESIZE)		+= --enable-dhcp_packet_resize
@@ -72,6 +74,8 @@ define Package/udhcp/install
 	install -m0755 $(PKG_BUILD_DIR)/default.script.ap $(1)/usr/share/udhcpc/
 	install -d -m0755 $(1)/usr/share/zcip
 	install -m0755 ./files/zcip.script $(1)/usr/share/zcip/
+	install -m0755 ./files/enable_option.script $(1)/usr/share/udhcpc/
+	install -m0755 ./files/org_dhcp_pri_config.script $(1)/usr/share/udhcpc/
 endef
 
 $(eval $(call BuildPackage,udhcp))

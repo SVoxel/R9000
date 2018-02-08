@@ -102,11 +102,14 @@ char *ctlport = DEFAULT_CLIENT_CONTROL_PORT;
 #define DEFAULT_KEYFILE SYSCONFDIR "/dhcp6cctlkey"
 #define CTLSKEW 300
 
+static int orange_flag = 0;
 static char *conffile = DHCP6C_CONF;
 
 static const struct sockaddr_in6 *sa6_allagent;
 static struct duid client_duid;
 static char *pid_file = DHCP6C_PIDFILE;
+
+static struct duid InforserverID;
 
 static char *ctlkeyfile = DEFAULT_KEYFILE;
 static struct keyinfo *ctlkey = NULL;
@@ -115,6 +118,10 @@ static int ctldigestlen;
 static int infreq_mode = 0;
 static char *user_class_data = NULL;
 static char *user_domain_data = NULL;
+#ifdef NETGEAR_DHCPV6_OPTION16
+static char *dhcp6_opt16 = NULL;
+static char *dhcp6_opt11_key = NULL;
+#endif
 static int duid_type = 1;
 char *hardware_if = NULL;
 
@@ -151,10 +158,12 @@ static struct dhcp6_timer *client6_expire_refreshtime __P((void *));
 static int process_auth __P((struct authparam *, struct dhcp6 *dh6, ssize_t,
     struct dhcp6_optinfo *));
 static int set_auth __P((struct dhcp6_event *, struct dhcp6_optinfo *));
+static int set_info_refresh_timer(struct dhcp6_if *ifp, u_int32_t timer, struct duid *serverID);
 
 struct dhcp6_timer *client6_timo __P((void *));
 int client6_start __P((struct dhcp6_if *));
 static void info_printf __P((const char *, ...));
+static void set_orange_vlan_egress_priority(int status);
 
 extern int client6_script __P((char *, int, struct dhcp6_optinfo *));
 #ifdef NETGEAR_script
@@ -171,6 +180,15 @@ extern char *config_get(char *name);
 reconfig_phase = RECONFIG_PHASE_NO;
 static struct dhcp6_optinfo reconfig_optinfo;
 static struct keyinfo *reconfig_key = NULL;
+
+
+static void set_orange_vlan_egress_priority(int status)
+{
+	char cmd_buf[256] = {0}; 
+
+	snprintf(cmd_buf, sizeof(cmd_buf), "/usr/share/udhcpc/org_dhcp_pri_config.script %d %s", status, hardware_if);
+	system(cmd_buf);
+}
 
 static void free_reconfig_resource()
 {
@@ -414,10 +432,12 @@ fail:
 static int lease_phase = LEASE_PHASE_0_START;
 static struct ia_conflist napd_configlist;
 
+
 int generate_pd(struct ia_conf *iac, int plen, char * prefix)
 {
 	size_t confsize;
 	struct dhcp6_prefix oprefix;
+        u_int32_t iaid;
 
 	iac->type = IATYPE_PD;
 	iac->iaid = IAPD_IAID;
@@ -557,6 +577,7 @@ static int construct_lease_confdata(ev)
 	struct dhcp6_eventdata *evd = NULL;
 	struct dhcp6_list *ial = NULL, pl;
 	struct dhcp6_ia iaparam;
+	u_int32_t iaid; 
 
 	TAILQ_INIT(&pl);        /* for safety */
 
@@ -659,7 +680,7 @@ main(argc, argv)
 	char *progname;
 	FILE *pidfp;
 	struct dhcp6_if *ifp;
-
+	char key[20] = {0};
 #ifndef HAVE_ARC4RANDOM
 	srandom(time(NULL) & getpid());
 #endif
@@ -669,8 +690,11 @@ main(argc, argv)
 	else
 		progname++;
 
-	while ((ch = getopt(argc, argv, "c:dDfi3h:k:p:u:U:")) != -1) {
+	while ((ch = getopt(argc, argv, "Oc:dDfi3h:k:p:u:U:v:a:m:")) != -1) {
 		switch (ch) {
+		case 'O':
+			orange_flag = 1;
+			break;
 		case 'c':
 			conffile = optarg;
 			break;
@@ -703,6 +727,25 @@ main(argc, argv)
 		case '3':
 			duid_type = 3;
 			break;
+#ifdef  NETGEAR_DHCPV6_OPTION16 
+		case 'v':
+			dhcp6_opt16 = optarg;
+			break;
+		case 'a':
+			if ((orange_flag == 1) && (strstr(optarg, "fti/") == NULL))
+			{
+			        snprintf(key, sizeof(key), "fti/%s", optarg);
+				dhcp6_opt11_key = key;
+			}
+			else
+			{
+			    dhcp6_opt11_key = optarg;
+			}
+			break;
+		case 'm':
+			dhcp6_duid_mac_addr = optarg;
+			break;
+#endif
 		default:
 			usage();
 			exit(0);
@@ -710,6 +753,12 @@ main(argc, argv)
 	}
 	argc -= optind;
 	argv += optind;
+
+	if (orange_flag == 1)
+	{
+		user_class_data = "FSVDSL_livebox.Internet.softathome.Livebox3";
+		dhcp6_opt16 = "sagem";
+	}
 
 	if (argc == 0) {
 		usage();
@@ -724,7 +773,10 @@ main(argc, argv)
 	if(hardware_if)
 		client6_init(hardware_if);
 	else
+	{
+		hardware_if = argv[0];	
 		client6_init(argv[0]);
+	}
 	
 #if defined(NETGEAR_dhcp6c_dad) || defined(NETGEAR_dhcp6c_gw)
 	/* open icmpv6 socket for DAD process */
@@ -1527,6 +1579,7 @@ construct_confdata(ifp, ev)
 	struct dhcp6_eventdata *evd = NULL;
 	struct dhcp6_list *ial = NULL, pl;
 	struct dhcp6_ia iaparam;
+	 u_int32_t iaid;
 
 	TAILQ_INIT(&pl);	/* for safety */
 
@@ -1617,6 +1670,7 @@ construct_reqdata(ifp, optinfo, ev)
 	struct dhcp6_eventdata *evd = NULL;
 	struct dhcp6_list *ial = NULL;
 	struct dhcp6_ia iaparam;
+	u_int32_t iaid;
 
 	/* discard previous event data */
 	dhcp6_remove_evdata(ev);
@@ -1639,7 +1693,6 @@ construct_reqdata(ifp, optinfo, ev)
 
 		memset(&iaparam, 0, sizeof(iaparam));
 		iaparam.iaid = iac->iaid;
-
 		ial = NULL;
 		evd = NULL;
 
@@ -2128,6 +2181,13 @@ client6_send(ev)
 	dh6 = (struct dhcp6 *)buf;
 	memset(dh6, 0, sizeof(*dh6));
 
+	if((ev->state == DHCP6S_SOLICIT) ||
+	    (ev->state == DHCP6S_RENEW) || 
+	    (ev->state == DHCP6S_RELEASE))
+	{
+		set_orange_vlan_egress_priority(0);
+	}
+
 	switch(ev->state) {
 	case DHCP6S_SOLICIT:
 		dh6->dh6_msgtype = DH6_SOLICIT;
@@ -2302,10 +2362,12 @@ client6_send(ev)
 	 * +-----------------------+--------------------------+
 	 */
 	if (user_class_data != NULL && dh6->dh6_msgtype != DH6_RELEASE) {
-		optinfo.usercls_len = strlen(user_class_data);
-		if ((optinfo.usercls_data = malloc(optinfo.usercls_len)) == NULL)
-			goto end;
-		memcpy(optinfo.usercls_data, user_class_data, optinfo.usercls_len);
+		optinfo.opt77.user_cls_len = htons(strlen(user_class_data));
+		strncpy(optinfo.opt77.user_cls_data, user_class_data, strlen(user_class_data)); 
+	//	optinfo.usercls_len = strlen(user_class_data);
+	//	if ((optinfo.usercls_data = malloc(optinfo.usercls_len)) == NULL)
+	//		goto end;
+	//	memcpy(optinfo.usercls_data, user_class_data, optinfo.usercls_len);
 	}
 
 	if (user_domain_data != NULL && dh6->dh6_msgtype != DH6_RELEASE) {
@@ -2317,6 +2379,14 @@ client6_send(ev)
 		    DHCP6_LISTVAL_VBUF, &name_vbuf, NULL) == NULL) 
 			goto end;
 	}
+#ifdef NETGEAR_DHCPV6_OPTION16 
+	if (dhcp6_opt16 != NULL && dh6->dh6_msgtype != DH6_RELEASE) { 
+		u_int32_t number = 1038;
+		optinfo.opt16.enterprise_no = htonl(number);
+		optinfo.opt16.vendor_class_len = htons(strlen(dhcp6_opt16));
+		strncpy(optinfo.opt16.vendor_class, dhcp6_opt16, strlen(dhcp6_opt16));
+	}
+#endif	
 
 #ifdef NETGEAR_reconfig
 	/* set reconfig accept option flag*/
@@ -2498,7 +2568,7 @@ client6_recv()
 		dprintf(LOG_INFO, FNAME, "failed to parse options");
 		return;
 	}
-
+        dprintf(LOG_INFO, FNAME, "client6_rcv");
 	switch(dh6->dh6_msgtype) {
 	case DH6_ADVERTISE:
 		(void)client6_recvadvert(ifp, dh6, len, &optinfo);
@@ -2752,6 +2822,98 @@ find_server(ev, duid)
 	return (NULL);
 }
 
+int client6_send_by_state(struct dhcp6_if *ifp, int state) 
+{
+	struct dhcp6_event *ev;
+
+	if ((ev = dhcp6_create_event(ifp, state)) == NULL) {
+		dprintf(LOG_ERR, FNAME, "failed to create an event");
+		return (-1);
+	}
+
+	if ((ev->timer = dhcp6_add_timer(client6_timo, ev)) == NULL) {
+		dprintf(LOG_ERR, FNAME, "failed to add a timer for %s", ifp->ifname);
+		free(ev);
+		return (-1);
+	}
+
+	if ((ev->authparam = new_authparam(ifp->authproto,
+	       ifp->authalgorithm, ifp->authrdm)) == NULL) {
+		dprintf(LOG_WARNING, FNAME, "failed to allocate "
+				"authentication parameters");
+		return -1;
+	}
+
+	//Add serverID
+	duidcpy(&ev->serverid, &InforserverID);
+
+	TAILQ_INSERT_TAIL(&ifp->event_list, ev, link);
+	ev->timeouts = 0;
+	dhcp6_set_timeoparam(ev);
+	dhcp6_reset_timer(ev);
+	client6_send(ev);
+
+	return 0;
+}
+
+
+static struct dhcp6_timer *info_refresh_timo(void *arg) 
+{
+	struct dhcp6_if *ifp = (struct dhcp6_if *)arg;
+
+	dprintf(LOG_DEBUG, FNAME, "information is refreshing...");
+	if (ifp->timer)
+	{
+		dhcp6_remove_timer(&ifp->timer);
+		client6_send_by_state(ifp, DHCP6S_INFOREQ);
+	}
+	return NULL;
+}
+
+#define INF_MAX_DELAY 1000
+static int set_info_refresh_timer(struct dhcp6_if *ifp, u_int32_t offered_irt, struct duid *serverID)
+{
+     int irt = DHCP6_IRT_DEFAULT;
+     struct timeval timo; 
+     double rval;
+   
+     if (irt == DHCP6_DURATION_INFINITE) {
+	     dprintf(LOG_DEBUG, FNAME, "information would not be refreshed any more");
+	     return 0;
+     }
+     
+     if (ifp->timer == NULL)
+     {
+	     memset(&InforserverID, 0, sizeof(struct duid));
+	     duidcpy(&InforserverID, serverID);
+
+	     if (offered_irt != DH6OPT_REFRESHTIME_UNDEF)
+		     irt = offered_irt;
+	     
+	     if (ifp->timer)
+	     {
+	     	dhcp6_remove_timer(&ifp->timer);
+	     }
+	
+	     if ((ifp->timer = dhcp6_add_timer(info_refresh_timo, ifp)) == NULL) {
+		     dprintf(LOG_ERR, FNAME, "failed to add a timer for %s", ifp->ifname);
+		     return -1;
+	     }
+
+	     /*
+	      *      * the client MUST delay sending the first Information-Request by
+	      *      * a random amount of time between 0 and INF_MAX_DELAY
+	      *      * [RFC4242 3.2.]
+	      *                     */
+	     rval = (double)random() / RAND_MAX * INF_MAX_DELAY * 1000;
+	     timo.tv_sec = irt + (long)(rval / 1000000);
+	     timo.tv_usec = (long)rval % 1000000;
+	     dhcp6_set_timer(&timo, ifp->timer);
+	     dprintf(LOG_DEBUG, FNAME, "information will be refreshed in %ld.%06ld [sec]", timo.tv_sec, timo.tv_usec);
+     }
+     return 0;    
+}
+
 static int
 client6_recvreply(ifp, dh6, len, optinfo)
 	struct dhcp6_if *ifp;
@@ -2786,6 +2948,8 @@ client6_recvreply(ifp, dh6, len, optinfo)
 		dprintf(LOG_INFO, FNAME, "unexpected reply");
 		return (-1);
 	}
+
+	set_orange_vlan_egress_priority(1);
 
 	/* A Reply message must contain a Server ID option */
 	if (optinfo->serverID.duid_len == 0) {
@@ -2932,6 +3096,8 @@ client6_recvreply(ifp, dh6, len, optinfo)
 	 * default otherwise.
 	 */
 	if (state == DHCP6S_INFOREQ) {
+	     set_info_refresh_timer(ifp, optinfo->refreshtime, &optinfo->serverID);
+#if 0
 		int64_t refreshtime = DHCP6_IRT_DEFAULT;
 
 		if (optinfo->refreshtime != DH6OPT_REFRESHTIME_UNDEF)
@@ -2967,6 +3133,7 @@ client6_recvreply(ifp, dh6, len, optinfo)
 		 */
 		dprintf(LOG_INFO, FNAME,
 		    "unexpected information refresh time option (ignored)");
+#endif
 	}
 
 	/* update stateful configuration information */
@@ -3267,6 +3434,12 @@ set_auth(ev, optinfo)
 	optinfo->authalgorithm = authparam->authalgorithm;
 	optinfo->authrdm = authparam->authrdm;
 
+#ifdef NETGEAR_DHCPV6_OPTION16
+	if (dhcp6_opt11_key && strlen(dhcp6_opt11_key))
+	{
+		strncpy(optinfo->auth_info, dhcp6_opt11_key, strlen(dhcp6_opt11_key));
+	}
+#endif	
 	switch (authparam->authproto) {
 	case DHCP6_AUTHPROTO_UNDEF: /* we simply do not need authentication */
 		return (0);

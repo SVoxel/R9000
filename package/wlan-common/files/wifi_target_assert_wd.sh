@@ -70,18 +70,18 @@ check_hostapd()
 	local driver_ssid=0
 	local dni_ssid=0
 
-	if [ -f "var/run/hostapd-wifi0" ] && [ -f "/var/run/wifi-ath0.pid" ]; then
+	if [ -f "/var/run/hostapd-wifi0" ] && [ -f "/var/run/wifi-ath0.pid" ]; then
 		driver_ssid=`hostapd_cli -p /var/run/hostapd-wifi0 -i ath0 GET ssid`
-		dni_ssid=`cat /var/run/hostapd-ath0.conf | grep ssid | awk -F '=' '{print $2}'`
+		dni_ssid=`cat /var/run/hostapd-ath0.conf | grep ssid | awk -F '=' '{print $2}' | head -1`
 		if [ "$driver_ssid" != "$dni_ssid" ]; then
 			wifi_reload=1
 			echo "ath0 hostapd get wrong ssid, driver ssid: $driver_ssid, config ssid: $dni_ssid"
 		fi
 	fi
 
-	if [ -f "var/run/hostapd-wifi1" ] && [ -f "/var/run/wifi-ath1.pid" ]; then
+	if [ -f "/var/run/hostapd-wifi1" ] && [ -f "/var/run/wifi-ath1.pid" ]; then
 		driver_ssid=`hostapd_cli -p /var/run/hostapd-wifi1 -i ath1 GET ssid`
-		dni_ssid=`cat /var/run/hostapd-ath1.conf | grep ssid | awk -F '=' '{print $2}'`
+		dni_ssid=`cat /var/run/hostapd-ath1.conf | grep ssid | awk -F '=' '{print $2}' | head -1`
 		if [ "$driver_ssid" != "$dni_ssid" ]; then
 			wifi_reload=1
 			echo "ath1 hostapd get wrong ssid, driver ssid: $driver_ssid, config ssid: $dni_ssid"
@@ -90,16 +90,16 @@ check_hostapd()
 
 	if [ -f "var/run/hostapd-wifi0" ] && [ -f "/var/run/wifi-ath01.pid" ]; then
 		driver_ssid=`hostapd_cli -p /var/run/hostapd-wifi0 -i ath01 GET ssid`
-		dni_ssid=`cat /var/run/hostapd-ath01.conf | grep ssid | awk -F '=' '{print $2}'`
+		dni_ssid=`cat /var/run/hostapd-ath01.conf | grep ssid | awk -F '=' '{print $2}' | head -1`
 		if [ "$driver_ssid" != "$dni_ssid" ]; then
 			wifi_reload=1
 			echo "ath01 hostapd get wrong ssid, driver ssid: $driver_ssid, config ssid: $dni_ssid"
 		fi
 	fi
 
-	if [ -f "var/run/hostapd-wifi1" ] && [ -f "/var/run/wifi-ath11.pid" ]; then
+	if [ -f "/var/run/hostapd-wifi1" ] && [ -f "/var/run/wifi-ath11.pid" ]; then
 		driver_ssid=`hostapd_cli -p /var/run/hostapd-wifi1 -i ath11 GET ssid`
-		dni_ssid=`cat /var/run/hostapd-ath11.conf | grep ssid | awk -F '=' '{print $2}'`
+		dni_ssid=`cat /var/run/hostapd-ath11.conf | grep ssid | awk -F '=' '{print $2}' | head -1`
 		if [ "$driver_ssid" != "$dni_ssid" ]; then
 			wifi_reload=1
 			echo "ath11 hostapd get wrong ssid, driver ssid: $driver_ssid, config ssid: $dni_ssid"
@@ -151,6 +151,8 @@ check_hostapd_EAP_common()
 		if [ "x$hostap_is_run" = "x" ]; then
 			echo "start hostapd for ${wifidev}-${athdev} ......."
 			hostapd -P /var/run/wifi-${athdev}.pid -B /var/run/hostapd-${athdev}.conf -e /var/run/entropy-${athdev}.bin
+                        sleep 3
+                        hostapd_cli -i ${athdev} -P /var/run/hostapd_cli-${athdev}.pid -a /lib/wifi/wps-hostapd-update-uci -p /var/run/hostapd-${wifidev} -B
 			### when restart hostap, also init the old static data.
 			dot11RSNA4WayHandshakeFailures_${athdev}_old=0
 			dot11RSNAEapReceived_${athdev}_old=0
@@ -173,7 +175,7 @@ check_hostapd_EAP_common()
 			grep -E "${athdev}" /proc/$pid/cmdline >/dev/null && \
 				kill $pid                                    
 			done
-			hostapd -P /var/run/wifi-${athdev}.pid -B /var/run/hostapd-${athdev}.conf -e /var/run/entropy-${athdev}.bin
+            		wlan vap "$wifidev" "$athdev"
 			dot11RSNA4WayHandshakeFailures=0
 			dot11RSNAEapReceived=0
 		fi
@@ -198,6 +200,37 @@ check_hostapd_EAP()
 	check_hostapd_EAP_common ath01 wifi0
 	check_hostapd_EAP_common ath1 wifi1
 	check_hostapd_EAP_common ath11 wifi1
+}
+
+down_up_vap()
+{
+    ifname=$1
+    no_assoc=`iwconfig $ifname | grep Not-Associated`
+    if [ "$no_assoc" != "" ]; then
+        ifconfig $ifname down
+        ifconfig $ifname up
+        echo "wifi_target_assert_wd: $ifname Not-Associated, up it"
+    fi
+}
+
+check_vap_not_up()
+{
+    ### check vap not up
+	bridge_mode=`config get bridge_mode`
+	[ "x$bridge_mode" = "x1" ] && return 0
+ 
+    wifi1_enable=`config get endis_wl_radio`
+    wifi0_enable=`config get endis_wla_radio`
+    ath11_enable=`config get wlg1_endis_guestNet`
+    ath01_enable=`config get wla1_endis_guestNet`
+    if [ "$wifi1_enable" = "1" ]; then
+        down_up_vap ath1
+        [ "$ath11_enable" = "1" ] && down_up_vap ath11
+    fi
+    if [ "$wifi0_enable" = "1" ]; then
+        down_up_vap ath0
+        [ "$ath01_enable" = "1" ] && down_up_vap ath01
+    fi
 }
 
 check_samba_daemon()
@@ -268,6 +301,9 @@ do
 		wlan up
 		echo 0 > /tmp/wifi_down
 	fi
+
+    ### check vap not up ###
+    check_vap_not_up
 
 	#check samba
 	check_samba_daemon

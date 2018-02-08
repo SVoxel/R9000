@@ -92,6 +92,36 @@ config UDHCP_SUPPORT_OPTION_60
 
 	  If unsure, say N.
 
+config UDHCP_SUPPORT_OPTION_77
+	bool "Support changing the USER CLASS by \"-U [USER CLASS]\" in dhcpc"
+	default y
+	help
+	  NETGEAR Router Spec V1.8, chapter 16.2.3 TR-69
+	  If TR_069 function is enabled, and the WAN type is DHCP mode, then the CPE should
+	  include the string "dslforum.org"(all lower case) any where in the Vendor Class
+	  Identifier (DHCP option 60) to let DHCP server to identify this device as supporting
+	  this method ......
+	  ...
+
+	  If selected, udhcpc can change the USER CLASS by "-U [USER CLASS]"
+
+	  If unsure, say N.
+
+config UDHCP_SUPPORT_OPTION_90
+	bool "Support changing the AUTHENTICATION by \"-A [AUTHENTICATION]\" in dhcpc"
+	default y
+	help
+	  NETGEAR Router Spec V1.8, chapter 16.2.3 TR-69
+	  If TR_069 function is enabled, and the WAN type is DHCP mode, then the CPE should
+	  include the string "dslforum.org"(all lower case) any where in the Vendor Class
+	  Identifier (DHCP option 60) to let DHCP server to identify this device as supporting
+	  this method ......
+	  ...
+
+	  If selected, udhcpc can change the AUTHENTICATION by "-A [AUTHENTICATION]"
+
+	  If unsure, say N.
+
 config UDHCP_SUPPORT_OPTION_43
 	bool "Obtain the parameter ManagementServer.URL in option 43 and recognize it as ACS URL address and query it IP address via DNS again"
 	default y

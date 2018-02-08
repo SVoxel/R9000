@@ -24,6 +24,11 @@ start ()
 		# make LAN interface send NS packets
 		echo 0 > /proc/sys/net/ipv6/neigh/$bridge/not_send_neighbor_solicitation
 	fi
+	if [ "x$wan6_type" = "xdisabled" ]; then
+		echo 0 > /proc/sys/net/ipv6/conf/all/accept_ra
+	else
+		echo 1 > /proc/sys/net/ipv6/conf/all/accept_ra
+	fi
 }
 
 case "$1" in

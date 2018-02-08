@@ -66,6 +66,7 @@ static int signal_pipe[2];
 #define LISTEN_KERNEL 1
 #define LISTEN_RAW 2
 static int listen_mode;
+static int orange_flag = 0;
 
 #define DEFAULT_SCRIPT		"/usr/share/udhcpc/default.script"
 #define DEFAULT_SCRIPT_AP	"/usr/share/udhcpc/default.script.ap"
@@ -87,6 +88,13 @@ struct client_config_t client_config = {
 #ifdef SUPPORT_OPTION_60
 	vendor: NULL,
 #endif
+#ifdef SUPPORT_OPTION_77
+	user_class: NULL,
+#endif
+#ifdef SUPPORT_OPTION_90
+	authentication: NULL,
+#endif
+
 	apmode: 0,
 };
 
@@ -295,6 +303,14 @@ static int client_ip_check(u_int32_t addr)
        return arpping(addr, 0, client_config.arp, client_config.interface, NULL);
 }
 
+static void set_orange_vlan_egress_priority(int status)
+{
+    char cmd_buf[256] = {0};
+
+    snprintf(cmd_buf, sizeof(cmd_buf), "/usr/share/udhcpc/org_dhcp_pri_config.script %d %s", status, client_config.interface);
+    system(cmd_buf);
+}
+
 #ifdef COMBINED_BINARY
 int udhcpc_main(int argc, char *argv[])
 #else
@@ -337,20 +353,35 @@ int main(int argc, char *argv[])
 #ifdef SUPPORT_OPTION_60
 		{"Vendor",	required_argument,	0, 'V'},
 #endif
+#ifdef SUPPORT_OPTION_77
+		{"User_class",	required_argument,	0, 'U'},
+#endif
+#ifdef SUPPORT_OPTION_90
+		{"Authen",	required_argument,	0, 'A'},
+#endif
+
 #ifdef DHCPC_CHOOSE_OLDIP
 		{"oldip",	required_argument,	0, 'N'},
 #endif
 		{"apmode",	no_argument,		0, 'a'},
 		{"help",	no_argument,		0, '?'},
+		{"orange hidden flag",        no_argument,            0, 'O'},
 		{0, 0, 0, 0}
 	};
 
 	/* get options */
 	char optstr[64] = { [0 ... 63] = 0x00 };
-	strcpy(optstr, "ac:fbH:h:d:i:np:qr:s:v");
+	strcpy(optstr, "Oac:fbH:h:d:i:np:qr:s:v");
 #ifdef SUPPORT_OPTION_60
 	strcpy(optstr + strlen(optstr), "V:");
 #endif
+#ifdef SUPPORT_OPTION_77
+	strcpy(optstr + strlen(optstr), "U:");
+#endif
+#ifdef SUPPORT_OPTION_90
+	strcpy(optstr + strlen(optstr), "A:");
+#endif
+
 #ifdef DHCPC_CHOOSE_OLDIP
        strcpy(optstr + strlen(optstr), "N:");
 #endif
@@ -431,13 +462,86 @@ int main(int argc, char *argv[])
 			strncpy(client_config.vendor + OPT_DATA, optarg, len);
 			break;
 #endif
+#ifdef SUPPORT_OPTION_77
+		case 'U':
+			len = strlen(optarg) > 255 ? 255 : strlen(optarg);
+			if (client_config.user_class) free(client_config.user_class);
+			client_config.user_class = xmalloc(len + 2);
+			client_config.user_class[OPT_CODE] = DHCP_USER_CLASS;
+			client_config.user_class[OPT_LEN] = len+1;
+			client_config.user_class[OPT_DATA] = len;
+			strncpy(client_config.user_class + OPT_DATA + 1, optarg, len);
+			break;
+#endif
+#ifdef SUPPORT_OPTION_90
+		case 'A':
+			len = strlen(optarg) + strlen("fti/");
+			if (len > 255) len = 255;
+			if (client_config.authentication) free(client_config.authentication);
+			client_config.authentication = xmalloc(len + 12);
+			client_config.authentication[OPT_CODE] = DHCP_AUTHEN;
+			client_config.authentication[OPT_LEN] = len+11;
+			memset(&client_config.authentication[OPT_DATA],0x00,11);
+			if ((orange_flag == 1) && (strstr(optarg, "fti/") == NULL)) //search fti
+			{
+			        snprintf(client_config.authentication + OPT_DATA + 11, len + 1, "fti/%s", optarg);
+			}
+			else
+			{
+				strncpy(client_config.authentication + OPT_DATA + 11, optarg, len);
+			}
+			break;
+#endif
+
 		case 'a':
 			client_config.apmode = 1;
+			break;
+
+		case 'O':
+			orange_flag = 1;
 			break;
 
 		default:
 			show_usage();
 		}
+	}
+
+	//Set default orange option value for option 60 and 77
+	if (orange_flag == 1)
+	{
+	    //set option 60 to sagem
+	    len = strlen("sagem");
+	    if (client_config.vendor) free(client_config.vendor);
+	    client_config.vendor = xmalloc(len + 2);
+	    client_config.vendor[OPT_CODE] = DHCP_VENDOR;
+	    client_config.vendor[OPT_LEN] = len;
+	    client_config.vendor[OPT_DATA] = '\0';
+	    strncpy(client_config.vendor + OPT_DATA, "sagem", len);
+
+	    if (strcmp(client_config.interface, "brwan") == 0)
+	    {	 
+	    	//set option 77 to FSVDSL_livebox.Internet.softathome.Livebox3
+	    	len = strlen("FSVDSL_livebox.Internet.softathome.Livebox3");
+	    }
+	    else if (strcmp(client_config.interface, "brotv") == 0)
+	    {
+		//set option 77 to FSVDSL_livebox.MLTV.softathome.Livebox3
+		len = strlen("FSVDSL_livebox.MLTV.softathome.Livebox3");
+	    }
+
+	    if (client_config.user_class) free(client_config.user_class);
+	    client_config.user_class = xmalloc(len + 2);
+	    client_config.user_class[OPT_CODE] = DHCP_USER_CLASS;
+	    client_config.user_class[OPT_LEN] = len+1;
+	    client_config.user_class[OPT_DATA] = len;
+	    if (strcmp(client_config.interface, "brwan") == 0)
+	    {
+		strncpy(client_config.user_class + OPT_DATA + 1, "FSVDSL_livebox.Internet.softathome.Livebox3", len);
+	    }
+	    else if (strcmp(client_config.interface, "brotv") == 0)
+	    {
+		strncpy(client_config.user_class + OPT_DATA + 1, "FSVDSL_livebox.MLTV.softathome.Livebox3", len);
+	    }
 	}
 
 	if (!script_specified) {
@@ -530,6 +634,7 @@ int main(int argc, char *argv[])
 					/*if ( client_config.apmode != 1 )
 						sleep(5);       */
 
+					set_orange_vlan_egress_priority(0);
 					send_discover(xid, requested_ip); /* broadcast */
 					
 					timeout = uptime() + (client_config.apmode ? 5 : ((packet_num == 2) ? 4 : 2));
@@ -568,7 +673,10 @@ int main(int argc, char *argv[])
 				if (packet_num < 3) {
 					/* send request packet */
 					if (state == RENEW_REQUESTED)
+					{
+						set_orange_vlan_egress_priority(0);
 						send_renew(xid, server_addr, requested_ip); /* unicast */
+					}
 					else send_selecting(xid, server_addr, requested_ip); /* broadcast */
 					
 					/*
@@ -601,6 +709,7 @@ int main(int argc, char *argv[])
 					timeout = now + (t2 - t1);
 					DEBUG(LOG_INFO, "Entering rebinding state");
 				} else {
+					set_orange_vlan_egress_priority(0);
 					/* send a request packet */
 					send_renew(xid, server_addr, requested_ip); /* unicast */
 					
@@ -619,6 +728,7 @@ int main(int argc, char *argv[])
 					packet_num = 0;
 					change_mode(LISTEN_RAW);
 				} else {
+					set_orange_vlan_egress_priority(0);
 					/* send a request packet */
 					send_renew(xid, 0, requested_ip); /* broadcast */
 
@@ -816,7 +926,7 @@ int main(int argc, char *argv[])
                                                }
                                         }
 #endif
-
+					set_orange_vlan_egress_priority(1);
 					/* enter bound state */
 					t1 = lease / 2;
 					
@@ -838,7 +948,6 @@ int main(int argc, char *argv[])
 						exit_client(0);
 					if (!client_config.foreground)
 						background();
-
 				} else if (*message == DHCPNAK) {
 					/*
 					 * Fix bug 24603 - [DHCP]sometimes the DUT will always sending discover for the 
@@ -879,11 +988,13 @@ int main(int argc, char *argv[])
 				continue; /* probably just EINTR */
 			}
 			switch (sig) {
-			case SIGUSR1: 
+			case SIGUSR1:
+				set_orange_vlan_egress_priority(0);
 				perform_renew();
 				break;
 			case SIGUSR2:
 				syslog(6, "[Internet disconnected]");
+			   	set_orange_vlan_egress_priority(0);	
 				perform_release();
 				if (client_config.apmode)
 					run_script(NULL, "runzcip");
@@ -891,6 +1002,7 @@ int main(int argc, char *argv[])
 			case SIGTERM:
 				LOG(LOG_INFO, "Received SIGTERM");
 				syslog(6, "[Internet disconnected]");
+				set_orange_vlan_egress_priority(0);
 				/* 
 				 * [NETGEAR Spec 1.6]: It is recommended to send a DHCP RELEASE message to
 				 * the server under the case software shutdown or reboot.

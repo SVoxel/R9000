@@ -3,7 +3,7 @@
 . /etc/net6conf/6data.conf
 
 dhcp6c_write_config() {
-	printf 'interface %s {\n' "$WAN"
+	printf 'interface %s {\n' "$1"
 	printf '\tsend ia-pd 11;\n'
 	printf '\trequest domain-name;\n'
 	printf '\trequest domain-name-servers;\n'
@@ -21,8 +21,13 @@ start_dhcp6c() {
 	local U_CLADATA=`$CONFIG get ipv6_autoConfig_userClass`
 	local U_DOMAIN=`$CONFIG get ipv6_autoConfig_domainName`
 	# Using DHCP6 Client to get LAN's IPv6 prefix
-	dhcp6c_write_config > /tmp/dhcp6c.conf
-	/usr/sbin/dhcp6c -c /tmp/dhcp6c.conf -3 ${U_CLADATA:+-u $U_CLADATA} ${U_DOMAIN:+-U $U_DOMAIN} $WAN
+	dhcp6c_write_config $1> /tmp/dhcp6c.conf
+	#/usr/sbin/dhcp6c -c /tmp/dhcp6c.conf -3 ${U_CLADATA:+-u $U_CLADATA} ${U_DOMAIN:+-U $U_DOMAIN} $WAN
+	if [ "x$2" != "x" ]; then
+		/usr/sbin/dhcp6c -c /tmp/dhcp6c.conf -3 ${U_CLADATA:+-u $U_CLADATA} ${U_DOMAIN:+-U $U_DOMAIN} $2 -h $1 $1
+	else
+		/usr/sbin/dhcp6c -c /tmp/dhcp6c.conf -3 ${U_CLADATA:+-u $U_CLADATA} ${U_DOMAIN:+-U $U_DOMAIN} -h $1 $1
+	fi
 
 	#add the default route
 #	$IP -6 route add default dev $WAN
@@ -44,9 +49,10 @@ dhcpv6c_is_running() {
 
 autoconf_wan() {
 	# Change the WAN(eth0) interface to send the IPv6 Router Solicitation
-	echo 0 > /proc/sys/net/ipv6/conf/${WAN}/forwarding
+	echo 0 > /proc/sys/net/ipv6/conf/$1/forwarding
+	echo 2 > /proc/sys/net/ipv6/conf/${WAN}/accept_ra
 	echo 1 > /proc/sys/net/ipv6/icmp/ra_sel_flag
-	rs_send -i $WAN -c 3 -t 4 &
+	rs_send -i $1 -c 3 -t 4 &
 #	ifconfig $WAN down && ifconfig $WAN up
 }
 
@@ -65,12 +71,45 @@ start() {
 	fi
 	rm $RA_DNS_FILE
 
-	autoconf_wan
+	local Enable_vlan=$($CONFIG get enable_vlan)
+	local Vlan_type=$($CONFIG get vlan_type)
+	local Enable_orange=$($CONFIG get enable_orange_ipv6)
 
-	start_dhcp6c
+	i=0
+	if [ $Enable_orange -eq 1 -a $Enable_vlan -eq 1 -a $Vlan_type -eq 1 ]; then
+		while [ "x$($CONFIG get vlan_tag_"$i")" != "x" ]
+		do
+			# enable, name, vid, pri, wports, wlports
+			vlan_enable_flag=`echo $($CONFIG get vlan_tag_"$i")|awk -F " " '{print $1}'`
+			vlan_name=`echo $($CONFIG get vlan_tag_"$i")|awk -F " " '{print $2}'`
+			vlan_id=`echo $($CONFIG get vlan_tag_"$i")|awk -F " " '{print $3}'`
+			if [ "$vlan_enable_flag" = "1" ];then
+				if [ "$vlan_name" = "Internet" ]; then
+					vlan_value="-O -a $($CONFIG get wan_orange_username)"
+					if [ "$vlan_id" = "832" -o "$vlan_id" = "835" ]; then
+						autoconf_wan $WAN 
+						start_dhcp6c $WAN "$vlan_value"
+					else
+						autoconf_wan $WAN
+						start_dhcp6c $WAN
+					fi
+				fi
+			fi
+		i=$(($i+1))
+		done
+
+		#Add default IPv6 static route for Orange ISP
+		ip -6 route add fe80::ba0:bab dev $WAN
+		ip -6 route add default via fe80::ba0:bab dev $WAN
+	else
+		autoconf_wan $WAN
+		start_dhcp6c $WAN
+	fi
 }
 
 stop () {
+	echo 1 > /proc/sys/net/ipv6/conf/${WAN}/accept_ra
+	
 	if ! dhcpv6c_is_running ; then
 		echo "DHCPv6 client is not running! Return";
 		return 1;

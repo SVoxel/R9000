@@ -9,7 +9,12 @@ while [ 1 ]
 do
 	cat /sys/devices/platform/serial8250/console >> /tmp/Console-log$file_num.txt
 
-	sleep 1
+	usleep 10000
+
+        time=$(date "+%Y_%m_%d-%H:%M:%S")
+        up_time=$(uptime | awk '{print $1}')
+        format_time="[$time] "
+        awk -v t="$format_time" '{print t $0}' /tmp/Console-log.tmp >> /tmp/Console-log$file_num.txt
 
 	filesize=`ls -l /tmp/Console-log$file_num.txt | awk '{print $5}'`
 	# The maximum of each file is 5MB
@@ -23,5 +28,6 @@ do
 		# Once 1 file has reached the maximum(5MB), start write to another file
 		[ -f /tmp/Console-log$file_num.txt ] && rm -rf /tmp/Console-log$file_num.txt
 	fi
+
 done
 

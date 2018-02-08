@@ -21,5 +21,5 @@ restart()
 boot()
 {
 	$CONFIG set first_boot_qos=1
-	[ "$($CONFIG get trend_micro_enable)" = "1" ] && /TM/QoSControl boot
+	[ "$($CONFIG get trend_micro_enable)" = "1" ] && /TM/QoSControl setbw
 }

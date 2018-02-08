@@ -84,6 +84,15 @@ static void init_packet(struct dhcpMessage *packet, char type)
 	if (client_config.hostname) add_option_string(packet->options, client_config.hostname);
 	if (client_config.domain_name) add_option_string(packet->options, client_config.domain_name);
 	if (type != DHCPDECLINE) {
+#ifdef SUPPORT_OPTION_90
+		if (client_config.authentication)
+			add_option_string(packet->options, client_config.authentication);
+#endif
+
+#ifdef SUPPORT_OPTION_77
+		if (client_config.user_class)
+			add_option_string(packet->options, client_config.user_class);
+#endif
 #ifdef SUPPORT_OPTION_60
 		if (client_config.vendor)
 			add_option_string(packet->options, client_config.vendor);

@@ -71,6 +71,8 @@
 #define DHCP_T1			0x3a
 #define DHCP_T2			0x3b
 #define DHCP_VENDOR		0x3c
+#define DHCP_USER_CLASS		0x4d
+#define DHCP_AUTHEN			0x5a
 #define DHCP_CLIENT_ID		0x3d
 
 #define DHCP_END		0xFF

@@ -78,6 +78,8 @@ setup_interface() # $1: apmode/brmode/extmode/factory
 
 start0() # $1: boot/start
 {
+	local ip=$($CONFIG get lan_ipaddr)
+	$CONFIG set ap_old_lan_ipaddr=$ip
 	local opmode=$($CONFIG get i_opmode)
 
 	setup_hostname $opmode
@@ -108,6 +110,7 @@ start()
 	start0 start
 	/etc/init.d/ntpclient start
 	/etc/init.d/cron start
+	/etc/init.d/dnsmasq stop
 	/etc/init.d/dnsmasq start
 }
 

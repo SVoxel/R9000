@@ -14,10 +14,10 @@ plex_drive(){
 			number=`ls /sys/block/$line/device/scsi_disk |awk -F":" '{print $1}'`
 			sd=`cat /proc/partitions |grep $line|awk '{print $4}'|egrep sd[a-z] |sed -n "$i"p`
 			id=`vol_id /dev/"$sd" 2>/dev/null |grep ID_FS_UUID|cut -d= -f2`
-			path_tmp=`mount |grep $sd |sed -n '1p' |grep "/tmp/mnt" |awk -F" " '{print $3}'`
+			path_tmp=`mount |grep "dev/$sd" |sed -n '1p' |grep "/tmp/mnt" |awk -F" " '{print $3}'`
 			[ "x$path_tmp" = "x" -o "x`vol_id /dev/$sd 2>/dev/null |head -1`" = "x" ] && i=`expr $i + 1` && continue
 			[ "x`parted -s /dev/$line print | grep \"Partition Table\" | awk '{print $3}'`" != "xloop" -a "x`parted -s /dev/$line print noshare | grep $sd`" != "x" ] && i=`expr $i + 1` && continue
-			path=`mount |grep $sd |sed -n '1p' |grep "/tmp/mnt" |grep rw |awk -F" " '{print $3}'`
+			path=`mount |grep "dev/$sd" |sed -n '1p' |grep "/tmp/mnt" |grep rw |awk -F" " '{print $3}'`
 			if [ "x$path" = "x" -a "x`config get plex_file_path`" = "x$path_tmp" ];then
 				echo "Your USB Drive is read-only, please choose a new Drive for Plex Library."
 				i=`expr $i + 1` 
@@ -25,9 +25,9 @@ plex_drive(){
 			fi
 			mybook=`vol_id /dev/$sd 2>/dev/null |grep ID_FS_LABEL |cut -d= -f2 |head -1`
 			model=`cat /sys/block/$line/device/model` 
-			size=`df -h | grep $line |grep "$sd" | grep "/tmp/mnt/sd" | awk '{print $2}'`
-			free_size=`df -h | grep $line |grep "$sd" | grep "/tmp/mnt/sd" | awk '{print $4}'`
-			free_size_tmp=`df -m | grep $line |grep "$sd" | grep "/tmp/mnt/sd" | awk '{print $4}'`
+			size=`df -h | grep $line |grep "dev/$sd" | grep "/tmp/mnt/sd" | awk '{print $2}'`
+			free_size=`df -h | grep $line |grep "dev/$sd" | grep "/tmp/mnt/sd" | awk '{print $4}'`
+			free_size_tmp=`df -m | grep $line |grep "dev/$sd" | grep "/tmp/mnt/sd" | awk '{print $4}'`
 			plex_library_path=`config get plex_file_path`
 			[ "x$plex_library_path" != "x" ] && Transcode_size=`du -sm $plex_library_path/Library/Application\ Support/Plex\ Media\ Server/Cache/Transcode 2>/dev/null |awk '{print $1}'`
 		 	[ "x$Transcode_size" = "x" ] && Transcode_size=0
@@ -51,9 +51,9 @@ plex_drive(){
 			sernum=`cat /proc/scsi/usb-storage/$number |grep Serial |awk -F" " '{print $3}'`
 			if [ "x`vol_id /dev/$sd 2>/dev/null`" != "x" -a "x$id" = "x" ];then
 				if [ "x`echo $sd | cut -b 4-`" != "x" ];then
-					id="`echo $sd | cut -b 4-`-`cat /sys/block/$line/$sd/size`-`mount |grep $sd |sed -n '1p' |awk '{print $5}'`"
+					id="`echo $sd | cut -b 4-`-`cat /sys/block/$line/$sd/size`-`mount |grep "dev/$sd" |sed -n '1p' |awk '{print $5}'`"
 				else
-					id="$sernum-`cat /sys/block/$line/size`-`mount |grep $sd |sed -n '1p' |awk '{print $5}'`"
+					id="$sernum-`cat /sys/block/$line/size`-`mount |grep "dev/$sd" |sed -n '1p' |awk '{print $5}'`"
 				fi
 			fi
 			i=`expr $i + 1`

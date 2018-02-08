@@ -808,6 +808,13 @@ Optional Features:
   --enable-support_option_60
                           Support changing the Vendor ID by "-V [YOU_ID]" in
                           dhcpc
+  
+  --enable-support_option_77
+                          Support changing the USER CLASS by "-U [USER CLASS]" in
+                          dhcpc
+  --enable-support_option_90
+                          Support changing the USER CLASS by "-U [USER CLASS]" in
+                          dhcpc
 
   --enable-support_option_43
                           Obtain the parameter ManagementServer.URL in option
@@ -1391,6 +1398,30 @@ if test "${enable_support_option_60+set}" = set; then
   if test x"$enableval" = xyes ; then
 		cat >>confdefs.h <<\_ACEOF
 #define SUPPORT_OPTION_60 1
+_ACEOF
+
+	fi
+
+fi;
+
+# Check whether --enable-support_option_77 or --disable-support_option_77 was given.
+if test "${enable_support_option_77+set}" = set; then
+  enableval="$enable_support_option_77"
+  if test x"$enableval" = xyes ; then
+		cat >>confdefs.h <<\_ACEOF
+#define SUPPORT_OPTION_77 1
+_ACEOF
+
+	fi
+
+fi;
+
+# Check whether --enable-support_option_90 or --disable-support_option_90 was given.
+if test "${enable_support_option_90+set}" = set; then
+  enableval="$enable_support_option_90"
+  if test x"$enableval" = xyes ; then
+		cat >>confdefs.h <<\_ACEOF
+#define SUPPORT_OPTION_90 1
 _ACEOF
 
 	fi

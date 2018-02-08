@@ -82,9 +82,12 @@ wds_role_0="repeater"
 wds_role_1="rootap"
 
 tpscale_100=0
-tpscale_75=1
-tpscale_50=2
-tpscale_25=3
+tpscale_75=2
+tpscale_63=3
+tpscale_50=4
+tpscale_33=5
+tpscale_25=7
+tpscale_12=10
 
 dniconfig()
 {
@@ -462,6 +465,7 @@ if [ -n "$DNI_CONFIG" ]; then
     wl_dtim_w_guest=${wl_dtim_w_guest:-2}
     wl_guest_dtim=${wl_guest_dtim:-2}
 
+    lbd_onoff=`dniconfig get enable_smart_connect`
 
     eval wig_if_onoff=\$onoff_`dniconfig get endis_wig_radio`
     if [ "$wig_exist" = "on" ]; then

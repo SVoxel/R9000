@@ -1,0 +1,112 @@
+#!/bin/sh
+
+have_set_txpower=$(/bin/config get have_set_txpower)
+current_country_code=$(config get wl_country)
+old_country_code=$(config get old_country_code)
+
+current_wl_channel=$(config get wl_channel)
+old_wl_channel=$(config get old_wl_channel)
+
+current_wla_channel=$(config get wla_channel)
+old_wla_channel=$(config get old_wla_channel)
+
+# There are two condition need change max_txpower: DUT reset to default or wireless region has been changed
+# If have_set_txpower=1 means max_txpower has already set, so if have_set_txpower=0 means not set the max_txpower,
+# so if user never apply coverage setting for web page, this script will always return, util user click the coverage setting button.
+
+#if [ "x$have_set_txpower" != "x1" ];then
+#    return
+#fi
+
+# If change the wireless region and waiting wifi going stable, should not support set txpower
+[ "x$(cat /tmp/set_txpower_lock)" -eq "x1" ] && return
+
+# If have_set_txpower=0, means DUT just config default, then need to set max_txpower from the GUI
+# If have_set_txpower=1, means DUT have set the max_txpower, only when user change the wireless region should update max_txpower, if user
+# not always use the same country_code, the max_txpower will always stay.
+
+if [ "x$have_set_txpower" != "x1" ]||[ "x$current_country_code" != "x$old_country_code" ]||[ "x$current_wl_channel" != "x$old_wl_channel" ]||[ "x$current_wla_channel" != "x$old_wla_channel" ];then
+
+    if [ "x$current_country_code" != "x$old_country_code" ]||[ "x$current_wl_channel" != "x$old_wl_channel" ]||[ "x$current_wla_channel" != "x$old_wla_channel" ];then
+        echo 1 > /tmp/set_txpower_lock
+        # Wait about 20s to let wireless interface's power value stable
+        sleep 20
+        echo 0 > /tmp/set_txpower_lock
+    fi
+
+    max_ath0=$(iwconfig ath0 | grep -Eo "Tx-Power..." | grep -oE [0-9]+)
+    config set txpower_max_ath0="$max_ath0"
+	max_ath1=$(iwconfig ath1 | grep -Eo "Tx-Power..." | grep -oE [0-9]+)
+	config set txpower_max_ath1="$max_ath1"
+
+	guest_wlg=$(config get wlg1_endis_guestNet)
+	guest_wla=$(config get wla1_endis_guestNet)
+	if [ "x$guest_wla" = "x1" ];then
+		 max_ath01=$(iwconfig ath01 | grep -Eo "Tx-Power..." | grep -oE [0-9]+)
+		config set txpower_max_ath01="$max_ath01"
+	elif [ "x$guest_wlg" = "x1" ];then
+		max_ath11=$(iwconfig ath11 | grep -Eo "Tx-Power..." | grep -oE [0-9]+)
+		config set txpower_max_ath11="$max_ath11"
+	fi
+
+    config set have_set_txpower=1
+
+    config set old_country_code="$current_country_code"
+
+	config set old_wl_channel="$current_wl_channel"
+
+	config set old_wla_channel="$current_wla_channel"
+
+    config commit
+fi
+
+
+percent1=$(config get wla_tpscale)
+
+txpower_max_ath0=$(config get txpower_max_ath0)
+
+if [ "x$guest_wla" = "x1" ];then
+	txpower_max_ath01=$(config get txpower_max_ath01)
+fi
+
+percent2=$(config get wl_tpscale)
+
+txpower_max_ath1=$(config get txpower_max_ath1)
+
+if [ "x$guest_wlg" = "x1" ];then
+	txpower_max_ath11=$(config get txpower_max_ath11)
+fi
+#[ $txpower_max_ath0 -gt 24 ] && return
+#[ $txpower_max_ath01 -gt 24  ] && return
+#[ $txpower_max_ath1 -gt 24  ] && return
+#[ $txpower_max_ath11 -gt 24  ] && return
+
+case $percent1 in
+        100) value1=0 ;;
+        75) value1=1 ;;
+        50) value1=3 ;;
+        25) value1=6 ;;
+esac
+
+case $percent2 in
+		100) value2=0 ;;
+		75) value2=1 ;;
+		50) value2=3 ;;
+		25) value2=6 ;;
+esac
+
+txpower_ath0=$(echo "$txpower_max_ath0 - $value1" | bc)
+txpower_ath1=$(echo "$txpower_max_ath1 - $value2" | bc)
+
+iwconfig ath0 txpower $txpower_ath0
+iwconfig ath1 txpower $txpower_ath1
+
+if [ "x$guest_wla" = "x1" ];then
+	txpower_ath01=$(echo "$txpower_max_ath01 - $value1" | bc)
+	iwconfig ath01 txpower $txpower_ath01
+fi
+
+if [ "x$guest_wlg" = "x1" ];then
+	txpower_ath11=$(echo "$txpower_max_ath11 - $value2" | bc)
+	iwconfig ath11 txpower $txpower_ath11
+fi

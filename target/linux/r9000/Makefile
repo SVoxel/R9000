@@ -14,7 +14,7 @@ CPU_TYPE:=cortex-a15
 CPU_SUBTYPE:=neon
 #MAINTAINER:=Florian Fainelli <florian@openwrt.org>
 
-CFLAGS:=-O2 -pipe -mcpu=cortex-a15 -mfpu=neon-vfpv4 -mtune=cortex-a15
+CFLAGS:=-O2 -pipe -mcpu=cortex-a15 -mfpu=neon-vfpv4 -funsafe-math-optimizations -mtune=cortex-a15
 
 CUSTOMER:=dni
 LINUX_VERSION:=3.10.20

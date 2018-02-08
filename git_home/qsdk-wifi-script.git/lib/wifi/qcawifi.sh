@@ -431,6 +431,8 @@ enable_qcawifi() {
 	config_get channel "$device" channel
 	config_get vifs "$device" vifs
 	config_get txpower "$device" txpower
+	config_get tpscale "$device" tpscale
+	[ -n "$tpscale" ] && iwpriv "$phy" tpscale "$tpscale"
 
 	[ auto = "$channel" ] && channel=0
 
@@ -732,6 +734,12 @@ enable_qcawifi() {
 			continue
 		}
 		config_set "$vif" ifname "$ifname"
+		if [ $3 ]; then
+			if [ "$3" != "$ifname" ]; then
+				echo "~~~~~~~~~ $3 != $ifname, skip ~~~~~~~~~"
+				continue
+			fi
+		fi 
 
 		config_get hwmode "$device" hwmode auto
 		config_get htmode "$device" htmode auto
@@ -1399,6 +1407,12 @@ enable_qcawifi() {
 		# Force assocwar160 enabled when HT80_80 or HT160 is selected
 		[ "$htmode" = "HT80_80" -o "$htmode" = "HT160" ] && iwpriv "$ifname" assocwar160 1
 
+		config_get rawdwepind "$vif" rawdwepind
+		[ -n "$rawdwepind" ] && iwpriv "$ifname" rawdwepind "$rawdwepind"
+
+		config_get revsig160  "$vif" revsig160
+		[ -n "$revsig160" ] && iwpriv "$ifname" revsig160 "$revsig160"
+
 		if [ "$ODM" != "dni" ]; then
 			local net_cfg bridge
 			net_cfg="$(find_net_config "$vif")"
@@ -1560,9 +1574,6 @@ enable_qcawifi() {
 	iwpriv wifi1 dpd_enable 0
 	sleep 1
 	iwpriv wifi1 dpd_enable 1
-
-	iwpriv "$phy" tpscale 0
-	sleep 5 && config_get tpscale "$device" tpscale && [ -n "$tpscale" ] && iwpriv "$phy" tpscale "$tpscale" &
 }
 
 wifitoggle_qcawifi()
@@ -1781,6 +1792,12 @@ wifiradio_qcawifi()
                     config_get ifname "$vif" ifname
                     isap=`iwconfig $ifname | grep Master`
                     [ -z "$isap" ] && continue
+		    isdown=`echo $isap |grep Not-Associated`
+                    [ -n "$isdown" ] && {
+		       chan=`iwpriv $ifname get_deschan|cut -d: -f2`
+		       echo "$chan"
+		       break;
+	    	    }
                     p_chan=`iwlist $ifname chan | grep Current | awk '{printf "%d\n", substr($5,1,length($5))}'`
                     cur_mode=`iwpriv $ifname g_dni_curmode | cut -d: -f2`
                     is_20=`echo $cur_mode | grep '20'`
@@ -2196,6 +2213,7 @@ detect_qcawifi() {
 	done
 	cd /sys/class/net
 	[ -d wifi0 ] || return
+    [ -f /tmp/.wlan_updateconf_lockfile ] && exit 0
 	for dev in $(ls -d wifi* 2>&-); do
 		found=0
 		config_foreach check_qcawifi_device wifi-device

@@ -7,9 +7,17 @@ SESSION_INFO=/tmp/debug_session
 
 cpu_usage()
 {
-	USAGE=`mpstat 3 1 | grep all | head -1 | awk '{print 100-$12}'`
+	USAGE1=`mpstat -P ALL | sed -n 4p | awk '{print 100-$12}'`
+	echo -e CPU1: "${USAGE1}% \c" > $CPU_INFO
 
-	echo "${USAGE}%" > $CPU_INFO
+        USAGE2=`mpstat -P ALL | sed -n 5p | awk '{print 100-$12}'`
+        echo -e CPU2: "${USAGE2}% \c" >> $CPU_INFO
+
+        USAGE3=`mpstat -P ALL | sed -n 6p | awk '{print 100-$12}'`
+        echo -e CPU3: "${USAGE3}% \c" >> $CPU_INFO
+
+        USAGE4=`mpstat -P ALL | sed -n 7p | awk '{print 100-$12}'`
+        echo -e CPU4: "${USAGE4}% \c" >> $CPU_INFO
 }
 
 mem_usage()

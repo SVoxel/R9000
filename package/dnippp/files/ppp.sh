@@ -119,24 +119,53 @@ cat /proc/uptime | awk '{print\$1}' > /tmp/ppp/ppp_last_conn_time
 staticdns1="\$(config get wan_ether_dns1)"
 staticdns2="\$(config get wan_ether_dns2)"
 if [ "\$(config get wan_proto)" = "pptp" -a "\$(config get wan_pptp_dns_assign)" = "1" ]; then
-        echo nameserver "\$staticdns1" > /tmp/resolv.conf
-        echo nameserver "\$staticdns2" >> /tmp/resolv.conf
         if [ "x\$staticdns1" != "x" ]; then
+				echo nameserver "\$staticdns1" > /tmp/resolv.conf
                 /sbin/route del \$staticdns1
-        elif [ "x\$staticdns2" != "x" ]; then
+		fi
+        if [ "x\$staticdns2" != "x" -a "x\$staticdns1" != "x" ]; then
+				echo nameserver "\$staticdns2" >> /tmp/resolv.conf
                 /sbin/route del \$staticdns2
+		fi
+		if [ "x\$staticdns1" = "x" -a "x\$staticdns2" != "x" ]; then
+				echo nameserver "\$staticdns2" > /tmp/resolv.conf
+				echo nameserver "\$staticdns1" >> /tmp/resolv.conf
+				/sbin/route del \$staticdns2
+		fi		
+		if [ "x\$staticdns2" = "x" -a "x\$staticdns1" != "x" ]; then
+				echo nameserver "\$staticdns2" >> /tmp/resolv.conf
         fi
 elif [ "\$(config get wan_proto)" = "l2tp" -a "\$(config get wan_l2tp_dns_assign)" = "1" ]; then
-        echo nameserver "\$staticdns1" > /tmp/resolv.conf
-        echo nameserver "\$staticdns2" >> /tmp/resolv.conf
         if [ "x\$staticdns1" != "x" ]; then
+				echo nameserver "\$staticdns1" > /tmp/resolv.conf
                 /sbin/route del \$staticdns1
-        elif [ "x\$staticdns2" != "x" ]; then
+		fi
+        if [ "x\$staticdns2" != "x" -a "x\$staticdns1" != "x" ]; then
+				echo nameserver "\$staticdns2" >> /tmp/resolv.conf
                 /sbin/route del \$staticdns2
+		fi
+		if [ "x\$staticdns1" = "x" -a "x\$staticdns2" != "x" ]; then
+				echo nameserver "\$staticdns2" > /tmp/resolv.conf
+				echo nameserver "\$staticdns1" >> /tmp/resolv.conf
+				/sbin/route del \$staticdns2
+		fi		
+		if [ "x\$staticdns2" = "x" -a "x\$staticdns1" != "x" ]; then
+				echo nameserver "\$staticdns2" >> /tmp/resolv.conf
         fi
 elif [ "\$(config get wan_proto)" = "pppoe" -a "\$(config get wan_pppoe_dns_assign)" = "1" ]; then
-        echo nameserver "\$staticdns1" > /tmp/resolv.conf
-        echo nameserver "\$staticdns2" >> /tmp/resolv.conf
+        if [ "x\$staticdns1" != "x" ]; then
+				echo nameserver "\$staticdns1" > /tmp/resolv.conf
+		fi
+        if [ "x\$staticdns2" != "x" -a "x\$staticdns1" != "x" ]; then
+				echo nameserver "\$staticdns2" >> /tmp/resolv.conf
+		fi
+		if [ "x\$staticdns1" = "x" -a "x\$staticdns2" != "x" ]; then
+				echo nameserver "\$staticdns2" > /tmp/resolv.conf
+				echo nameserver "\$staticdns1" >> /tmp/resolv.conf
+		fi		
+		if [ "x\$staticdns2" = "x" -a "x\$staticdns1" != "x" ]; then
+				echo nameserver "\$staticdns2" >> /tmp/resolv.conf
+        fi
 fi
 if [ "\$(config get wan_proto)" = "pptp" -a "\$(config get wan_pptp_wan_assign)" = "0" ]; then
 	cat /tmp/dhcpc_resolv.conf >> /tmp/resolv.conf

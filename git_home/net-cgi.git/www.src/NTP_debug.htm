@@ -1,0 +1,102 @@
+<% http_header("style/form.css", "funcs.js") %>
+<% body_header("", "NTP_debug.htm", "ntp_debug") %>
+<div class="page_title">$ntp_settings</div>
+<style>
+tr{ height:25px; }
+</style>
+<script>
+var cur_time = "<% cur_time() %>";
+var gui_region = "<% cfg_get("GUI_Region") %>";
+var netgear_region = "<% get_firmeare_region() %>";
+cur_time = change_cur_time(cur_time, gui_region);
+
+var cf = document.forms[0];
+var sel_type = "<% cfg_get("ntp_server_type") %>";
+var pri_ntp_ser = "<% cfg_get("manual_ntp_server") %>";
+
+function loadvalue()
+{
+	if(sel_type == "1")
+		cf.ntp_type[1].checked = true;
+	else
+	{	cf.ntp_type[0].checked = true;
+		pri_ntp_ser = "";
+	}
+	cf.pri_ntp.value = pri_ntp_ser;
+}
+
+function click_apply()
+{
+	if(!cf.ntp_type[0].checked && !cf.ntp_type[1].checked)
+	{
+		alert("$ntp_ser_type");
+		return false;
+	}
+	if(cf.ntp_type[1].checked && cf.pri_ntp.value == "")
+	{
+		alert("$ntp_blank");
+		return false;
+	}
+	if(cf.ntp_type[1].checked)
+	{
+		var tmp = cf.pri_ntp.value;
+		if(tmp.slice(0, 7) == "http://")
+			tmp = tmp.slice(7);
+		else if(tmp.slice(0, 8) == "https://")
+			tmp = tmp.slice(8);
+		var i = tmp.indexOf("/");
+		i == -1? i=tmp.length: i=i;
+		tmp = tmp.slice(0, i);
+		var isIP = /^[0-9.]+$$/g.test(tmp);
+		if(isIP)
+		{
+			if(checkipaddr(tmp) == false)
+			{
+				alert("$ntp_invalid_ip");
+				return false;
+			}
+		}
+		else if(!check_domain(tmp))
+		{
+			alert("$ntp_invalid_domain");
+			return false;
+		}
+	}
+	cf.submit();
+}
+
+function check_domain(str)
+{
+	var exp = /^(www\.)?[-a-zA-Z0-9]+(\.[-a-zA-Z0-9]+)+$$/g;
+	return exp.test(str);
+}
+</script>
+
+<input type="hidden" name="conflict_wanlan">
+
+<div class="fix_button">
+<TABLE width=100% border=0 cellpadding=0 cellspacing=2>
+<script>
+	var master="<% cfg_get("http_loginname") %>";
+	if( master =="admin" ){
+		document.write('<TR><TD nowrap colspan=2 align=center><input class="cancel_bt" type="button" name="Cancel" id="cancel" value="$cancel_mark" onClick="location.href=\'NTP_debug.htm\';">&nbsp;&nbsp;<input class="apply_bt" type="button" name="Apply" id="apply" value="$apply_mark" onClick="click_apply();"></TD></TR>');
+	}
+	else
+		document.write('<TR><TD nowrap colspan=2 align=center><input class="cancel1_bt" type="button" name="Cancel" id="cancel" value="$cancel_mark" disabled>&nbsp;&nbsp;<input class="apply1_bt" type="button" name="Apply" id="apply" value="$apply_mark" disabled></TD></TR>');
+</script>
+</TABLE>
+</div>
+
+<div id="main" class="main_top_button">
+<TABLE cellspacing=5 cellPadding=0 width=100% border=0>
+<TR><TD nowrap colspan=2><b style="margin-left:5px;">$ntp_cur_time: <script>document.write(cur_time);</script></b></TD></TR>
+<TR><TD nowrap colspan=2><input type="radio" name="ntp_type" value="0">$ntp_default</TD></TR>
+<TR><TD nowrap colspan=2><input type="radio" name="ntp_type" value="1">$ntp_pre_ser</TD></TR>
+<TR><TD nowrap colspan=2>
+	<span style="position:relative; left:23px;">$ntp_pri_ser<input type="text" name="pri_ntp" size="25" maxlength="128" onfocus="cf.ntp_type[1].checked = true;"></span>
+</TD></TR>
+</TABLE>
+</div>
+</FORM>
+</BODY>
+</HTML>

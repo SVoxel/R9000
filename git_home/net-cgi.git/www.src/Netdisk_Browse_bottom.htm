@@ -1,0 +1,20 @@
+<% http_header("style/form2.css", "/funcs.js") %>
+<% nobody_header("Netdisk_Browse_bottom.htm", "browser_apply") %>
+<input type=hidden name=folder_path value="">
+<script>
+function closeBrowserwindow()
+{
+	window.open('', '_self', '');
+	window.parent.close();
+}
+</script>
+<table width=100%% boder=0 cellpadding=0 sellspacing=3>
+<TR><TD colspan=2 class="spliteline"></TD></TR>
+<tr><td colspan="2">&nbsp;</td></tr>
+<TR><TD colspan=2 align=center>
+<input class="new_sel_dir ui-corner-all" type="button" name="close" value="  $close_win_mark" onClick='closeBrowserwindow();'>
+</TD></TR>  
+</table>
+</form>
+</body>
+</html>

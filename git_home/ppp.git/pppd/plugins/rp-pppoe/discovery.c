@@ -40,12 +40,14 @@ static char const RCSID[] =
 
 #define MAX_AC_NAME_LEN	126
 #define MAX_AC_SIZE	8
+#define MAX_AC_NAME_RETRY 10
 
 struct pppoe_ac_name
 {
 	unsigned short success;
 
 	char ac_name[MAX_AC_NAME_LEN];
+	int fail_counter;
 };
 
 struct pppoe_ac_name ac_names[MAX_AC_SIZE];
@@ -60,7 +62,23 @@ int parse_ac_name(char *name, UINT16_t len)
 
 	for (i = 0; i < pppoe_ac_num; i++) {
 		if (strncmp(name, ac_names[i].ac_name, len) == 0)
-			return ac_names[i].success;
+		{
+			if (ac_names[i].success == 1)
+				return 1;
+			else if ( ac_names[i].success == 0 && ac_names[i].fail_counter < MAX_AC_NAME_RETRY)
+			{
+				ac_names[i].fail_counter++;
+				return 0;
+			}
+			else
+			{
+				/*If auth failed counter is MAX_AC_NAME_RETRY, we should remove this ac name from array*/
+				pppoe_ac_num--;
+				memcpy(&ac_names[i], &ac_names[pppoe_ac_num], sizeof(struct pppoe_ac_name));
+				memset(&ac_names[pppoe_ac_num], 0, sizeof(struct pppoe_ac_name));
+				return 0;
+			}
+		}
 	}
 
 	/* If the AC table is full, we assume the AC name is acceptable. */
@@ -69,6 +87,7 @@ int parse_ac_name(char *name, UINT16_t len)
 	
 	cur_ac_name = &ac_names[pppoe_ac_num++];
 	cur_ac_name->success = 1;
+	cur_ac_name->fail_counter = 0;
 	strncpy(cur_ac_name->ac_name, name, len);
 
 	return 1;
@@ -78,6 +97,7 @@ void cur_ac_fail(void)
 {
 	if (cur_ac_name) {
 		cur_ac_name->success = 0;
+		cur_ac_name->fail_counter++;
 		cur_ac_name = NULL; /* Clear it! :) */
 	}
 }

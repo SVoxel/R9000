@@ -98,6 +98,9 @@ stop0()
 		;;
 	esac
 	op_del_all_brs_vifs
+	[ "x$($CONFIG get ap_old_lan_ipaddr)" != "x" ] && $CONFIG set lan_ipaddr=$($CONFIG get ap_old_lan_ipaddr)
+	$CONFIG unset ap_old_lan_ipaddr
+	$CONFIG commit
 }
 
 start()

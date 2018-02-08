@@ -86,7 +86,12 @@ checkUSBandFolder() # $1:folder name $2:usb serial number $3:usb path
 		local dev_info=`sed -n "/,$sd,sd[a-o]/p" $USB_MAP_TABLE` 
 		local dev=`echo $dev_info |awk -F"," '{print $3}'`
 		local num=`ls /sys/block/$dev/device/scsi_device |awk -F ":" '{print $1}'`
-		local serial=`cat /proc/scsi/usb-storage/$num |grep "Serial" |awk '{print $NF}'`
+		local last_num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $4}'`
+		local serial0=`cat /proc/scsi/usb-storage/$num |grep "Serial" |awk '{print $NF}'`
+		local serial=$serial0
+		if [ "x$last_num" != "x" -a "x$last_num" != "x0" ]; then
+			serial = $serial0$last_num
+		fi
 		echo "TESTE $serial $2"
 		[ "x$serial" != "x$2" ] && continue
 		
@@ -206,7 +211,12 @@ nusb_mount() #1:sd**
 	local dev_info=`sed -n "/,$sd,sd[a-o]/p" $USB_MAP_TABLE` 
 	local dev=`echo $dev_info |awk -F"," '{print $3}'`
 	local num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $1}'`
-	local serial=`cat /proc/scsi/usb-storage/$num |grep "Serial" |awk '{print $NF}'`
+	local last_num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $4}'`
+	local serial0=`cat /proc/scsi/usb-storage/$num |grep "Serial" |awk '{print $NF}'`
+	local serial=$serial0
+	if [ "x$last_num" != "x" -a "x$last_num" != "x0" ]; then
+		serial = $serial0$last_num
+	fi
 	#if [ $serial = $usb_serial ] && [ "$sd_num" = "`echo $usbPath |cut -b 13`" ]; then
     if [ $serial = $usb_serial ]; then
         config set usb_path="/tmp/mnt/$1"

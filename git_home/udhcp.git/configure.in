@@ -102,6 +102,25 @@ AC_ARG_ENABLE(support_option_60,
 	fi
 )
 
+AC_ARG_ENABLE(support_option_77,
+	[AC_HELP_STRING(
+		[--enable-support_option_77],
+		[Support changing the USER CLASS by "-U [USER CLASS]" in dhcpc])
+	],
+	if test x"$enableval" = xyes ; then
+		AC_DEFINE(SUPPORT_OPTION_77)
+	fi
+)
+AC_ARG_ENABLE(support_option_90,
+	[AC_HELP_STRING(
+		[--enable-support_option_90],
+		[Support changing the USER CLASS by "-U [USER CLASS]" in dhcpc])
+	],
+	if test x"$enableval" = xyes ; then
+		AC_DEFINE(SUPPORT_OPTION_90)
+	fi
+)
+
 AC_ARG_ENABLE(support_option_43,
 	[AC_HELP_STRING(
 		[--enable-support_option_43],

@@ -648,6 +648,15 @@ static void init_reboot(unsigned long magic)
 static void shutdown_system(void)
 {
 	sigset_t block_signals;
+	static char cmd[128];
+	struct tm *tm_now;
+	time_t now;
+	time(&now);
+	tm_now = localtime(&now);
+	sprintf(cmd, "/bin/config set Reboot_timestamp=\"%d/%d/%d %d:%d:%d\" >/dev/console",(1900+tm_now->tm_year), (1+tm_now->tm_mon), tm_now->tm_mday,tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
+	system(cmd);
+	system("/bin/config set eventtype=0");
+	system("/bin/config commit");
 
     //some progresses block pppd to send the package.But if put kill pppd here,it will send.
 	system("killall pppd");

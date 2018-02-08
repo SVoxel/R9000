@@ -189,17 +189,9 @@ generate_tpscale()
     eval wl_value=\$`echo $1`_tpscale
 
     if [ "$1" = "wlg" ]; then
-    	if [ "$wlg_super_wifi" == "1" ]; then
-        	uci set wireless.${g_device}.tpscale=0
-	else
-        	uci set wireless.${g_device}.tpscale=${wl_value:-0}
-	fi
+        uci set wireless.${g_device}.tpscale=${wl_value:-0}
     else
-    	if [ "$wla_super_wifi" == "1" ]; then
-        	uci set wireless.${a_device}.tpscale=0
-	else
-        	uci set wireless.${a_device}.tpscale=${wl_value:-0}
-	fi
+        uci set wireless.${a_device}.tpscale=${wl_value:-0}
     fi
 
 }
@@ -739,6 +731,20 @@ generate_mu_mimo()
     fi
 }
 
+generate_lbd()
+{
+    local lbd_enable=
+   
+#   eval lbd_conf_onoff=\$`echo $1`_onoff
+
+    if [ x"$lbd_onoff" = x"1" ]; then
+	   lbd_enable=1
+    else
+	   lbd_enable=0
+    fi
+    uci set lbd.@config[0].Enable=${lbd_enable}
+}
+
 generate_hostapd_debug_level()
 {
     eval wl_hostapd_debug_level=\$`echo $1`_hostapd_debug_level
@@ -777,7 +783,6 @@ if [ "$update_conf" = "wifi" -o "$update_conf" = "all" ]; then
         generate_hwmode "wlg"
         generate_htmode "wlg"
         generate_bf "wlg"
-	generate_tpscale "wlg"
     fi
 
     if [ "$wla_exist" = "on" ]; then
@@ -794,7 +799,6 @@ if [ "$update_conf" = "wifi" -o "$update_conf" = "all" ]; then
         generate_bf "wla"
         generate_implicitbf "wla"
         generate_mu_mimo "wla"
-	generate_tpscale "wla"
     fi
 
     get_intf_onoff _tmp_wlg_onoff "wlg"
@@ -897,6 +901,9 @@ if [ "$update_conf" = "wifi" -o "$update_conf" = "all" ]; then
     uci commit wireless
     sync
 
+    generate_lbd "lbd"
+    uci commit lbd
+    sync
 fi
 
 if [ "$update_conf" = "wigig" -o "$update_conf" = "all" ]; then

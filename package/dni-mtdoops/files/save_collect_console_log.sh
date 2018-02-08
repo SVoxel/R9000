@@ -24,6 +24,10 @@ mtd_oops="$(find_mtd_part 'crashdump')"
 
 /sbin/debug_save_panic_log $mtd_oops
 
+#disable dynamic debug for 11ad
+#[ -f /proc/sys/kernel/printk ] && echo '7' > /proc/sys/kernel/printk
+#[ -f /sys/kernel/debug/dynamic_debug/control ] && echo 'module wil6210 -p' > /sys/kernel/debug/dynamic_debug/control
+
 cd /tmp
 
 # System will zipped all debug files into 1 zip file and save to client browser
@@ -38,7 +42,7 @@ killall tcpdump
 killall tcpdump
 killall basic_log.sh 
 killall console_log.sh 
-killall wireless_log.sh  
+killall wireless_log_detail.sh  
 
 echo close > /sys/devices/platform/serial8250/console
 
@@ -48,15 +52,17 @@ dd if=/dev/mtd_crashdump of=/tmp/panic_log.txt bs=131072 count=2
 [ -f /tmp/Console-log1.txt ] && unix2dos /tmp/Console-log1.txt
 [ -f /tmp/Console-log2.txt ] && unix2dos /tmp/Console-log2.txt 
 [ -f /tmp/basic_debug_log.txt ] && unix2dos /tmp/basic_debug_log.txt
+[ -f /tmp/wirless_log1.txt ] && unix2dos /tmp/wireless_log1.txt
+[ -f /tmp/wirless_log2.txt ] && unix2dos /tmp/wireless_log2.txt
 collect_log=`cat /tmp/collect_debug`
 
 if [ "x$collect_log" = "x1" ];then
-	zip debug-log.zip  panic_log.txt Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap
+	zip debug-log.zip  panic_log.txt Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap wireless_log1.txt wireless_log2.txt
 else
-	zip debug-log.zip NETGEAR_$module_name.cfg  panic_log.txt  Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap
+	zip debug-log.zip NETGEAR_$module_name.cfg  panic_log.txt  Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap wireless_log1.txt wireless_log2.txt
 fi
 
 cd /tmp
-rm -rf debug-usb debug_cpu debug_flash debug_mem debug_mirror_on debug_session NETGEAR_$module_name.cfg panic_log.txt Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap
+rm -rf debug-usb debug_cpu debug_flash debug_mem debug_mirror_on debug_session NETGEAR_$module_name.cfg panic_log.txt Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap wireless_log1.txt wireless_log2.txt
 
 echo 0 > /tmp/collect_debug

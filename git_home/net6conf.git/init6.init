@@ -79,6 +79,9 @@ start() {
 			start_netwall
 			start_radvd
 		fi
+	else
+		echo 0 > /proc/sys/net/ipv6/conf/all/accept_ra
+		${NET6CONF} restart
 	fi
 }
 

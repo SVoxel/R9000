@@ -126,9 +126,14 @@ dhcp6s_write_config() {
 		done < $DHCP6S_DSN
 	fi
 
-	if [ "$lease_time" -gt "0" ]; then
+	if [ "$lease_time" -gt "0" -o "$lease_time" -eq "-1" ]; then
 		printf 'interface %s {\n' "$bridge"
 		printf '\tallow rapid-commit;\n'
+		if [ "$lease_time" -eq "-1" ]; then
+			printf '\taddress-pool pool_netgear %s %s;\n' "infinity" "infinity"
+		else
+			printf '\taddress-pool pool_netgear %s %s;\n' "$pre_time" "$lease_time"
+		fi
 		printf '\taddress-pool pool_netgear %s %s;\n' "$pre_time" "$lease_time"
 		printf '};\n'
 		printf 'pool pool_netgear {\n'
@@ -220,7 +225,7 @@ get_prefix() {
 	*) ;;
 	esac
 
-	printf "$prefix"
+	printf %s "$prefix"
 }
 
 get_dns() {

@@ -26,6 +26,7 @@ PKG_MD5SUM:=13bdc1b1d1ff39b6fd42a255e74676a4
 
 PKG_LICENSE:=OpenSSL
 PKG_LICENSE_FILES:=LICENSE
+PKG_BUILD_DEPENDS:=ocf-crypto-headers
 PKG_CONFIG_DEPENDS:= \
 	CONFIG_OPENSSL_ENGINE_CRYPTO \
 	CONFIG_OPENSSL_ENGINE_DIGEST \
@@ -35,6 +36,8 @@ PKG_CONFIG_DEPENDS:= \
 	CONFIG_OPENSSL_HARDWARE_SUPPORT
 
 include $(INCLUDE_DIR)/package.mk
+
+TARGET_CFLAGS:=-O3 -pipe -mcpu=cortex-a15 -mfpu=neon-vfpv4 -mtune=cortex-a15 -mfloat-abi=hard -fhonour-copts $(FPIC)
 
 ifneq ($(CONFIG_CCACHE),)
 HOSTCC=$(HOSTCC_NOCACHE)
@@ -92,7 +95,7 @@ endef
 
 
 OPENSSL_NO_CIPHERS:= no-idea no-md2 no-mdc2 no-rc5 no-sha0 no-camellia no-krb5
-OPENSSL_OPTIONS:= shared no-err zlib-dynamic no-sse2 no-ssl2
+OPENSSL_OPTIONS:= shared zlib-dynamic no-sse2 no-ssl2
 
 ifdef CONFIG_OPENSSL_ENGINE_CRYPTO
   OPENSSL_OPTIONS += -DHAVE_CRYPTODEV
@@ -126,8 +129,8 @@ else
   OPENSSL_OPTIONS+=no-sse2
   ifeq ($(CONFIG_mips)$(CONFIG_mipsel),y)
     OPENSSL_TARGET:=linux-mips-openwrt
-#  else ifeq ($(CONFIG_arm)$(CONFIG_armeb),y)
-#    OPENSSL_TARGET:=linux-armv4-openwrt
+  else ifeq ($(CONFIG_arm)$(CONFIG_armeb),y)
+    OPENSSL_TARGET:=linux-armv4-openwrt
   else
     OPENSSL_TARGET:=linux-generic-openwrt
     OPENSSL_OPTIONS+=no-perlasm
@@ -147,7 +150,7 @@ define Build/Configure
 			--openssldir=/etc/ssl \
 			$(TARGET_CPPFLAGS) \
 			$(TARGET_LDFLAGS) -ldl \
-			-DOPENSSL_SMALL_FOOTPRINT \
+			-DNDEBUG \
 			$(OPENSSL_NO_CIPHERS) \
 			$(OPENSSL_OPTIONS) \
 	)
@@ -161,7 +164,6 @@ define Build/Configure
 		depend
 endef
 
-TARGET_CFLAGS += $(FPIC) -I$(CURDIR)/include
 
 define Build/Compile
 	+$(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR) \
@@ -208,6 +210,8 @@ define Package/libopenssl/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/libcrypto.so.* $(1)/usr/lib/
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/libssl.so.* $(1)/usr/lib/
+	(cd $(1)/usr/lib; $(LN) libcrypto.so.1.0.0 libcrypto.so.0.9.8)
+	(cd $(1)/usr/lib; $(LN) libssl.so.1.0.0 libssl.so.0.9.8)
 endef
 
 define Package/openssl-util/install

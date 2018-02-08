@@ -49,7 +49,7 @@ endef
 
 CONFIGURE_ARGS += --prefix=/usr
 
-TARGET_CFLAGS:=-O3 -pipe -mcpu=cortex-a15 -mfpu=neon-vfpv4 -mtune=cortex-a15 -mfloat-abi=hard
+TARGET_CFLAGS:=-O3 -pipe -mcpu=cortex-a15 -mfpu=neon-vfpv4 -funsafe-math-optimizations -mtune=cortex-a15 -mfloat-abi=hard
 
 define Build/Configure
 	$(Build/Configure/Default)

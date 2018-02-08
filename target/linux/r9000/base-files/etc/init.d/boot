@@ -136,6 +136,13 @@ start() {
 		commit_flag=1
 	fi
 
+	#get Production time to /tmp/protime
+	pro_time1=`/sbin/artmtd -r protime|grep Usage`
+	pro_time2=`/sbin/artmtd -r protime|cut -d ":" -f 2`
+	pro_oldtime=20170501
+	if [ "x$pro_time1" != "xUsage" ] && [ $pro_time2 -gt $pro_oldtime ]; then
+		/bin/config set new_sold_board=1
+	fi
 	#read wpspin from flash to /tmp/wpspin
 	/sbin/artmtd -r wpspin
 	#read serial number from flash to /tmp/Seria_Number
@@ -320,9 +327,6 @@ start() {
 	# Run FAN default setting
 	if [ "$(/bin/config get factory_mode)" = "1" ];then
 		echo 3500 > /sys/bus/i2c/devices/0-003e/fan1_target
-		if [ "$(/bin/config get openvpn_update)" != "1" ];then
-			/bin/openvpn_update &
-		fi
 
 	else
 		/sbin/fan_algoritham boot > /dev/console

@@ -12,6 +12,7 @@ WAN_PROTO=$($CONFIG get wan_proto)
 WAN6_PROTO=$($CONFIG get ipv6_type)
 LAN_NETMASK=$($CONFIG get lan_netmask)
 WAN_IPUP="/sbin/wan-ipup"
+IPTABLES="/usr/sbin/iptables" 
 
 SR33_FILE="/tmp/udhcpc_static_route"
 CSR121_FILE="/tmp/udhcpc_classless_static_route"
@@ -122,6 +123,7 @@ $ECHO -n > "$CSR249_FILE"
 
 case "$1" in
 	deconfig)
+	if [ "$interface" = "brwan" ]; then
 		#in russia dynamic pppoe,it will need udhcpc to realize Ethernet Interface 
 		if [ "$WAN_PROTO" != "pppoe" ]; then
 			killall pppd
@@ -142,9 +144,14 @@ case "$1" in
 		/usr/bin/killall -SIGINT ripd 2> /dev/null
 		/sbin/cmdroute restart
 		/usr/sbin/ripd
+	else
+		# Just set the Orange IPTV/VOD WAN interface's IP address to be 0.0.0.0
+		$IFCONFIG $interface 0.0.0.0 
+	fi
 		;;
 
 	bound)
+	if [ "$interface" = "brwan" ]; then
 		old_ip=$($CONFIG get wan_dhcp_ipaddr)
 		$IFCONFIG $interface $ip $BROADCAST $NETMASK && $CONFIG set wan_dhcp_ipaddr=$ip && $CONFIG set wan_dhcp_oldip=$ip && $CONFIG set wan_dhcp_netmask=$subnet
 
@@ -235,9 +242,16 @@ case "$1" in
 				if compare_the_same_subnet "$ip" "$i" "$subnet"; then
 					$ROUTE add -net $i netmask 255.255.255.255 dev $interface
 				fi
-				$ROUTE add default gw $i dev $interface 
+				#VLAN832 is for Orange Internet WAN; VLAN838 is for VOD
+				if [ "$interface" != "br838" ]; then
+					$ROUTE add default gw $i dev $interface
+				fi
 			done
-			$CONFIG set wan_dhcp_gateway=$router
+			#VLAN832 is for Orange Internet WAN; VLAN838 is for VOD
+			if [ "$interface" != "br838" ]; then
+				$CONFIG set wan_dhcp_gateway=$router
+			fi
+
 		fi
 
 		# Run /sbin/wan-ipup after checking ipconflict
@@ -351,9 +365,47 @@ case "$1" in
 			# If upgrade FW, need to update stremboost database
 			sb_update_database
 		fi
+	else
+		echo "*** Enter WAN $interface DHCP bound state with IP $ip and netmask $NETMASK..."
+		$IFCONFIG $interface $ip $BROADCAST $NETMASK
+		if [ -n "$router" ]; then
+			while $ROUTE del default gw 0.0.0.0 dev $interface >&- 2>&-; do
+				:
+			done
+			for i in $router ; do 
+				if compare_the_same_subnet "$ip" "$i" "$subnet"; then 
+					$ROUTE add -net $i netmask 255.255.255.255 dev $interface
+				fi
+			done
+		fi
+
+		#configure firewall for non-default WAN
+		$IPTABLES -D INPUT  -p 2 -i $interface -j ACCEPT
+		$IPTABLES -I INPUT 7 -p 2 -i $interface -j ACCEPT
+		$IPTABLES -D INPUT  -i $interface -j brwan_in
+		$IPTABLES -I INPUT 9 -i $interface -j brwan_in
+		$IPTABLES -D FORWARD  -p udp -i $interface -o br0 -d 224.0.0.0/4 -j ACCEPT
+		$IPTABLES -I FORWARD 1 -p udp -i $interface -o br0 -d 224.0.0.0/4 -j ACCEPT
+		$IPTABLES -D FORWARD -p udp --dport 5000 -i br0 -o $interface -j ACCEPT
+		$IPTABLES -I FORWARD 1 -p udp --dport 5000 -i br0 -o $interface -j ACCEPT
+		$IPTABLES -D FORWARD -p tcp --dport 8554 -i br0 -o $interface -j ACCEPT
+		$IPTABLES -I FORWARD 1 -p tcp --dport 8554 -i br0 -o $interface -j ACCEPT
+		$IPTABLES -D FORWARD -p tcp --dport 443 -i br0 -o $interface -j ACCEPT
+		$IPTABLES -I FORWARD 1 -p tcp --dport 443 -i br0 -o $interface -j ACCEPT
+		$IPTABLES -D OUTPUT  -p 2 -o $interface -j ACCEPT 
+		$IPTABLES -I OUTPUT 1 -p 2 -o $interface -j ACCEPT 
+		$IPTABLES -t nat -D POSTROUTING -o $interface -j brwan_masq
+		$IPTABLES -t nat -A POSTROUTING -o $interface -j brwan_masq
+		$IPTABLES -t nat -D PREROUTING -p udp -i $interface -d 224.0.0.0/4 -j ACCEPT 
+		$IPTABLES -t nat -A PREROUTING -p udp -i $interface -d 224.0.0.0/4 -j ACCEPT 
+
+		#start igmpproxy
+		/sbin/cmdigmp start 
+	fi
 		;;
 	renew)
-		echo "Enter renew"		
+		echo "Enter renew"
+	if [ "$interface" = "brwan" ]; then		
 		old_ip=$($CONFIG get wan_dhcp_ipaddr)
 		$IFCONFIG $interface $ip $BROADCAST $NETMASK && $CONFIG set wan_dhcp_ipaddr=$ip && $CONFIG set wan_dhcp_oldip=$ip && $CONFIG set wan_dhcp_netmask=$subnet
 
@@ -565,6 +617,44 @@ case "$1" in
 			# If upgrade FW, need to update stremboost database
 			sb_update_database
 		fi
+	else
+		echo "*** Enter WAN $interface DHCP renew state with IP $ip and netmask $NETMASK..."
+		$IFCONFIG $interface $ip $BROADCAST $NETMASK
+		if [ -n "$router" ]; then 
+			while $ROUTE del default gw 0.0.0.0 dev $interface >&- 2>&-; do
+				:
+			done
+			for i in $router ; do
+				if compare_the_same_subnet "$ip" "$i" "$subnet"; then
+					$ROUTE del -net $i netmask 255.255.255.255 dev $interface
+					$ROUTE add -net $i netmask 255.255.255.255 dev $interface 
+				fi
+			done
+		fi
+
+		#configure firewall for non-default WAN
+		$IPTABLES -D INPUT -p 2 -i $interface -j ACCEPT
+		$IPTABLES -I INPUT 7 -p 2 -i $interface -j ACCEPT
+		$IPTABLES -D INPUT -i $interface -j brwan_in
+		$IPTABLES -I INPUT 9 -i $interface -j brwan_in
+		$IPTABLES -D FORWARD -p udp -i $interface -o br0 -d 224.0.0.0/4 -j ACCEPT
+		$IPTABLES -I FORWARD 1 -p udp -i $interface -o br0 -d 224.0.0.0/4 -j ACCEPT 
+		$IPTABLES -D FORWARD -p udp --dport 5000 -i br0 -o $interface -j ACCEPT
+		$IPTABLES -I FORWARD 1 -p udp --dport 5000 -i br0 -o $interface -j ACCEPT
+		$IPTABLES -D FORWARD -p tcp --dport 8554 -i br0 -o $interface -j ACCEPT
+		$IPTABLES -I FORWARD 1 -p tcp --dport 8554 -i br0 -o $interface -j ACCEPT
+		$IPTABLES -D FORWARD -p tcp --dport 443 -i br0 -o $interface -j ACCEPT
+		$IPTABLES -I FORWARD 1 -p tcp --dport 443 -i br0 -o $interface -j ACCEPT
+		$IPTABLES -D OUTPUT -p 2 -o $interface -j ACCEPT
+		$IPTABLES -I OUTPUT 1 -p 2 -o $interface -j ACCEPT
+		$IPTABLES -t nat -D POSTROUTING -o $interface -j brwan_masq
+		$IPTABLES -t nat -A POSTROUTING -o $interface -j brwan_masq 
+		$IPTABLES -t nat -D PREROUTING -p udp -i $interface -d 224.0.0.0/4 -j ACCEPT 
+		$IPTABLES -t nat -A PREROUTING -p udp -i $interface -d 224.0.0.0/4 -j ACCEPT 
+
+		 #start igmpproxy 
+		 /sbin/cmdigmp start 
+	fi
 		;;
 esac
 

@@ -14,6 +14,8 @@ app_pid_file=/var/run/$appname.pid
 app_info_file=/tmp/$appname.info
 app_tgz_file=/tmp/$appname.tar.gz
 app_update_url="ftp://updates1.netgear.com/sw-apps/$appname/$modelname/"
+app_update_url_ftp="ftp://updates1.netgear.com/sw-apps/$appname/$modelname/"
+app_update_url_https="https://updates1.netgear.com/sw-apps/$appname/$modelname/"
 #app_update_url="-u user:passwd ftp://172.16.83.218/tmp/$modelname/"
 
 app_updated_file="/tmp/.$appname.updated"
@@ -186,6 +188,11 @@ update()
 	oc echo "[$appname] start to get info from update-sever : $app_update_url"
 	retry=0
 	while [ 1 ]; do
+		app_update_url=$app_update_url_https
+		curl -l $app_update_url 2>/dev/null | filter_app_info > $app_info_file
+		[ -s $app_info_file ] && break
+
+		app_update_url=$app_update_url_ftp
 		curl -l $app_update_url 2>/dev/null | filter_app_info > $app_info_file
 		[ -s $app_info_file ] && break
 

@@ -17,7 +17,7 @@ include $(INCLUDE_DIR)/package.mk
 EXTRA_CFLAGS += -DNETGEAR_getifaddrs -DNETGEAR_lease_phase \
 	-DNETGEAR_reconfig -DNETGEAR_user_class -DNETGEAR_select_server \
 	-DNETGEAR_dhcp6c_gw -DNETGEAR_dhcp6c_dad -DNETGEAR_dhcp6s_iata \
-	-DNETGEAR_script -DNETGEAR_dhcp6c_inforeq -DKERNEL_NO_IN6_PKTINFO -I./missing
+	-DNETGEAR_script -DNETGEAR_dhcp6c_inforeq -DNETGEAR_DHCPV6_OPTION16 -DKERNEL_NO_IN6_PKTINFO -I./missing
 CONFIGURE_ARGS += --sysconfdir=/etc --with-localdbdir=/tmp
 
 define Package/wide-dhcpv6/Default

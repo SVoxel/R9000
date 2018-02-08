@@ -225,8 +225,8 @@ sw_init()
 	$ssdk_sh_id 0 debug reg set 0x614 0x80020002 4
 
 	# do not learn mac address on internal trunk 5
-	$ssdk_sh_id 0 fdb portLearn set 5 disable
-	$ssdk_sh_id 0 fdb fdb entry flush 0
+	#$ssdk_sh_id 0 fdb portLearn set 5 disable
+	#$ssdk_sh_id 0 fdb fdb entry flush 0
 
 	# For rfc packet lose issue
 	$ssdk_sh_id 0 debug reg set 0x94 0x7e 4
@@ -345,6 +345,7 @@ sw_print_ssdk_cmds_add_vlan() # $1: swid, $2: vlanindext, $3: vlanid, $4: trunk_
 	local trunk_ports="$4"
 	local access_ports="$5"
 	local vlan_mode="$6"
+	local vlan_enable_bridge=$($CONFIG get vlan_tag_enable_bridge)
 	
 	# Set Prot VLAN ID, Ingress Mode, Egress Mode.
 	local pp
@@ -358,14 +359,22 @@ $ssdk_sh_id $swid portvlan egress set $pp tagged
 EOF
 		elif [ "$vlan_mode" = "vlan_br" -o "$vlan_mode" = "vlan_wan" ]; then
 			if [ "$swid" = "$WAN_SID" -a "$pp" = "$WAN_PID" ]; then
+				if [ "$vlanid" != "838" -a "$vlanid" != "840" ]; then
 			cat <<EOF
 $ssdk_sh_id $swid portvlan defaultCVid set $pp $vlanid
 $ssdk_sh_id $swid portvlan ingress set $pp check
-$ssdk_sh_id $swid portvlan egress set $pp tagged
+$ssdk_sh_id $swid portvlan egress set $pp unmodified
 EOF
+#				else
+#			cat <<EOF
+#$ssdk_sh_id $swid portvlan defaultCVid set $pp $vlanid
+#$ssdk_sh_id $swid portvlan ingress set $pp check
+#$ssdk_sh_id $swid portvlan egress set $pp tagged
+#EOF
+				fi
 			fi
 		elif [ "$vlan_mode" = "iptv" ]; then
-			if [ "$swid" = "$WAN_SID" -a "$pp" = "5" ]; then
+			if [ "$swid" = "$WAN_SID" -a "$pp" = "5" -a "$vlan_enable_bridge" != "1"]; then
 			cat <<EOF
 $ssdk_sh_id $swid portvlan defaultCVid set $pp $vlanid
 $ssdk_sh_id $swid portvlan ingress set $pp check
@@ -434,7 +443,9 @@ sw_user_lan_ports_vlan_config() # $1: vlanid $2: LAN Ports, $3: Is_Bridge_VLAN $
 	local is_wan_vlan="$4"
 	local is_iptv_vlan="$5"
 	local vlan_mode="$6"
-	
+	local vlan_enable_bridge=$($CONFIG get enable_orange)
+	local iptv_vlan_enable=$($CONFIG get iptv_vlan_enable)
+
 	local sw0_trunk_ports="0 5 4 6"
 	local sw0_access_ports=""
 	local sw1_trunk_ports="0 5"
@@ -444,6 +455,8 @@ sw_user_lan_ports_vlan_config() # $1: vlanid $2: LAN Ports, $3: Is_Bridge_VLAN $
 	for lan_pp in $lan_ports; do
 		[ "x$lan_pp" = "x" ] && continue
 		[ $lan_pp -lt 1 -o $lan_pp -gt 6 ] && continue
+		[ "$iptv_vlan_enable" = "1" -a "$vlan_mode" = "iptv" ] && continue
+		[ "$vlan_enable_bridge" = "1" -a "$vlan_mode" = "iptv" ] && continue
 		if [ "$(eval echo "$""LAN"$lan_pp"_SID")" = "0" ]; then
 			sw0_access_ports="$sw0_access_ports $(eval echo "$""LAN"$lan_pp"_PID")"
 		else
@@ -467,13 +480,38 @@ sw_user_lan_ports_vlan_config() # $1: vlanid $2: LAN Ports, $3: Is_Bridge_VLAN $
 		fi
 	fi
 
-	if [ "$is_iptv_vlan" = "1" ]; then 
+	if [ "$is_iptv_vlan" = "1" ]; then	
+		if [ "$iptv_vlan_enable" = "1" -o "$vlan_enable_bridge" = "1" ]; then
+			if ["$vlan_enable_bridge" = "1"]; then
+				sw0_trunk_ports="3 4 6"
+			else	
+				sw0_trunk_ports="3 5 4 6"
+			fi
+			if [ "$vlan_mode" = "iptv" ]; then
+				for lan_pp in $lan_ports; do
+					[ "x$lan_pp" = "x" ] && continue
+					[ $lan_pp -lt 1 -o $lan_pp -gt 6 ] && continue
+					if [ "$(eval echo "$""LAN"$lan_pp"_SID")" = "0" ]; then
+						sw0_trunk_ports="$sw0_trunk_ports $(eval echo "$""LAN"$lan_pp"_PID")"
+					else
+						sw1_trunk_ports="$sw1_trunk_ports $(eval echo "$""LAN"$lan_pp"_PID")"
+					fi
+				done
+			fi
+		else
 			sw0_trunk_ports="5 4 6"
 			sw0_access_ports="$sw0_access_ports 3"
+		fi
 	fi
 
 	if [ "$vlan_mode" = "iptv_lan" ]; then
-			sw0_trunk_ports="0 4 6"
+		sw0_trunk_ports="0 4 6"
+
+		if [ "$iptv_vlan_enable" = "1" ]; then
+			echo "*** FreeISP access ports settings"
+			sw0_access_ports="2 1"
+			sw1_access_ports="4 3 2 1"
+		fi
 	fi
 
 	if [ "$vlan_mode" = "normal_lan" ]; then
@@ -580,6 +618,8 @@ sw_configvlan_iptv() # $1: iptv_mask
 	local lan_ports=""
 	local iptv_ports=""
 	local i
+	local iptv_vlan_enable=$($CONFIG get iptv_vlan_enable)
+	local iptv_vlan=$($CONFIG get iptv_vlan)
 
 	for i in 1 2 3 4 5 6; do
 		[ $(( $(i_mask $i) & $mask )) -eq 0 ] && lan_ports="$lan_ports $i" || iptv_ports="$iptv_ports $i"
@@ -588,8 +628,12 @@ sw_configvlan_iptv() # $1: iptv_mask
 	sw_print_ssdk_cmds_start > $ssdk_cmds_new_file
 	sw_print_ssdk_cmds_flush_vlan >> $ssdk_cmds_new_file
 	sw_user_lan_ports_vlan_config "1" "$lan_ports" "0" "0" "0" "iptv_lan"
-	sw_user_lan_ports_vlan_config "2" "$iptv_ports" "0" "0" "1" "iptv"
-
+	if [ "$iptv_vlan_enable" = "1" ]; then
+		sw_user_lan_ports_vlan_config "$iptv_vlan" "$iptv_ports" "0" "0" "1" "iptv"
+		sw_user_lan_ports_vlan_config "10" "" "0" "1" "0" "vlan_wan"
+	else
+		sw_user_lan_ports_vlan_config "2" "$iptv_ports" "0" "0" "1" "iptv"
+	fi
 	qt sh $ssdk_cmds_new_file
 }
 
@@ -619,13 +663,19 @@ sw_configvlan_vlan()
 				sw_user_lan_ports_vlan_config "$vid" "$ports" "1" "0" "0" "vlan"
 				sw_print_ssdk_cmds_set_ports_pri "$ports" "$pri" >> $ssdk_cmds_new_file
 				;;
+			iptv)
+				sw_user_lan_ports_vlan_config "$vid" "$ports" "0" "0" "1" "iptv"
+				sw_print_ssdk_cmds_set_ports_pri "$ports" "$pri" >> $ssdk_cmds_new_file
+				;;
 			wan) 
 				sw_user_lan_ports_vlan_config "$vid" "" "0" "1" "0" "vlan_wan"
 				sw_print_ssdk_cmds_set_wan_port_pri "$pri" >> $ssdk_cmds_new_file
 				;;
 			br) 
 				sw_user_lan_ports_vlan_config "$vid" "" "1" "1" "0" "vlan_br"
-				sw_print_ssdk_cmds_set_wan_port_pri "$pri" >> $ssdk_cmds_new_file
+				if [ "$vid" != "838" -a "$vid" != "840" ]; then
+					sw_print_ssdk_cmds_set_wan_port_pri "$pri" >> $ssdk_cmds_new_file
+				fi
 				;;
 		esac
 

@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+
+<head>
+<% hijack_title() %>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="style/hijack_style.css" />
+<link rel="stylesheet" type="text/css" href="style/hijack_03C_haveOrange.css" />
+<script language="javascript" type="text/javascript" src="script/brs_hijack.js"></script>
+<script language="javascript" type="text/javascript" src="script/brs_hijack_03C_haveOrange.js"></script>
+<script language="javascript" type="text/javascript" src="script/funcs.js"></script>
+<% hijack_language() %>
+</head>
+
+<body>
+<% form_submit("apply", "BRS_security.html", "hijack_orange") %>
+<script>
+var master="<% cfg_get("http_loginname") %>";
+function change_type()
+{
+	var form=document.forms[0];
+	if(form.Orange_type.value == "orange_dhcp")
+		document.getElementById("orange_passwd").style.display = "none";
+	else
+		document.getElementById("orange_passwd").style.display = "";
+}
+</script>
+<input type="hidden" name="hidden_enable_orange">
+<div class="wizard_content_div">
+	<div class="wizard_words_div">
+		<table>
+			<tbody>
+				<tr><td>My ISP Profile</td>
+				<td><select class="Orange_sel" name="Orange_type" size="1" onchange="change_type()">
+				<option value="orange_dhcp" selected>Orange France DHCP</option>
+				<option value="orange_pppoe">Orange France PPPoE</option>
+				</tr>
+				<tr><td>Login Name</td>
+				<td><input type="text" id="orange_login" name="orange_login" maxlength="64" align="right" autocomplete="off" onKeyPress="return getkey('ssid', event)"></td>
+				</tr>
+				<tr name="orange_passwd" id="orange_passwd" style="display:none"><td>Password</td>
+				<td><input type="text" id="orange_passwd" name="orange_passwd" maxlength="64" align="right" size="16" autocomplete="off" onKeyPress="return getkey('ssid', event)"></td>
+				</tr>
+				<tr>
+				<td><input type="checkbox" name="enable_orange" id="enable_orange">Enable Orange TV</td></tr>
+			</tbody>
+		</table>
+	</div>
+	<div id="allBtns_div" class="wizard_buttons_div" align="center">
+		<div id="btnsContainer_div1" class="buttons_img_div" align="center">
+			<input type="button" name="Back" id="back" class="purple_short_btn"><!--back_mark-->
+		</div>
+		<div class="buttons_split"></div>
+		<div id="btnsContainer_div2" class="buttons_img_div" align="center">
+			<input type="button" name="Next" id="next" class="purple_short_btn"><!--next_mark-->
+		</div>
+	</div>
+</div>
+</form>
+</body>
+</html>

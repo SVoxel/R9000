@@ -1174,9 +1174,9 @@ int get_lan_linklocal_ipaddr6(struct in6_addr *inp6, int global_flag)
 	#undef IPV6_ADDR_LINKLOCAL
 	#undef IPV6_ADDR_GLOBAL
 	
+	fclose(fp);
         if (0 == inp6->s6_addr16[0])
                 return -1;
-	fclose(fp);
 	return 0;
 }
 
@@ -1204,6 +1204,7 @@ size_t answer_request(HEADER *header, char *limit, size_t qlen, struct daemon *d
      forward rather than answering from the cache, which doesn't include
      security information. */
 
+  my_syslog(LOG_INFO, "answer_request domain is %s\n", name);
   if (find_pseudoheader(header, qlen, NULL, &pheader, &is_sign))
     { 
       unsigned short udpsz, ext_rcode, flags;
@@ -1225,17 +1226,19 @@ size_t answer_request(HEADER *header, char *limit, size_t qlen, struct daemon *d
       dryrun = 1;
     }
 
-  if (!qdcount || header->opcode != QUERY )
+  if (!qdcount || header->opcode != QUERY ) {
+	my_syslog(LOG_INFO, " qdcount= %d\n", qdcount);
     return 0;
-  
+  }
   for (rec = daemon->mxnames; rec; rec = rec->next)
     rec->offset = 0;
   
  rerun:
   /* determine end of question section (we put answers there) */
-  if (!(ansp = skip_questions(header, qlen)))
+  if (!(ansp = skip_questions(header, qlen))) {
+	my_syslog(LOG_INFO, "ansp %s\n", ansp);
     return 0; /* bad packet */
-   
+   }
   /* now process each question, answers go in RRs after the question */
   p = (unsigned char *)(header+1);
 
@@ -1245,9 +1248,10 @@ size_t answer_request(HEADER *header, char *limit, size_t qlen, struct daemon *d
       nameoffset = p - (unsigned char *)header;
 
       /* now extract name as .-concatenated string into name */
-      if (!extract_name(header, qlen, &p, name, 1))
+      if (!extract_name(header, qlen, &p, name, 1)) {
+		my_syslog(LOG_INFO, "extract_name bad packet");
 	return 0; /* bad packet */
-            
+    }
       GETSHORT(qtype, p); 
       GETSHORT(qclass, p);
 
@@ -1595,8 +1599,10 @@ size_t answer_request(HEADER *header, char *limit, size_t qlen, struct daemon *d
       {
 	#if 1
 #ifndef HAVE_IPV6
-	if (qtype != T_A || qclass != C_IN)
+	if (qtype != T_A || qclass != C_IN) {
+		my_syslog(LOG_INFO, "qtype is %d, qclass is %d\n", qtype, qclass);
 		return 0; /* we only do IPv4 Address */
+	}
 #endif
 	static char *pass_domains[] = {
 		"as.xboxlive.com",
@@ -1667,8 +1673,10 @@ size_t answer_request(HEADER *header, char *limit, size_t qlen, struct daemon *d
 	for (i = 0, hijackdomain = 0; hijack_domains[i]; i++) {
 	    if (strcmp(name, hijack_domains[i]) == 0) {
 #ifdef HAVE_IPV6
-		if ((qtype != T_A && qtype != T_AAAA && qtype != T_A6) || qclass != C_IN)
+		if ((qtype != T_A && qtype != T_AAAA && qtype != T_A6) || qclass != C_IN) {
+			my_syslog(LOG_INFO, "ipv6 qtype is  %d, qclass is %d\n", qtype, qclass);
 			return -1;//We would do nothing for this kind of request.
+		}
 #endif
 		hijackdomain = 1;
 		break;
@@ -1679,8 +1687,10 @@ size_t answer_request(HEADER *header, char *limit, size_t qlen, struct daemon *d
 	    if (!hijackdomain) {
 		/* In DNS Hijack mode now: MUST `in_hijack != 0`. */
 		for (i = 0; pass_domains[i]; i++) {
-		    if (strcmp(name, pass_domains[i]) == 0)
+		    if (strcmp(name, pass_domains[i]) == 0) {
+			my_syslog(LOG_INFO, "In DNS Hijack mode\n" );
 			return 0;
+			}
 		}
 	    }
 
@@ -1693,14 +1703,18 @@ size_t answer_request(HEADER *header, char *limit, size_t qlen, struct daemon *d
 	     */
 		if (qtype == T_AAAA || qtype == T_A6) {
 		    if (get_lan_linklocal_ipaddr6(&addr.addr.addr6, 1)){
-		        if (get_lan_linklocal_ipaddr6(&addr.addr.addr6, 0))
+		        if (get_lan_linklocal_ipaddr6(&addr.addr.addr6, 0)) {
+					my_syslog(LOG_INFO, "get_lan_linklocal_ipaddr6 fail\n");
 		            return 0;
+				}
 		    }
 		    if (add_resource_record(header, limit, &trunc, nameoffset, &ansp, 0, NULL, T_AAAA, C_IN, "6", &addr))
 		        anscount++;
 		} else {
-		    if (!get_lan_ipaddr(&addr.addr.addr4))
+		    if (!get_lan_ipaddr(&addr.addr.addr4)) {
+				my_syslog(LOG_INFO, "get_lan_ipaddr fail\n");
 		        return 0;
+			}
 		    if (add_resource_record(header, limit, &trunc, nameoffset, &ansp, 0, NULL, T_A, C_IN, "4", &addr))
 		        anscount++;
 		}
@@ -1709,6 +1723,7 @@ size_t answer_request(HEADER *header, char *limit, size_t qlen, struct daemon *d
 	    continue;
 	}
 	#endif
+	my_syslog(LOG_INFO, "hijackdomain is %d  in_hijack is %d\n", hijackdomain, in_hijack);
 	return 0; /* failed to answer a question */
       }
     }
@@ -1764,6 +1779,7 @@ size_t answer_request(HEADER *header, char *limit, size_t qlen, struct daemon *d
   header->ancount = htons(anscount);
   header->nscount = htons(0);
   header->arcount = htons(addncount);
+	my_syslog(LOG_INFO, "last return\n");
   return ansp - (unsigned char *)header;
 }
 

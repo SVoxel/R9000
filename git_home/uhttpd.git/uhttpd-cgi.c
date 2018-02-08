@@ -492,6 +492,8 @@ void uh_cgi_request(
 
 					else if( ! strcasecmp(req->headers[i], "If-Match") )
 						setenv("HTTP_IF_MATCH", req->headers[i+1], 1);
+					else if (!strcasecmp(req->headers[i], "X-Forwarded-For"))
+						setenv("REMOTE_ADDR", strtok(req->headers[i+1], ","), 1);
 
 				}
 

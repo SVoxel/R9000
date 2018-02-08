@@ -1,1 +1,1 @@
-wil6210 led_id=2
+wil6210 led_id=2 no_fw_recovery=1

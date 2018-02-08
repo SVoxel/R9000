@@ -47,6 +47,7 @@ define Package/wlan-common/install
 	$(INSTALL_DIR) $(1)/sbin
 	cp -af $(PKG_BUILD_DIR)/sbin/* $(1)/sbin
 	$(INSTALL_BIN) ./files/wifi_target_assert_wd.sh $(1)/sbin 
+	$(INSTALL_BIN) ./files/set_txpower $(1)/sbin 
 	$(INSTALL_DIR) $(1)/lib/wifi/
 	cp -af $(PKG_BUILD_DIR)/lib/wifi/* $(1)/lib/wifi
 	install -d -m0755 $(1)/etc/config

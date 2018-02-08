@@ -204,6 +204,11 @@ fi
 echo $new_usbdisknum > /tmp/usbdisknum
 echo $new_printer1num > /tmp/printer1num
 echo $new_printer3num > /tmp/printer3num
+if [ $new_usbdisknum -ge 1 -a $new_usbdisknum -gt $old_usbdisknum ]; then
+	if [ "x$(cat /tmp/usb1num)" = "x" -a "x$(cat /tmp/usb3num)" = "x" ]; then
+		echo "0" > /tmp/usbdisknum
+	fi
+fi
 satadisknum=$(cat /tmp/satadisknum)
 if [ "x$satadisknum" = "x" ]; then
 	echo "0" > /tmp/satadisknum

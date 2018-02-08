@@ -2,6 +2,10 @@
 # Copyright (C) 2006 OpenWrt.org
 
 . /lib/functions.sh
+ 
+wlan_updown_lockfile=/tmp/.wlan_updown_lockfile
+wlan_updateconf_lockfile=/tmp/.wlan_updateconf_lockfile
+wlan_updateconf_eventfile=/tmp/.wlan_updateconf_eventfile
 
 usage() {
 	cat <<EOF
@@ -86,6 +90,13 @@ wifi_fixup_hwmode() {
 # Do not call this function if there is still anything you want to do after it,
 # because it is exited directly.
 wifi_updateconf() {
+    if [ -f $wlan_updateconf_lockfile -o -f $wlan_updown_lockfile ] ;then
+        echo "===!!!!=============time:`date +%s` wlan updateconf already running,will restart wifi when this restart finished======" >/dev/console
+        add_wifi_updateconf_event
+        exit 0
+    fi
+    echo "===!!!!=============time:`date +%s` wlan updateconf start======" >/dev/console
+    touch $wlan_updateconf_lockfile
 	local reload_time=3;
 	if eval "type update-wifi" 2>/dev/null >/dev/null; then
 		update-wifi
@@ -106,8 +117,12 @@ wifi_updateconf() {
 				reload_time=$(( $reload_time + $driver_reload_time ))
 			fi
 		done
+        rm -f $wlan_updateconf_lockfile
+        echo "===!!!!=============time:`date +%s` wlan updateconf end======" >/dev/console
 		exit $reload_time
 	fi
+    rm -f $wlan_updateconf_lockfile
+    echo "===!!!!=============time:`date +%s` wlan updateconf end======" >/dev/console
 }
 
 wifi_updown() {
@@ -115,6 +130,13 @@ wifi_updown() {
 	#	wifi_updown disable "$2"
 	#	scan_wifi
 	#}
+
+    [ -f $wlan_updown_lockfile -o  -f $wlan_updateconf_lockfile ] && exit 0
+    [ "$1" = "enable" ] && echo "===!!!!=============time:`date +%s` wlan up start==================" >/dev/console
+    [ "$1" = "disable" ] && echo "===!!!!=============time:`date +%s` wlan down start==================" >/dev/console
+    touch $wlan_updown_lockfile
+    echo "wlan $1" > $wlan_updown_lockfile
+
 	for driver in ${DRIVERS}; do (
 		if eval "type pre_${driver}" 2>/dev/null >/dev/null; then
 			eval "pre_${driver}" ${1}
@@ -165,10 +187,21 @@ wifi_updown() {
 				echo "$driver: Interface type not supported force_off_led function"
 			fi
 		); done
+		### when radio change down, rm stainfo file.         ###
+		### request command "wlan stainfo", update the assoc sta ###
+		[ -f /tmp/stainfo ] && rm -f /tmp/stainfo
 	fi
+	if [ "${1}" = "enable" ];then
+		sh /sbin/set_txpower &
+	fi
+    rm -rf $wlan_updown_lockfile
+    [ "$1" = "enable" ] && echo "===!!!!=============time:`date +%s` wlan up end==================" >/dev/console
+    [ "$1" = "disable" ] && echo "===!!!!=============time:`date +%s` wlan down end==================" >/dev/console
+    [ "$1" = "enable" ] && execute_wifi_updateconf_event
 }
 
 wifi_detect() {
+    [ -f $wlan_updateconf_lockfile ] && exit 0
 	for driver in ${2:-$DRIVERS}; do (
 		if eval "type detect_$driver" 2>/dev/null >/dev/null; then
 			eval "detect_$driver dni $1" || echo "$driver: Detect failed" >&2
@@ -376,7 +409,8 @@ wifi_schedule() {
 wifi_stainfo() {
 local new_sta=`cat /proc/new_sta`
 local stainfo=/tmp/stainfo
-if [ "x$new_sta" = "x1" ]; then
+local bridge_mode=`dniconfig get bridge_mode`
+if [ "x$new_sta" = "x1" -o "x$bridge_mode" = "x1" ]; then
 	rm -f $stainfo
 	touch $stainfo
 	for device in ${DEVICES}; do (
@@ -389,7 +423,7 @@ if [ "x$new_sta" = "x1" ]; then
 		fi
 	); done
 fi
-cat $stainfo
+[ -f $stainfo ] && cat $stainfo
 }
 
 wifi_radio() {
@@ -466,6 +500,38 @@ Commands:
 EOF
 }
 
+vap_updown() {
+    echo "---- 0-$0 1-$1 2-$2 3-$3 4-$4----"
+	ifconfig "$3" down
+	wlanconfig "$3" destroy
+	
+	[ enable = "$1" ] && {
+		scan_wifi
+	}
+
+	for driver in ${DRIVERS}; do (
+		if eval "type pre_${driver}" 2>/dev/null >/dev/null; then
+			eval "pre_${driver}" ${1}
+		fi
+	); done
+
+	for device in ${2:-$DEVICES}; do (
+		config_get disabled "$device" disabled
+		[ 1 == "$disabled" ] && {
+			echo "'$device' is disabled"
+			set disable
+		}
+		config_get iftype "$device" type
+		if eval "type ${1}_$iftype" 2>/dev/null >/dev/null; then
+			eval "scan_$iftype '$device'"
+			eval "${1}_$iftype '$device' 'dni' '$3'"  || echo "$device($iftype): ${1} failed"
+		else
+			echo "$device($iftype): Interface type not supported"
+		fi
+	); done
+}
+
+
 DEVICES=
 DRIVERS=
 CONFIGS=
@@ -487,6 +553,7 @@ case "$1" in
 	stainfo) wifi_stainfo "$@";;
 	radio) wifi_radio "$@";;
 	up) wifi_updown "enable" "$2";;
+	vap) vap_updown "enable" "$2" "$3";;
 	statistic ) wifi_statistic ;;
 	mac ) wifi_mac ;;
 	*) show_usage ;;

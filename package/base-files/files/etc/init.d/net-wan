@@ -108,21 +108,55 @@ setup_interface_dhcp()
 	local mtu
 	local u_hostname
 	local u_wan_domain=$($CONFIG get wan_domain)
-
+	local enable_iptv=$($CONFIG get enable_vlan)
+	local vlan_type=$($CONFIG get vlan_type)
 	mtu=$($CONFIG get wan_dhcp_mtu)
 	ifconfig $WAN_IF mtu ${mtu:-1500}
-	
+
 	if [ "x$($CONFIG get wan_hostname)" != "x" ];then
 		u_hostname=$($CONFIG get wan_hostname)
 	else
 		u_hostname=$($CONFIG get Device_name)
 	fi
-	if [ "$changing_mode" = "1" ]; then
-		udhcpc -b -i $WAN_IF -h $u_hostname -r $($CONFIG get wan_dhcp_ipaddr) -N $($CONFIG get wan_dhcp_oldip) ${u_wan_domain:+-d $u_wan_domain} &
-    	else
-		udhcpc -b -i $WAN_IF -h $u_hostname -r $($CONFIG get wan_dhcp_ipaddr) -N $($CONFIG get wan_dhcp_oldip) ${u_wan_domain:+-d $u_wan_domain}
-    	fi	
+	if [ $vlan_type -eq 1 -a $enable_iptv -eq 1 ]; then
+		#/usr/share/udhcpc/enable_option.script
+		#sleep 3
+		echo "************ org IPTV start *************"
+		for i in 0 1 2 3 4 5 6 7 8 9 10; do
+			tv=$($CONFIG get vlan_tag_$i)
+			[ -n "$tv" ] || continue
+			set - $(echo $tv)
+			# $1: enable, $2: name, $3: vid, $4: pri, $5:wports, $6:wlports
+			[ "$1" = "1" ] || continue
+			vlan_id=$3
+			ORG_LOGIN=$($CONFIG get wan_orange_username)
+			if [ "$2" = "Internet" ]; then
+				if [ "$vlan_id" = "832" -o "$vlan_id" = "835" ]; then
+					udhcpc -b -i $WAN_IF -h $u_hostname ${u_wan_domain:+-d $u_wan_domain} -O -A $ORG_LOGIN
+				else
+					udhcpc -b -i $WAN_IF -h $u_hostname -r $($CONFIG get wan_dhcp_ipaddr) -N $($CONFIG get wan_dhcp_oldip) ${u_wan_domain:+-d $u_wan_domain}
+				fi
+			else
+				if [ "$vlan_id" = "838" -o "$vlan_id" = "840" ]; then
+					# enable igmp
+					/bin/config set wan_endis_igmp=1
 
+					udhcpc -b -i brotv -O
+					sleep 3
+
+					# Since Orange ISP prefers to IGMPv2, change to support IGMPv2 instead of IGMPv3
+					echo 2 > /proc/sys/net/ipv4/conf/all/force_igmp_version
+				fi
+			fi
+		done
+		echo "************ org IPTV end ***************"
+	else
+		if [ "$changing_mode" = "1" ]; then
+				udhcpc -b -i $WAN_IF -h $u_hostname -r $($CONFIG get wan_dhcp_ipaddr) -N $($CONFIG get wan_dhcp_oldip) ${u_wan_domain:+-d $u_wan_domain} &
+    	else
+				udhcpc -b -i $WAN_IF -h $u_hostname -r $($CONFIG get wan_dhcp_ipaddr) -N $($CONFIG get wan_dhcp_oldip) ${u_wan_domain:+-d $u_wan_domain}
+    	fi	
+	fi
 }
 
 setup_interface_mulpppoe()
@@ -203,6 +237,7 @@ setup_wan_interface() # $1: manually
 	local proto=$($CONFIG get wan_proto)
 	local traffic_month_limit=$($CONFIG get trafficmeter_monthly_limit_reached)
 	local traffic_block_all=$($CONFIG get traffic_block_all)
+	local endis_traffic=$($CONFIG get endis_traffic)
 	local firmware_region=`cat /tmp/firmware_region | awk '{print $1}'`
 	local ru_feature=0
 	
@@ -218,7 +253,7 @@ setup_wan_interface() # $1: manually
 	pppoe)
 		. /lib/network/ppp.sh
 		#if traffic meter monthly limit is not reached or don't check "Disconnect and disable the Internet connection".
-		if [ "$traffic_month_limit" != "1" -o "$traffic_block_all" != "1" ]; then
+		if [ "$endis_traffic" != "1" -o "$traffic_month_limit" != "1" -o "$traffic_block_all" != "1" ]; then
 			if [ "$($CONFIG get wan_pppoe_intranet_wan_assign)" = "0" ]; then
 				# Confiure the PPP parameters firstly, then started PPPD by UDHCPC
 				setup_interface_ppp $1
@@ -258,7 +293,7 @@ setup_wan_interface() # $1: manually
 	pptp)
 		. /lib/network/ppp.sh
 		#if traffic meter monthly limit is not reached or don't check "Disconnect and disable the Internet connection".
-		if [ "$traffic_month_limit" != "1" -o "$traffic_block_all" != "1" ]; then
+		if [ "$endis_traffic" != "1" -o "$traffic_month_limit" != "1" -o "$traffic_block_all" != "1" ]; then
 			# [ "$($CONFIG get wan_pptp_dns_assign)" = "1" ] && set_dns
 			# Setup WAN Ethernet interface IP address
 			if [ "$($CONFIG get wan_pptp_wan_assign)" = "0" ]; then

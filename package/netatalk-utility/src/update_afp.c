@@ -334,6 +334,22 @@ static char * get_usb_serial_num(char *part_name)
 	}	
 
 	if(bus_num != NULL){
+		char cmds[128] = {0}, line_num[32] = {0}, last_nu[16] = {0};
+		FILE *last_num_fp = NULL;
+		int len = 0;
+		sprintf(cmds, "/bin/ls /sys/block/%s/device/scsi_device |awk -F: '{print $4}'> /tmp/last_num_afp", disk_name);
+		system(cmds);
+		if((last_num_fp = fopen("/tmp/last_num_afp","r")) != NULL)
+		{
+			if (fgets(line_num,sizeof(line_num), last_num_fp)!= NULL)
+			{
+				strncpy(last_nu, line_num, sizeof(last_nu)-1);
+				len = strlen(last_nu);
+			}
+			system("rm -f /tmp/last_num_afp");
+			fclose(last_num_fp);
+		}
+
 		snprintf(path, 64, "/proc/scsi/usb-storage/%s", bus_num);
 		fp= fopen(path, "r");
 		if (fp == NULL)
@@ -358,6 +374,11 @@ static char * get_usb_serial_num(char *part_name)
 				while (*p == ' ' || *p == '\t')
 					p++;
 				strcpy(serial_num, p);
+				if (atoi(last_nu) != 0)
+				{
+					last_nu[len-1] = '\0';
+					strcat(serial_num, last_nu);
+				}
 			}
 		}
 	}

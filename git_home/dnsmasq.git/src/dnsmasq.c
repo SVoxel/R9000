@@ -853,7 +853,7 @@ static int set_dns_listeners(struct daemon *daemon, time_t now, fd_set *set, int
       /* death of a child goes through the select loop, so
 	 we don't need to explicitly arrange to wake up here */
       for (i = 0; i < MAX_PROCS; i++)
-	if (daemon->tcp_pids[i] == 0)
+	if ( daemon->tcp_pids[i] == 0 && listener->tcpfd != -1 )
 	  {
 	    FD_SET(listener->tcpfd, set);
 	    bump_maxfd(listener->tcpfd, maxfdp);
@@ -884,15 +884,18 @@ static void check_dns_listeners(struct daemon *daemon, fd_set *set, time_t now)
   
   for (listener = daemon->listeners; listener; listener = listener->next)
     {
-      if (FD_ISSET(listener->fd, set))
-	receive_query(listener, daemon, now); 
- 
+      if (FD_ISSET(listener->fd, set)){
+		if(listener->family == AF_PACKET)
+			receive_raw_query(listener, daemon, now);  
+		else
+			receive_query(listener, daemon, now); 
+	  }
 #ifdef HAVE_TFTP     
       if (listener->tftpfd != -1 && FD_ISSET(listener->tftpfd, set))
 	tftp_request(listener, daemon, now);
 #endif
 
-      if (FD_ISSET(listener->tcpfd, set))
+      if (listener->tcpfd != -1 && FD_ISSET(listener->tcpfd, set))
 	{
 	  int confd;
 	  struct irec *iface = NULL;

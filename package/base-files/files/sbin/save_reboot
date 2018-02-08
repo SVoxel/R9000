@@ -1,0 +1,4 @@
+#!/bin/sh
+
+	echo 2 > /etc/reboot_reason
+	return 0

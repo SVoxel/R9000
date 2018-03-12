@@ -47,7 +47,7 @@ plex_check()
 	fi
     rm -rf $plex_check_result $plex_download_result $plex_upgrade_result 2>/dev/null
     rm -rf $plex_check_tmp $plex_check_tmp2 2>/dev/null
-    curl --insecure --connect-timeout 30 --keepalive-time 30 --retry 1 $plex_download_url_https"verify_binary.txt" -o $plex_check_tmp2 2>/dev/null 
+    curl --connect-timeout 30 --keepalive-time 30 --retry 1 $plex_download_url_https"verify_binary.txt" -o $plex_check_tmp2 2>/dev/null 
     plex_echo=`echo $?`
     if [ $plex_echo -ne 0 ];then
 	curl --insecure --connect-timeout 30 --keepalive-time 30 $plex_download_url"verify_binary.txt" -o $plex_check_tmp2 2>/dev/null 

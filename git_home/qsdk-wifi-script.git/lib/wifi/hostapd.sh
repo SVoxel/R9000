@@ -641,7 +641,9 @@ EOF
 		if [ -z "$hostapd_debug" ]; then
 			hostapd -P /var/run/wifi-$ifname.pid -B /var/run/hostapd-$ifname.conf -e $entropy_file
 		else
-			hostapd -${hostapd_debug} /var/run/hostapd-$ifname.conf -e $entropy_file &
+			[ -f "/tmp/hostapd-${ifname}.log" ] && rm -f /tmp/hostapd-${ifname}.log
+			hostapd -${hostapd_debug} /var/run/hostapd-$ifname.conf -e $entropy_file -f /tmp/hostapd-${ifname}.log &
+			echo "/tmp/hostapd-${ifname}.log" >> /tmp/hostapd.log
 			sleep 2
 		fi
 

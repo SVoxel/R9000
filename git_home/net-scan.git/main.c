@@ -29,12 +29,29 @@
 
 #include "netscan.h"
 
-static int sigval;
+static int sigval_user1;
+static int sigval_alarm;
+static int sigval_chld;
+
 time_t refresh_time;
+
 
 void signal_pending(int sig)
 {
-	sigval = sig;
+	switch (sig)
+	{
+		case SIGUSR1:
+			sigval_user1 = 1;
+			break;
+		case SIGALRM:
+			sigval_alarm = 1;
+			break;
+		case SIGCHLD:
+			sigval_chld = 1;
+			break;
+		default:
+			break;
+	}
 }
 
 void do_signal(int arp_sock, struct sockaddr *me)
@@ -43,27 +60,32 @@ void do_signal(int arp_sock, struct sockaddr *me)
 	time_t now;
 	now = time(NULL);
 
-	if (sigval == 0)
+	if (sigval_user1 == 0 &&
+	    sigval_alarm == 0 &&
+	    sigval_chld == 0)
 		return;
-	if (sigval == SIGUSR1 && now > refresh_time && now - refresh_time < 8) {
-		DEBUGP("refresh too quickly, not to send arp packets, last time:%d, now:%d\n", refresh_time, now);
-		sigval = 0;
-		return;
-	}
-	if (sigval == SIGUSR1) {
-		/* To fix bug 22146, call reset_arp_table to set active status of all nodes in the arp_tbl to 0 in the parent process */
-		reset_arp_table();
-		scan_arp_table(arp_sock, me);
-	} else if (sigval == SIGALRM) {
-		show_arp_table();
-	} else if (sigval == SIGCHLD) {
+
+	if (sigval_chld == 1) {
 		int status;
 		int pid = waitpid(-1, &status, WNOHANG);
 		if(WIFEXITED(status))
 			DEBUGP("[%s][%d]The child %d exit with code %d\n", __FILE__, __LINE__, pid, WEXITSTATUS(status));
+		sigval_chld = 0;
 	}
-
-	sigval = 0;
+	else if ((sigval_user1 == 1) && (now > refresh_time && now - refresh_time < 8)) {
+		DEBUGP("refresh too quickly, not to send arp packets, last time:%d, now:%d\n", refresh_time, now);
+		sigval_user1 = 0;
+		return;
+	}
+	else if (sigval_user1 == 1) {
+		/* To fix bug 22146, call reset_arp_table to set active status of all nodes in the arp_tbl to 0 in the parent process */
+		reset_arp_table();
+		scan_arp_table(arp_sock, me);
+		sigval_user1 = 0;
+	} else if (sigval_alarm == 1) {
+		show_arp_table();
+		sigval_alarm = 0;
+	} 
 }
 
 int main(int argc, char **argv)

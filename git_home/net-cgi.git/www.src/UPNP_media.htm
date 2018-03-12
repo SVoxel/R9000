@@ -21,7 +21,7 @@
 </table>
 </div>
 <div id="main" class="main_top_button">
-<% save_timestamp("upnp_media", "upnp_media_scan", "iTunes_allow_control","edit_devname") %>
+<% save_timestamp("upnp_media", "upnp_media_scan", "edit_devname") %>
 <script>
 var consolidate_device_name = parent.consolidate_device_name;
 
@@ -34,9 +34,6 @@ else
 var scanType="<% cfg_get("upnp_scanType") %>";
 
 var upnp_enabletivo_flag="<% cfg_get("upnp_enable_tivo") %>";
-var endis_itunes="<% cfg_get("endis_itunes") %>";
-var passcode="<% cfg_get("itunes_app_passcode")%>";
-<% itunes_open_flag() %>
 var tivo_flag=parent.tivo_flag;
 
 var gui_region="<% cfg_get("GUI_Region") %>";
@@ -69,16 +66,6 @@ function loadvalue()
 		cf.media_server_tivo.checked = true;
 	else
 		cf.media_server_tivo.checked = false;
-	<% display_iTunes() %>
-	if(endis_itunes == "1"){
-                cf.enable_itunes.checked = true;
-		cf.app_passcode.value=passcode;
-	}
-        else{
-                cf.enable_itunes.checked = false;
-		cf.app_passcode.disabled=true;
-		cf.app_passcode.value="";
-	}
 
 	resize_pure_button(cf.allow_control, cf.Apply);
 

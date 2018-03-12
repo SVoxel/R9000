@@ -180,6 +180,9 @@ if [ "x$(parted -s /dev/`echo $1 | sed 's/[0-9]//g'` print noshare | grep $1)" =
 		"hfsplus")
 			mount -t hfsplus -o nodev,noatime --force /dev/$1 /mnt/$mount_part
 		;;
+		"exfat")
+			mount -t exfat -o umask=000 /dev/$1 /mnt/$mount_part
+		;;
 		"vfat")
 			mount -o usefree,utf8=yes,fmask=0000,dmask=0000 /dev/$1 /mnt/$mount_part
 			if [ $? -ne 0 ];then

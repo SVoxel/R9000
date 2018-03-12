@@ -37,7 +37,6 @@ start() {
 	ifconfig lo up
 	/bin/datalib
         echo "$(/bin/config get netbiosname)" > /proc/sys/kernel/hostname
-	/sbin/printhosts
 
 	# generate the firewall rule file after loading the configuration data.
 	/usr/sbin/net-wall rule
@@ -73,6 +72,9 @@ start() {
 	/etc/init.d/watchdog start &
 	# generate conf for R9000/R8900 Project.
 	/sbin/generate_board_conf.sh
+	
+	/sbin/printhosts
+
 	load_modules /etc/modules.d/*
 	insmod /lib/ufsd/jnl.ko
 	insmod /lib/ufsd/ufsd.ko

@@ -9,6 +9,8 @@ AP_MODE=$($CONFIG get ap_mode)
 BRIDGE_MODE=$($CONFIG get bridge_mode)
 EXTENDER_MODE=$($CONFIG get extender_mode)
 OPENVPN_CONF_DIR=/etc/openvpn/config/client
+CHECK_HOST=www.google.com
+OPT_ARGS="--fast-io --sndbuf 393216 --rcvbuf 393216 --tun-mtu 1500 --mssfix 1460"
 
 start() {
 	# Check existence of /etc/openvpn/config/client/*.ovpn file
@@ -46,8 +48,25 @@ start() {
 		exit 1
 	fi
 
+	# Sleep before starting if delay is set in NVRAM (to allow NTP set date/time)
+	DELAY=$($CONFIG get vpn_client_delay)
+	if [ ! "$DELAY" = "" ]; then
+		sleep $DELAY
+	fi
+
+	# Check if DNS is already working
+	count=0
+	while [ $count -le 20 ]; do
+		ping -q -c 3 $CHECK_HOST
+		if [ $? -eq 0 ]; then
+			break
+		fi
+		sleep 15
+		count=$(($count+1))
+	done
+
 	# Start OpenVPN client
-	$PROG --writepid $PID_FILE --log-append $LOG_FILE --cd $OPENVPN_CONF_DIR --config $OVPN_CLIENT_CONF --script-security 2 --up /etc/openvpn/ovpnclient-up.sh --down /etc/openvpn/ovpnclient-down.sh --daemon
+	$PROG $OPT_ARGS --writepid $PID_FILE --cd $OPENVPN_CONF_DIR --log-append $LOG_FILE --config $OVPN_CLIENT_CONF --script-security 2 --up /etc/openvpn/ovpnclient-up.sh --down /etc/openvpn/ovpnclient-down.sh --daemon --push "sndbuf 393216" --push "rcvbuf 393216"
 	echo "Please wait..."
 	sleep 20
 	ifconfig | grep -q tun0

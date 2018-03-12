@@ -1,5 +1,7 @@
 #!/bin/sh
 
+https_url="https://http.fw.updates1.netgear.com/sw-apps/ready-genie-cloud/r9000"
+ftp_url="ftp://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000"
 version=`cat /cloud_version`
 config=/bin/config
 sleep_time_1=60
@@ -13,31 +15,31 @@ dynamic_sleep() {
 		let retry_count=$retry_count+1
 	fi
 	eval sleep_time=\$sleep_time_$retry_count
-	/bin/sleep $sleep_time
+	sleep $sleep_time
 }
 
 start() {
 	[ -d /opt ] && {
 		/opt/xagent/run-xagent.sh
-		/bin/sleep 5
+		sleep 5
 		/www/cgi-bin/readycloud_control.cgi
-		/bin/sleep 5
+		sleep 5
 	}
 }
 
 uninstall() {
-	[ -s /opt/filelist ] && /bin/cat /opt/filelist | xargs rm -f
+	[ -s /opt/filelist ] && cat /opt/filelist | xargs rm -f
 	if [ -f /opt/dirlist ]; then
-		/bin/mv -f /opt/dirlist /tmp/cloud_dirlist
+		mv -f /opt/dirlist /tmp/cloud_dirlist
 		while read line; do
-			/bin/rmdir $line
+			rmdir $line
 		done < /tmp/cloud_dirlist
 		if [ -d /opt ]; then
-			/bin/rmdir /opt
+			rmdir /opt
 		fi
 	fi
-	/bin/rm -f /tmp/cloud_dirlist
-	/bin/rm -f /tmp/.cloud_updated
+	rm -f /tmp/cloud_dirlist
+	rm -f /tmp/.cloud_updated
 }
 
 checkversion() {
@@ -49,15 +51,15 @@ backup() {
 	[ -s /overlay/opt/filelist ] || return 1
 	while read file; do
 		target="/tmp/clouddir$(dirname $file)"
-		/bin/mkdir -p $target
-		/bin/cp -f $file $target
+		mkdir -p $target
+		cp -f $file $target
 	done < /overlay/opt/filelist
 }
 
 restore() {
 	[ -d /tmp/clouddir ] || return 1
-	/bin/cp -fpR /tmp/clouddir/overlay/* /overlay
-	/bin/rm -rf /tmp/clouddir
+	cp -fpR /tmp/clouddir/overlay/* /overlay
+	rm -rf /tmp/clouddir
 }
 
 update() {
@@ -74,53 +76,65 @@ update() {
 	[ -f /tmp/.cloud_updated ] && return 1
 	PID_file=/var/run/cloud.pid
 	[ -f $PID_file ] && return 1
-	/bin/echo "$$" > $PID_file
-	/bin/echo "start to get info from ftp://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/"
+	echo "$$" > $PID_file
+	echo "start to get info from ftp://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/"
 	retry_count=0
 	while [ 1 ]; do
 		download_proto="ftp"
-		/usr/bin/curl $download_proto://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/ 2>/dev/null | /bin/grep readygeniecloud-r9000new-$version-.*.tar.gz > /tmp/cloud_info
+		curl $ftp_url/fileinfo.txt -o /tmp/cloud_info 2>/dev/null
 		[ -s /tmp/cloud_info ] && break
-		/bin/echo "cannot access $download_proto://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/ or don't find readygeniecloud tarball with version $version"
+		echo "cannot access $download_proto://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/ or don't find readygeniecloud tarball with version $version"
 		download_proto="https"
-		/usr/bin/curl $download_proto://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/ 2>/dev/null | /bin/grep readygeniecloud-r9000new-$version-.*.tar.gz > /tmp/cloud_info
+		curl -L $https_url/fileinfo.txt -o /tmp/cloud_info 2>/dev/null
 		[ -s /tmp/cloud_info ] && break
-		/bin/echo "cannot access $download_proto://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/ or don't find readygeniecloud tarball with version $version"
+		echo "cannot access $https_url/fileinfo.txt or don't find readygeniecloud tarball with version $version"
 		dynamic_sleep
 	done
-	fullversion=`/usr/bin/tail -1 /tmp/cloud_info | /usr/bin/awk '{print $9}'`
-	if [ -f /opt/version -a "x$(/bin/cat /opt/version)" = "x$fullversion" ]; then
-		/bin/rm -f /tmp/cloud_info
-		/bin/touch /tmp/.cloud_updated
-		/bin/rm -f $PID_file
-		/bin/echo "the readygeniecloud on update server is same as on R/W filesystem"
+	ssl_version=`openssl version | awk '{print $2}'`
+
+	# Set 1.0.2l instead of latest OpenSSL for ReadyCLOUD (needed for checking version)
+	ssl_version=1.0.2l
+
+	fullversion=`cat /tmp/cloud_info | grep $ssl_version | awk '{print $1'}`
+	md5value=`cat /tmp/cloud_info | grep $ssl_version | awk '{print $3}'`
+	#size=`tail -1 /tmp/cloud_info | awk '{print $5}'`
+	if [ -f /opt/version -a "x$(cat /opt/version)" = "x$fullversion" ]; then
+		rm -f /tmp/cloud_info
+		touch /tmp/.cloud_updated
+		rm -f $PID_file
+		echo "the readygeniecloud on update server is same as on R/W filesystem"
 		start
 		return 1
 	fi
-	size=`/usr/bin/tail -1 /tmp/cloud_info | /usr/bin/awk '{print $5}'`
-	/bin/echo "start to download $download_proto://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/$fullversion"
+	echo "start to download $download_proto://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/$fullversion"
 	retry_count=0
 	while [ 1 ]; do
-		/usr/bin/curl $download_proto://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/$fullversion -o /tmp/cloud.tar.gz 2>/dev/null
-		[ "$(/usr/bin/wc -c /tmp/cloud.tar.gz | /usr/bin/awk '{print $1}')" = "$size" ] && break
-		/bin/echo "fail to download $download_proto://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/readygeniecloud-r9000-$fullversion"
+		if [ "x$download_proto" = "xftp" ]; then
+			curl $ftp_url/$fullversion -o /tmp/cloud.tar.gz 2>/dev/null
+			[ "$(md5sum /tmp/cloud.tar.gz | awk '{print $1}')" = "$md5value" ] && break
+			echo "fail to download $ftp_url/$fullversion"
+		elif [ "x$download_proto" = "xhttps" ]; then
+			curl -L $https_url/$fullversion -o /tmp/cloud.tar.gz 2>/dev/null
+			[ "$(md5sum /tmp/cloud.tar.gz | awk '{print $1}')" = "$md5value" ] && break
+			echo "fail to download $https_url/$fullversion"
+		fi
 		dynamic_sleep
 	done
 	uninstall
-	/bin/mkdir /tmp/clouddir
-	/usr/bin/tar xzf /tmp/cloud.tar.gz -C /tmp/clouddir
-	/bin/echo $fullversion > /tmp/clouddir/opt/version
-	/bin/touch /tmp/clouddir/opt/filelist
-	/usr/bin/find /tmp/clouddir -type f | /bin/sed 's/\/tmp\/clouddir/\/overlay/' > /tmp/clouddir/opt/filelist
-	/usr/bin/find /tmp/clouddir/opt -type d | /bin/sed 's/\/tmp\/clouddir/\/overlay/' | sort -r > /tmp/clouddir/opt/dirlist
-	/bin/cp -fpR /tmp/clouddir/* /
-	/bin/rm -f /tmp/cloud_info
-	/bin/rm -f /tmp/cloud.tar.gz
-	/bin/rm -rf /tmp/clouddir
-	/bin/touch /tmp/.cloud_updated
-	/bin/echo "install ftp://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/$fullversion to R/W filesystem successfully"
+	mkdir /tmp/clouddir
+	tar xzf /tmp/cloud.tar.gz -C /tmp/clouddir
+	echo $fullversion > /tmp/clouddir/opt/version
+	touch /tmp/clouddir/opt/filelist
+	find /tmp/clouddir -type f | sed 's/\/tmp\/clouddir/\/overlay/' > /tmp/clouddir/opt/filelist
+	find /tmp/clouddir/opt -type d | sed 's/\/tmp\/clouddir/\/overlay/' | sort -r > /tmp/clouddir/opt/dirlist
+	cp -fpR /tmp/clouddir/* /
+	rm -f /tmp/cloud_info
+	rm -f /tmp/cloud.tar.gz
+	rm -rf /tmp/clouddir
+	touch /tmp/.cloud_updated
+	echo "install ftp://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/$fullversion to R/W filesystem successfully"
 	start
-	/bin/rm -f $PID_file
+	rm -f $PID_file
 }
 
 case "$1" in

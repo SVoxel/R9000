@@ -40,7 +40,10 @@ function loadvalue()
 	else
 		document.forms[7].allow_ipv6_ping.checked = false;
 
-	document.forms[8].fan_speed.value = "<% cfg_get("fan_speed") %>";
+	if("<% cfg_get("enable_hostapd_debug") %>" === "1")
+		document.forms[8].enable_hostapd_debug.checked = true;
+
+	document.forms[9].fan_speed.value = "<% cfg_get("fan_speed") %>";
 
 	refresh_start();
 }
@@ -117,9 +120,19 @@ function click_ipv6()
 	cf.action="/apply.cgi?/debug_detail.htm timestamp="+ts;
 	cf.submit();
 }
-function click_fan()
+function click_hostapd()
 {
 	var cf = document.forms[8];
+	if(cf.enable_hostapd_debug.checked == true)
+		cf.hid_hostapd.value = "1";
+	else
+		cf.hid_hostapd.value = "0";
+	cf.action="/apply.cgi?/debug_detail.htm timestamp="+ts;
+	cf.submit();
+}
+function click_fan()
+{
+	var cf = document.forms[9];
 	cf.action="/apply.cgi?/debug_detail.htm timestamp="+ts;
 	cf.submit();
 }
@@ -157,7 +170,7 @@ function refresh_start()
 <div>
 <table width="100%" border="0" cellpadding="0" cellspacing="10">
 <tr><td colspan=3><img src=/liteblue.gif width=100% height=12></td></tr>
-<tr><td colspan=3><b>Basic Infomation</b></td></tr>
+<tr><td colspan=3><b>Basic Information</b></td></tr>
 <tr><td width=30px>&nbsp;</td><td width=250px><b>CPU Load</b></td><td><% cat_file("/tmp/debug_cpu") %></td></tr>
 <tr><td></td><td><b>Memory Usage(Used/Total)</b></td><td><% cat_file("/tmp/debug_mem") %></td></tr>
 <tr><td></td><td><b>Flash Usage(Used/Total)</b></td><td><% cat_file("/tmp/debug_flash") %></td></tr>
@@ -176,6 +189,7 @@ function refresh_start()
 	document.write(new_time);
 	</script>
 </td></tr>
+ <tr><td></td><td><b>Wireless driver version</b></td><td><% cat_file("/tmp/debug_wlan") %></td></tr>
 </table>
 </div>
 
@@ -232,7 +246,12 @@ function refresh_start()
 <input type="hidden" name="hid_ipv6" />
 <input type="checkbox" name="allow_ipv6_ping" onclick="click_ipv6();"><b>Allow external IPv6 hosts ping internal IPv6 hosts</b>
 </form>
-
+<br/>
+<form method="post" action="/apply.cgi?/debug_detail.htm" target="formframe">
+<input type="hidden" name="submit_flag" value="debug_info" />
+<input type="hidden" name="hid_hostapd" />
+<input type="checkbox" name="enable_hostapd_debug" onclick="click_hostapd();"><b>Enable hostapd debug</b>
+</form>
 </div>
 
 <style>

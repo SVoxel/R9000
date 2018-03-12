@@ -231,6 +231,21 @@ wpa_supplicant_setup_vif() {
 		}
 	}
 
+	config_get hostapd_debug_level "$vif" hostapd_debug_level
+	case "$hostapd_debug_level" in
+		1)
+			hostapd_debug="d" ;;
+		2)
+			hostapd_debug="dd" ;;
+		3)
+			hostapd_debug="ddd" ;;
+		4)
+			hostapd_debug="dddd" ;;
+		*)
+			hostapd_debug=""
+			;;
+	esac
+
 	local ctrl_interface wait_for_wrap=""
 
 	if [ $qwrap_enable -ne 0 ]; then
@@ -276,6 +291,14 @@ network={
 	$wep_auth_alg
 }
 EOF
-	[ -z "$proto" -a "$key_mgmt" != "NONE" ] || \
-		wpa_supplicant ${bridge:+ -b $bridge} -B $wait_for_wrap -P "/var/run/wifi-${ifname}.pid" -D ${driver:-wext} -i "$ifname" -c /var/run/wpa_supplicant-$ifname.conf $options
+	[ -z "$proto" -a "$key_mgmt" != "NONE" ] || { \
+		if [ -z "$hostapd_debug" ]; then
+			wpa_supplicant ${bridge:+ -b $bridge} -B $wait_for_wrap -P "/var/run/wifi-${ifname}.pid" -D ${driver:-wext} -i "$ifname" -c /var/run/wpa_supplicant-$ifname.conf $options
+		else
+			[ -f "/tmp/wpa_supplicant-${ifname}.log" ] && rm -f /tmp/wpa_supplicant-${ifname}.log
+			wpa_supplicant ${bridge:+ -b $bridge} -${hostapd_debug} $wait_for_wrap -P "/var/run/wifi-${ifname}.pid" -D ${driver:-wext} -i "$ifname" -c /var/run/wpa_supplicant-$ifname.conf $options -f /tmp/wpa_supplicant-${ifname}.log &
+			echo "/tmp/wpa_supplicant-${ifname}.log" >> /tmp/hostapd.log
+			sleep 2
+		fi
+		}
 }

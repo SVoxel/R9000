@@ -36,6 +36,11 @@ var pptp_empty=<% cfg_get_length("wan_pptp_password") %>;
 var readycloud_enable = "<% cfg_get("readycloud_enable") %>";
 var upnp_enableMedia = "<% cfg_get("upnp_enableMedia") %>";
 
+var wan_internet_cable = "<% cat_file("/tmp/WAN_status") %>".trim();
+var wan_sfp_cable = "<% cat_file("/tmp/SFP_status") %>".trim();
+var wan_valid_ip_address = "<% detwan_valid() %>";
+var wan_preference = "<% cfg_get("wan_preference") %>";
+
 if (pptp_get_this_mac == "")
 	pptp_get_this_mac="<% wan_mac() %>";
 
@@ -187,6 +192,17 @@ function loadvalue()
 	goTestApply();	
 	form.pptp_passwd.blur();
 	form.hidden_pwd_change.value="0";
+
+	if(wan_preference === "1") {
+    	form.wan_preference[1].checked = true;
+    	form.hid_wan_preference.value = "1";
+	}
+	else {
+	    form.wan_preference[0].checked = true;
+	    form.hid_wan_preference.value = "0";
+	}
+	<% ajax_ping_start() %>
+	have_wan_preference("<% cfg_get("support_wan_preference") %>");
 }
 function show_idleout(form,time)
 {
@@ -230,6 +246,7 @@ function click_jump()
 <input type="hidden" name="hidden_auto_conn_flag">
 <input type="hidden" name="hid_enable_vpn">
 <input type="hidden" name="hidden_pwd_change" value="0">
+<input type="hidden" name="hid_wan_preference" value="0">
 
 <div class="fix_button">
 <TABLE width=100% border=0 cellpadding=0 cellspacing=2>
@@ -245,6 +262,19 @@ else
 </div> <!-- button -->
 <div id="bas_top">
 <TABLE cellspacing=5 cellPadding=0 width=100% border=0>
+<TR id="wan_preference_tr1" style="display:none"><TD nowrap><B>WAN Preference</B></TD></TR>
+<TR id="wan_preference_tr2" style="display:none">
+	<TD nowrap>
+		<input onclick='document.forms[0].hid_wan_preference.value="0"'  type="radio" name="wan_preference" id="internet_port" value="0">Internet Port (1 Gbps)
+	</TD>
+</TR>
+<TR id="wan_preference_tr3" style="display:none">
+	<TD nowrap>
+		<input onclick='document.forms[0].hid_wan_preference.value="1"' type="radio" name="wan_preference" id="sfp_port" value="1" checked="true">10G LAN SFP+ Port (10 Gbps)
+		<span id='wan-port-status' style="margin-left: 70px; color: red"></span>
+	</TD>
+</TR>
+<TR id="wan_preference_hr" style="display:none"><TD colspan=2><img src=/liteblue.gif width=100% height=12></TD></TR>
 <TR><TD nowrap>
 <A tabindex=-1 href="javascript:loadhelp('_BAS_pptp','question')"><B>$basic_top_info</B></A>
 </TD></TR>
@@ -261,7 +291,7 @@ else
 $bluebar
 </TABLE>
 </div> <!-- bas_top -->
-<div id="main" class="main_bas">
+<div id="main" class="main_bas" style="top: 220px;">
 <TABLE cellspacing=5 cellPadding=0 width=100% border=0>
 <TR>
 	<TD nowrap>

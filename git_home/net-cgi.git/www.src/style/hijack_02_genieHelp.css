@@ -56,8 +56,8 @@
 .ap_doc_div .img_left img{height:200px; width:380px;}
 .ap_doc_div .img_right {height:220px; width:50%; margin:3px 0 3px 0; float:right;}
 .ap_doc_div .img_right img{height:200px; width:380px;}
-.ap_doc_div .left_div{ height:30px; width:46%; margin:3px 0 3px 3px; line-height:30px; float:left; }
-.ap_doc_div  .right_div{ height:30px; width:30%; margin:3px 0 3px 50px; line-height:30px; float:right; font-weight:bold; }
+.ap_doc_div .left_div{ min-height:30px; width:46%; margin:3px 0 3px 3px; line-height:30px; display: inline-block; word-wrap: break-word; vertical-align: top; work-break: break-all; }
+.ap_doc_div  .right_div{ min-height:30px; width:30%; margin:3px 0 3px 50px; line-height:30px; font-weight:bold; display: inline-block; work-break: break-all; word-wrap: break-word; vertical-align: top;}
 .ap_doc_div  .line_div{ height:30px; width:80%; margin:3px 0 3px 3px; line-height:30px; float:left;}
 .ap_warning_div{ height:50px; width:80%; line-height:30px; padding:0; margin:3px auto; font-family:Arial; font-size:10pt; font-weight:normal;}
 

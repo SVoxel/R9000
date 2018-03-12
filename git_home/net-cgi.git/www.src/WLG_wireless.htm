@@ -183,9 +183,9 @@ else if(an_router_flag == 1)
 		document.write('<option value=8>$coun_mx</option>');
 		document.write('<option value=14>$coun_md_1</option>');
 		document.write('<option value=15>$coun_md_2</option>');
-		document.write('<option value=16>$coun_md_3</option>');
-		document.write('<option value=17>$coun_md_4</option>');
-		document.write('<option value=18>$coun_md_5</option>');
+		document.write('<option value=16>Middle East(Egypt/Tunisia/Kuwait)</option>');
+		document.write('<option value=17>Middle East(Turkey)</option>');
+		document.write('<option value=18>Middle East(Saudi Arabia/United Arab Emirates)</option>');
 		document.write('<option value=19>$coun_ru</option>');
 		document.write('<option value=20>$coun_si</option>');
 		document.write('<option value=9>$coun_sa</option>');
@@ -1324,6 +1324,8 @@ function loadvalue()
 		if(get_smart_connect == "1") {
 			form.enable_smart_connect.checked = true;
 			toggle_an_edit();
+			handle_sync_input();
+			sync_broadcast();
 		}
 	}
 }

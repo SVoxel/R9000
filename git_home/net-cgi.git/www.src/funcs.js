@@ -351,7 +351,7 @@ function sAlert(str, callback_ok, callback_cancel, dwidth, anc, button_lang){
 	callback_cancel = callback_cancel || 0;
 	button_lang = button_lang || "";
 
-	var anc_v=anc || 0; // anc£º click apply button, not close div
+	var anc_v=anc || 0; // anc click apply button, not close div
 	
 	var msgw,msgh,bordercolor;
 	msgw=dwidth||420;//warning width
@@ -3427,5 +3427,75 @@ function resize_pure_button()
 		var new_size = arguments[i].offsetWidth;
 		if(new_size < old_size)
 			arguments[i].style.width = old_size + "px";
+	}
+}
+
+function wan_preference_status() {
+	var statusStr = "";
+	var el = document.getElementById("wan-port-status");
+	var retried = 0;
+	var totalTry = 5;
+	var waiting = 4000;
+	if(wan_preference === "1" && wan_sfp_cable === "Link down") {
+		statusStr = "Error: The SFP+ module is not connected to the port";
+	}
+	else if(wan_preference !== "1" && wan_internet_cable === "Link down") {
+		statusStr = "Error: The cable is not connected to the port";
+	}
+	else if(wan_valid_ip_address !== "1") {
+		statusStr = "Error: Unable to establish an internet connection";
+	}
+
+	if(statusStr !== "") {
+		el.innerHTML = statusStr;
+		el.style.color = "red";
+		return;
+	}
+
+	if( window.XMLHttpRequest ) {
+		var reqHttp = new XMLHttpRequest();
+	}
+	else {
+		var reqHttp = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+
+	reqHttp.onreadystatechange = function() {
+		if( reqHttp.readyState == 4 && reqHttp.status == 200 ) {
+			var resp = reqHttp.responseText.trim();
+			if(resp !== "Success;" && retried < totalTry) {
+				setTimeout(function() {
+					reqHttp.open("GET", "ajax_ping_result.txt", true);
+					reqHttp.send(null);
+				}, 500);
+			}
+			else if(resp === "Success;") {
+				statusStr = "Status: Connected to the internet";
+				el.innerHTML = statusStr;
+				el.style.color = "blue";
+			}
+			else if(retried > (totalTry - 1)) {
+				statusStr = "Error: Unable to establish an internet connection";
+				el.innerHTML = statusStr;
+				el.style.color = "red";
+			}
+		}
+	}
+
+	setTimeout(function() {
+		reqHttp.open("GET", "ajax_ping_result.txt", true);
+		reqHttp.send(null);
+	}, waiting);
+}
+
+function have_wan_preference(flag) {
+	if(flag === "1") {
+		document.getElementById("wan_preference_tr1").style.display = "";
+		document.getElementById("wan_preference_tr2").style.display = "";
+		document.getElementById("wan_preference_tr3").style.display = "";
+		document.getElementById("wan_preference_hr").style.display = "";
+		wan_preference_status();
+	}
+	else {
+		document.getElementById("main").style.top = "135px";
 	}
 }

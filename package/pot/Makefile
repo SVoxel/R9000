@@ -41,6 +41,7 @@ define Package/pot/install
 	install -m0755 $(PKG_BUILD_DIR)/stamac $(1)/usr/sbin/
 	install -d -m0755 $(1)/etc/init.d
 	install -m0755 ./files/pot.init $(1)/etc/init.d/pot
+	install -m0755 ./files/netconn.sh $(1)/usr/sbin
 endef
 
 $(eval $(call BuildPackage,pot))

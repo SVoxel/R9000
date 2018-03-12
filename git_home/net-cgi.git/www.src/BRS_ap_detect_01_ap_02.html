@@ -69,14 +69,12 @@ function show_yes_or_no_div(cf)
 	if(cf.use_ap[0].checked)
 	{	
 		document.getElementById("ap_yes_content").style.display="";
-		document.getElementById("ap_yes_content").style.height="400px"
 		document.getElementById("ap_no_content").style.display="none";
 	}
 	if (cf.use_ap[1].checked)
 	{
 		document.getElementById("ap_yes_content").style.display="none";		
 		document.getElementById("ap_no_content").style.display="";
-		document.getElementById("ap_no_content").style.height="140px";
 	}
 
 }
@@ -110,7 +108,9 @@ function show_yes_or_no_div(cf)
 			<p><b><script>document.write(bh_mode_yes_tips);</script></b></p>	
 			<div class="img_left"><img src="image/G5.gif"/></div>
 			<div class="img_right"><img src="image/G6.gif"/></div>
-				
+
+			<div style="clear:both"></div>
+
 			<div class="left_div">2.4GHz <script>document.write(bh_wirless_name);</script></div>
 			<div class="right_div"><input id="ESSID" type="text" maxlength="32" size="20" value="" name="wl_ssid"></div>
 			<div class="left_div">

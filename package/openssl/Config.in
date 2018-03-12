@@ -22,7 +22,7 @@ config OPENSSL_ENGINE_DIGEST
 
 config OPENSSL_HARDWARE_SUPPORT
 	bool
-	default n
+	default y
 	prompt "Enable hardware support"
 
 endif

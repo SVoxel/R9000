@@ -45,9 +45,9 @@ hr{color:#9D98FF;}
 .wizard_words_div p{ font-family:Arial; font-size:10pt; font-weight:normal; color:#404040; }
 
 
-.wizard_words_div .left_div{ height:30px; width:46%; margin:3px 0 3px 0; line-height:30px; float:left; }
+.wizard_words_div .left_div{ min-height:30px; width:46%; margin:3px 0 3px 0; line-height:30px; display: inline-block; word-wrap: break-word; vertical-align: top; work-break: break-all; }
 
-.wizard_words_div .right_div{ height:30px; width:50%; margin:3px 0 3px 3px; line-height:30px; float:left; font-weight:bold; }
+.wizard_words_div .right_div{ min-height:30px; width:50%; margin:3px 0 3px 3px; line-height:30px; font-weight:bold; display: inline-block; work-break: break-all; word-wrap: break-word; vertical-align: top;}
 
 
 .wizard_words_div .radio_div{ height:40px; margin:3px 0 auto 0; line-height:20px; }

@@ -57,54 +57,33 @@ check_wifi_interrupts()
 	
 }
 
-check_11ad_wd()
+check_hostapd_ath()
 {
-	local ad_script=`ps -www|grep 11ad_linkloss_wd.sh |grep -v grep 2>&-`
-	if [ "x$ad_script" = "x" ]; then
-		/sbin/11ad_linkloss_wd.sh &
-	fi	
-}
-
-check_hostapd()
-{
+        local wifidev=$1
+        local athdev=$2
 	local driver_ssid=0
 	local dni_ssid=0
 
-	if [ -f "/var/run/hostapd-wifi0" ] && [ -f "/var/run/wifi-ath0.pid" ]; then
-		driver_ssid=`hostapd_cli -p /var/run/hostapd-wifi0 -i ath0 GET ssid`
-		dni_ssid=`cat /var/run/hostapd-ath0.conf | grep ssid | awk -F '=' '{print $2}' | head -1`
+	if [ -f "/var/run/hostapd-${wifidev}" ] && [ -f "/var/run/wifi-${athdev}.pid" ]; then
+		driver_ssid=`hostapd_cli -p /var/run/hostapd-${wifidev} -i ${athdev} GET ssid`
+		dni_ssid=`cat /var/run/hostapd-${athdev}.conf | grep ssid | awk -F '=' '{print $2}' | head -1`
 		if [ "$driver_ssid" != "$dni_ssid" ]; then
 			wifi_reload=1
-			echo "ath0 hostapd get wrong ssid, driver ssid: $driver_ssid, config ssid: $dni_ssid"
+			echo "${athdev} hostapd get wrong ssid, driver ssid: $driver_ssid, config ssid: $dni_ssid"
 		fi
 	fi
+}
 
-	if [ -f "/var/run/hostapd-wifi1" ] && [ -f "/var/run/wifi-ath1.pid" ]; then
-		driver_ssid=`hostapd_cli -p /var/run/hostapd-wifi1 -i ath1 GET ssid`
-		dni_ssid=`cat /var/run/hostapd-ath1.conf | grep ssid | awk -F '=' '{print $2}' | head -1`
-		if [ "$driver_ssid" != "$dni_ssid" ]; then
-			wifi_reload=1
-			echo "ath1 hostapd get wrong ssid, driver ssid: $driver_ssid, config ssid: $dni_ssid"
-		fi
-	fi
-
-	if [ -f "var/run/hostapd-wifi0" ] && [ -f "/var/run/wifi-ath01.pid" ]; then
-		driver_ssid=`hostapd_cli -p /var/run/hostapd-wifi0 -i ath01 GET ssid`
-		dni_ssid=`cat /var/run/hostapd-ath01.conf | grep ssid | awk -F '=' '{print $2}' | head -1`
-		if [ "$driver_ssid" != "$dni_ssid" ]; then
-			wifi_reload=1
-			echo "ath01 hostapd get wrong ssid, driver ssid: $driver_ssid, config ssid: $dni_ssid"
-		fi
-	fi
-
-	if [ -f "/var/run/hostapd-wifi1" ] && [ -f "/var/run/wifi-ath11.pid" ]; then
-		driver_ssid=`hostapd_cli -p /var/run/hostapd-wifi1 -i ath11 GET ssid`
-		dni_ssid=`cat /var/run/hostapd-ath11.conf | grep ssid | awk -F '=' '{print $2}' | head -1`
-		if [ "$driver_ssid" != "$dni_ssid" ]; then
-			wifi_reload=1
-			echo "ath11 hostapd get wrong ssid, driver ssid: $driver_ssid, config ssid: $dni_ssid"
-		fi
-	fi
+check_hostapd(){
+        local vaps=$1
+        for t_vap in $vaps
+        do
+                if [ "$t_vap" = "ath0" -o "$t_vap" = "ath01" ]; then
+                        check_hostapd_ath $t_vap wifi0
+                else
+                        check_hostapd_ath $t_vap wifi1
+                fi
+        done
 }
 
 check_hostapd_EAP_common()
@@ -175,7 +154,9 @@ check_hostapd_EAP_common()
 			grep -E "${athdev}" /proc/$pid/cmdline >/dev/null && \
 				kill $pid                                    
 			done
-            		wlan vap "$wifidev" "$athdev"
+            iwpriv "$wifidev" pdev_reset 5
+            sleep 3
+            wlan vap "$wifidev" "$athdev"
 			dot11RSNA4WayHandshakeFailures=0
 			dot11RSNAEapReceived=0
 		fi
@@ -188,6 +169,7 @@ check_hostapd_EAP_common()
 
 check_hostapd_EAP()
 {
+        local vaps=$1
 	### check time for 2 minus.
 	hostapd_EAP_InterVal_cnt=$(($hostapd_EAP_InterVal_cnt+1))
 	[ $hostapd_EAP_InterVal_cnt -lt $hostapd_EAP_InterVal ] && return 0
@@ -196,10 +178,14 @@ check_hostapd_EAP()
 	bridge_mode=`config get bridge_mode`
 	[ "x$bridge_mode" = "x1" ] && return 0
 
-	check_hostapd_EAP_common ath0 wifi0
-	check_hostapd_EAP_common ath01 wifi0
-	check_hostapd_EAP_common ath1 wifi1
-	check_hostapd_EAP_common ath11 wifi1
+        for t_vap in $vaps
+        do
+                if [ "$t_vap" = "ath0" -o "$t_vap" = "ath01" ]; then
+	                check_hostapd_EAP_common $t_vap wifi0
+                else
+	                check_hostapd_EAP_common $t_vap wifi1
+                fi
+        done
 }
 
 down_up_vap()
@@ -213,24 +199,18 @@ down_up_vap()
     fi
 }
 
+### check vap not up
 check_vap_not_up()
 {
-    ### check vap not up
-	bridge_mode=`config get bridge_mode`
-	[ "x$bridge_mode" = "x1" ] && return 0
- 
-    wifi1_enable=`config get endis_wl_radio`
-    wifi0_enable=`config get endis_wla_radio`
-    ath11_enable=`config get wlg1_endis_guestNet`
-    ath01_enable=`config get wla1_endis_guestNet`
-    if [ "$wifi1_enable" = "1" ]; then
-        down_up_vap ath1
-        [ "$ath11_enable" = "1" ] && down_up_vap ath11
-    fi
-    if [ "$wifi0_enable" = "1" ]; then
-        down_up_vap ath0
-        [ "$ath01_enable" = "1" ] && down_up_vap ath01
-    fi
+        local vaps=$1
+
+        bridge_mode=`config get bridge_mode`
+        [ "x$bridge_mode" = "x1" ] && return 0
+
+        for t_vap in $vaps
+        do
+                down_up_vap $t_vap
+        done
 }
 
 check_samba_daemon()
@@ -255,6 +235,38 @@ check_qos_conf()
 	fi
 }
 
+check_user_operate_wifi(){
+        local m_vap=""
+
+        wifi1_enable=`config get endis_wl_radio`
+        wifi0_enable=`config get endis_wla_radio`
+        ath11_enable=`config get wlg1_endis_guestNet`
+        ath01_enable=`config get wla1_endis_guestNet`
+        hw_btn_state=$(config get wl_hw_btn_state)
+
+        [ "$wifi0_enable" = "1" -a "$hw_btn_state" = "on" ] && m_vap="$m_vap ath0"
+        [ "$wifi0_enable" = "1" -a "$ath01_enable" = "1" -a "$hw_btn_state" = "on" ] && m_vap="$m_vap ath01"
+        [ "$wifi1_enable" = "1" -a "$hw_btn_state" = "on" ] && m_vap="$m_vap ath1"
+        [ "$wifi1_enable" = "1" -a "$ath11_enable" = "1" -a "$hw_btn_state" = "on" ] && m_vap="$m_vap ath11"
+        
+        echo $m_vap
+}
+
+#should add check ipv6 type in the future
+check_dhcp6c_process()
+{
+	ps w | grep dhcp6c | grep -v grep > /dev/null
+	if [ $? -ne 0  ]; then
+		let "recovery_num+=1"
+		echo "dhcp6c process exit and try to recovery $recovery_num times ..."
+		echo "ppp2-status value is `cat /tmp/ppp/ppp2-status`"
+		/etc/net6conf/net6conf restart
+	fi
+
+}
+
+
+
 wifi_reload=0
 wifi0_int_counter=0
 wifi1_int_counter=0
@@ -270,45 +282,71 @@ dot11RSNAEapReceived_ath0_old=0
 dot11RSNAEapReceived_ath01_old=0
 dot11RSNAEapReceived_ath1_old=0
 dot11RSNAEapReceived_ath11_old=0
+monitor_vap=""
+
+#recovery dhcp6c
+recovery_num=0
+ipv6_type="dhcp"
+
 
 while [ TRUE ]
 do
-	sleep 20 
+        sleep 20 
 
-	echo 0 > /tmp/wifi_down
+        #check samba
+        check_samba_daemon
 
-	### check wifi interrupts ###
-	check_wifi_interrupts
+        #check qos conf
+        check_qos_conf
 
-	### check 11ad watchdog ###
-#	check_11ad_wd
-	
-	### check wifi target assert ###
-	check_wifi_target_assert
-	
-	### check hostapd issue ###
-	check_hostapd
+        monitor_vap=$(check_user_operate_wifi) 
 
-	### check for no eap M1 send ###
-	check_hostapd_EAP
+        if [ "$(echo $monitor_vap | sed 's/ //g')" = "" ]; then
+                continue
+        fi
 
-	if [ "$wifi_reload" = "1" ]; then
-		wifi_reload=0
-		collect_dump
-		uci set wireless.qcawifi.module_reload=1	
-		echo 1 > /tmp/wifi_down #1 means this wifi reload is triggered by wifi watchdog, not GUI
-		wlan down
-		wlan up
-		echo 0 > /tmp/wifi_down
-	fi
+        echo 0 > /tmp/wifi_down
 
-    ### check vap not up ###
-    check_vap_not_up
+        ### check wifi interrupts ###
+        check_wifi_interrupts
 
-	#check samba
-	check_samba_daemon
+        ### check wifi target assert ###
+        check_wifi_target_assert
 
-	#check qos conf
-	check_qos_conf
+        ### check hostapd issue ###
+        check_hostapd "$monitor_vap"
+
+        ### check for no eap M1 send ###
+        check_hostapd_EAP "$monitor_vap"
+
+        if [ "$wifi_reload" = "1" ]; then
+                wifi_reload=0
+                collect_dump
+                uci set wireless.qcawifi.module_reload=1	
+                echo 1 > /tmp/wifi_down #1 means this wifi reload is triggered by wifi watchdog, not GUI
+                iwpriv wifi0 pdev_reset 5
+                sleep 3
+                iwpriv wifi1 pdev_reset 5
+                sleep 3
+                wlan down
+                wlan up
+                echo 0 > /tmp/wifi_down
+        fi
+
+        ### check vap not up ###
+        check_vap_not_up "$monitor_vap"
+
+	#check dhcp6c process
+	if [ "x`config get ipv6_type`" = "pppoe"  ]; then
+		if [ "x`config get ipv6_sameinfo`" = "x1" ]; then
+			ipaddr=`ifconfig ppp0 | grep "inet addr" | cut -f2 -d: | cut -f1 -d' '`
+		else
+			ipaddr=`ifconfig ppp1 | grep "inet addr" | cut -f2 -d: | cut -f1 -d' '`
+		fi 
+		if [ "x$ipaddr" != "x" ]; then
+			check_dhcp6c_process  
+		fi
+	fi 
+
 done
 

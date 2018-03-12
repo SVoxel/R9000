@@ -9,6 +9,7 @@ var ad_router_flag = 1;
 var sfp_router_flag = 1;
 
 var timereset="<% cfg_sed_xss("timereset") %>";
+var wan_preference="<% cfg_get("wan_preference") %>";
 var clock = 0;
 
 if (timereset == "")
@@ -67,7 +68,7 @@ document.write(new_time);
 	<TD nowrap align=center><span class="thead">$statistics_rx</span></TD>
 	<TD nowrap align=center><span class="thead">$statistics_up</span></TD>
 	</TR>
-	<TR> 
+	<TR id="wan-tr" style="display:table-row;">
 	<TD nowrap align=center><span class="thead">$statistics_wan</span></TD>
 	<TD nowrap align=center><span class="ttext"><script>
 	if (wan_status != "Link down"){
@@ -94,12 +95,22 @@ document.write(new_time);
 </script>	
 	</span></TD>
 	</TR>
-
+<script>
+	if(wan_preference === "1") {
+		document.getElementById("wan-tr").style.display = "none";
+		lan_port_num ++;
+		lan_txpkts = parseInt(lan_txpkts) + parseInt(wan_txpkts);
+		lan_rxpkts = parseInt(lan_rxpkts) + parseInt(wan_rxpkts);
+		lan_collisions = parseInt(lan_collisions) + parseInt(wan_collisions);
+		lan_txbs = parseInt(lan_txbs) + parseInt(wan_txbs);
+		lan_rxbs = parseInt(lan_rxbs) + parseInt(wan_rxbs);
+	}
+</script>
 <script>
 if(sfp_router_flag == 1)
 {
 	document.write('<TR>');
-	document.write('<TD nowrap align=center><span class="thead">SFP+</span></TD>');
+	document.write('<TD nowrap align=center><span class="thead">SFP+' + (wan_preference === "1"? ' (WAN)': '') + '</span></TD>');
 	document.write('<TD nowrap align=center><span class="ttext">');
 	if(sfp_status != "Link down")
 		document.write(translate_status(sfp_status));
@@ -127,10 +138,24 @@ if(sfp_router_flag == 1)
 <script>
 	for(i=0; i<lan_port_num; i++)
 	{
-		var lan_st = eval("lan_status" + i);
-		var lan_ut = eval("lan" + i + "_systime");
+		if(wan_preference === "1") {
+			var label = i;
+			if(i === 0) {
+				var lan_st = wan_status;
+				var lan_ut = wan_systime;
+			}
+			else {
+				var lan_st = eval("lan_status" + (i - 1));
+				var lan_ut = eval("lan" + (i - 1) + "_systime");
+			}
+		}
+		else {
+			var lan_st = eval("lan_status" + i);
+			var lan_ut = eval("lan" + i + "_systime");
+			var label = i + 1;
+		}
 		document.write('<tr id="lan'+ (i+1) +'_info">');
-		document.write('<td nowrap="" align="center"><span class="thead">$statistics_lan '+(i+1)+'</span></td>');
+		document.write('<td nowrap="" align="center"><span class="thead">$statistics_lan '+ label +'</span></td>');
 		document.write('<td nowrap="" align="center"><span class="ttext">');
 		if (lan_st != "Link down")
 			document.write(translate_status(lan_st));

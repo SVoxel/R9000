@@ -15,7 +15,7 @@ app_info_file=/tmp/$appname.info
 app_tgz_file=/tmp/$appname.tar.gz
 app_update_url="ftp://updates1.netgear.com/sw-apps/$appname/$modelname/"
 app_update_url_ftp="ftp://updates1.netgear.com/sw-apps/$appname/$modelname/"
-app_update_url_https="https://updates1.netgear.com/sw-apps/$appname/$modelname/"
+app_update_url_https="https://http.fw.updates1.netgear.com/sw-apps/$appname/$modelname/"
 #app_update_url="-u user:passwd ftp://172.16.83.218/tmp/$modelname/"
 
 app_updated_file="/tmp/.$appname.updated"
@@ -49,6 +49,16 @@ dlna_has_run()
 
 start()
 {
+	# Check if kwilt is disabled
+	if [ -f /.nokwilt ]; then
+		exit 0
+	fi
+
+	nokwilt=$($config get nokwilt)
+	if [ "$nokwilt" = "1" ]; then
+		exit 0
+	fi
+
 	app_has_updated || { oc echo "[$appname] no run, has not been updated !"; return; }
 	dlna_has_run || { oc echo "[$appname] no run, dlna has not been run !"; return; }
 	[ -d /hipplay ] && /hipplay/bin/busybox sh /hipplay/daemon start &
@@ -179,7 +189,7 @@ update()
 		exit 0
 	fi
 
-	local retry fullversion localversion
+	local retry fullversion localversion downtype
 
 	app_has_updated && { oc echo "[$appname] no update, has ever been updated !"; return 1; }
 	[ -f $app_pid_file ] && { oc echo "[$appname] no update, others running now !"; return 1; }
@@ -187,14 +197,15 @@ update()
 
 	oc echo "[$appname] start to get info from update-sever : $app_update_url"
 	retry=0
+	downtype=0
 	while [ 1 ]; do
 		app_update_url=$app_update_url_https
-		curl -l $app_update_url 2>/dev/null | filter_app_info > $app_info_file
-		[ -s $app_info_file ] && break
+		curl $app_update_url"fileinfo.txt" -o $app_info_file 2>/dev/null 
+		[ -s $app_info_file ] && downtype=1 && break
 
 		app_update_url=$app_update_url_ftp
 		curl -l $app_update_url 2>/dev/null | filter_app_info > $app_info_file
-		[ -s $app_info_file ] && break
+		[ -s $app_info_file ] && downtype=2 && break
 
 		oc echo "[$appname] retry=$retry, fail to get update-server info."
 		[ "$retry" = "2" ] && try_to_run_local_version_and_exit "1" "update is given up !"
@@ -202,15 +213,19 @@ update()
 		retry=$(($retry + 1)) && sleep $(get_dynamic_sleep_time $retry)
 	done
 
-	fullversion="$(get_fullversion $app_info_file)"
-	if [ -z "$fullversion" ]; then
-		try_to_run_local_version_and_exit "1" "bug in update-server"
-		exit_update "2" "[$appname] bug in local versoin & update-server !"
-	fi
+	if [ "$downtype" = "2" ]; then
+		fullversion="$(get_fullversion $app_info_file)"
+		if [ -z "$fullversion" ]; then
+			try_to_run_local_version_and_exit "1" "bug in update-server"
+			exit_update "2" "[$appname] bug in local versoin & update-server !"
+		fi
 
-	localversion=$(get_app_local_version)
-	app_version_allowed "$localversion" && newer_app "$localversion" "$fullversion" && \
-		run_local_version_and_exit "0" "no newer version !"
+		localversion=$(get_app_local_version)
+		app_version_allowed "$localversion" && newer_app "$localversion" "$fullversion" && \
+			run_local_version_and_exit "0" "no newer version !"
+	elif [ "$downtype" = "1" ]; then
+		fullversion=`cat $app_info_file`
+	fi
 
 	oc echo "[$appname] start to download image : $app_update_url$fullversion"
 	retry=0

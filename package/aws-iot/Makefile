@@ -18,6 +18,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/aws-iot
   SECTION:=utils
   CATEGORY:=Utilities
+  DEPENDS:=+curl
   TITLE:=The AWS IoT to Publish Topic
 endef
 

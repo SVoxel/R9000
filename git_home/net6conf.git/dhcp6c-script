@@ -129,10 +129,10 @@ fi
 
 echo "dhcp6c lease changed !" > /dev/console
 
-if [ "x`$CONFIG get ipv6_dhcps_enable`" = "x1" ]; then
+#if [ "x`$CONFIG get ipv6_dhcps_enable`" = "x1" ]; then
 	# lease changed, pull low LAN port for 3 seconds to force LAN PC's to re-acquire their IPv6 assignments
 	echo -n 3 > /proc/switch_phy
-fi
+#fi
 
 # The prefix changed, we delete all the ip of the bridge
 pre_ip=`ifconfig $bridge |grep "inet6 addr" |grep -v "Link" |awk '{print $3}'`

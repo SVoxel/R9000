@@ -333,6 +333,8 @@ disable_qcawifi() {
 				[ -f "/var/run/wifi-${dev}.pid" ] &&
 					kill "$(cat "/var/run/wifi-${dev}.pid")" || {
 						pids=`ps | grep hostapd | grep "\-d\{1,4\}" | awk '{print $1}'`
+						pids2=`ps | grep wpa_supplicant | grep "\-d\{1,4\}" | awk '{print $1}'`
+						pids="$pids $pids2"
 						for pid in $pids; do
 							found=`cat /proc/$pid/cmdline | grep ${dev}`
 							[ -n "$found" ] && {

@@ -858,7 +858,7 @@ ftp_start() {
 PID_file=/var/run/cmdftp.pid
 test -f $PID_file && kill $(cat $PID_file)
 echo "$$" > $PID_file
-sleep 5
+sleep 1
 
 case "$1" in
 	stop)

@@ -1,4 +1,18 @@
 <% help_head() %>
 </HEAD>
 $h_lan
+<script>
+	var newNode = document.createElement("p");
+	newNode.innerHTML = "<b>DHCP Lease Time:</b>";
+	var hr = document.getElementsByName("reserved")[0].previousSibling;
+	hr.insertAdjacentElement("beforeBegin", newNode);
+
+	var newNode2 = document.createElement("p");
+	newNode2.innerHTML = "The DHCP lease time is the period of time that the DHCP server leases an IP address to a new device. After the lease expires, the DHCP server might assign the IP address to a different device.";
+	newNode.insertAdjacentElement("afterEnd", newNode2);
+
+	var newNode3 = document.createElement("p");
+	newNode3.innerHTML = "The DHCP lease time range is 1 to 24 hours. The default DHCP lease time is 24 hours.";
+	newNode2.insertAdjacentElement("afterEnd", newNode3);
+</script>
 </HTML>

@@ -520,20 +520,20 @@ LDFLAGS += -L$(STAGING_DIR)/usr/lib/libiconv/lib
 all : net-cgi usb_cfg inetd detplc remote_smb_conf remote_user_conf remote_share_conf readycloud_unregister
 
 net-cgi : $(FILES)
-	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -lpthread -liconv -lm -lmtd -lcurl
+	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -lpthread -liconv -lm -lmtd -lcurl -ldni-common-api
 	@echo "make $@ finished on `date`"
 
 usb_cfg : usbdisk.o usb_cfg.o print.o
-	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -liconv	
+	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -liconv -ldni-common-api	
 
 inetd : http_scan.o
-	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS)
+	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -ldni-common-api
 
 remote_smb_conf remote_user_conf remote_share_conf readycloud_unregister: usbdisk.o remote_smb_conf.o print.o
-	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -liconv
+	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -liconv -ldni-common-api
 
 detplc: plc_devs_detect.o
-	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig
+	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -ldni-common-api
 
 %.o : %.c
 	$(CC) $(CFLAGS) -c $<

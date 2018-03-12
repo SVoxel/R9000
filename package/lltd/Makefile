@@ -48,8 +48,8 @@ define Package/lltd/install
 	install -m0755 $(PKG_BUILD_DIR)/lld2d $(1)/usr/sbin/
 	install -m0755 -d $(1)/etc
 	install -m0755 $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)/files/lld2d.conf  $(1)/etc/
-	install -m0755 ./files/large.ico  $(1)/etc/
-	install -m0755 ./files/icon.ico $(1)/etc/
+	install -m0644 ./files/large.ico  $(1)/etc/
+	install -m0644 ./files/icon.ico $(1)/etc/
 	#install -m0755 -d $(1)/etc/init.d
 	#install -m0755 $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)/files/lltd.init $(1)/etc/init.d/lltd
 endef

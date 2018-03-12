@@ -4,56 +4,74 @@ DNI_CONFIG=/bin/config
 LOGGER="/usr/bin/logger -s -p daemon.info -t TM_update"
 
 Trend_micro_enable=$($DNI_CONFIG get trend_micro_enable)
+device_name=`cat /module_name|tr A-Z a-z`
+local vs1=0
+local cur_vs1=0
+local vs2=0
+local cur_vs2=0
+local old_date=0
+local version=0
+local cur_version=0
+local rel_date=0
 
-Download_Type="https"
+judgement_version(){
+	version=`cat /tmp/Trend_Micro.db| grep version | cut -d ":" -f 2`
+	rel_date=`cat /tmp/Trend_Micro.db| grep update_data | cut -d ":" -f 2`
+	cur_version=`cat /TM/database_versions | grep version | cut -d ":" -f 2`
+	vs1=`echo $version | cut -d "-" -f 4 | cut -c 2`
+	cur_vs1=`echo $cur_version | cut -d "-" -f 4 | cut -c 2`
+	vs2=`echo $version | cut -d "." -f 2`
+	cur_vs2=`echo $cur_version | cut -d "." -f 2`
+	old_date=`cat /TM/database_versions | grep update_data | cut -d ":" -f 2`
+}
 
 update() {
 	local UPDATE_STATUS=0
-	$LOGGER "start to get info from $Download_Type://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/"
-	curl $Download_Type://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/ --connect-timeout 5 --retry 1  2>/dev/null  > /tmp/Trend_Micro.db
-	if [ $? -ne 0 ]; then
-		Download_Type="ftp"
-		$LOGGER "start to get info from $Download_Type://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/"
-		curl $Download_Type://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/ 2>/dev/null  > /tmp/Trend_Micro.db
-	fi
-	line=`cat /tmp/Trend_Micro.db | grep netgear-detection`
 
-	if [ "x$line" != "x" ] ; then
-		version=`echo $line |awk -F " " '{print $9}'`
-		cur_version=`cat /TM/database_versions | grep version | cut -d ":" -f 2`
-		local vs1=`echo $version | cut -d "-" -f 4 | cut -d "." -f 1 | cut -c 2`
-		local cur_vs1=`echo $cur_version | cut -d "-" -f 4 | cut -c 2`
-		local vs2=`echo $version | cut -d "." -f 2`
-		local cur_vs2=`echo $cur_version | cut -d "." -f 2`
-		local old_date=`cat /TM/database_versions | grep update_data | cut -d ":" -f 2`
-		if [ $vs1 -gt $cur_vs1 ] || [ $vs1 -eq $cur_vs1 ] && [ $vs2 -gt $cur_vs2 ]; then
-			curl $Download_Type://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/$version -o /tmp/$version 2>/dev/null
-			if [ "$?" = "0" ]; then
-				[ "$Trend_micro_enable" = "1" ] && shutdown
-				unzip -o /tmp/$version -d /tm_pattern/
-				if [ -e /tm_pattern/update_date ];then
-				local now_date=`cat /tm_pattern/update_date | grep update_data | cut -d ":" -f 2`
-				sed -i "s/$old_date/$now_date/g" /TM/database_versions
-				fi
-				version_1=`echo $version | cut -d "." -f -2`
-				sed -i "s/$cur_version/$version_1/g" /TM/database_versions
-				rm -f /tmp/$version
-				echo " update success !" > /dev/console
-				[ "$Trend_micro_enable" = "1" ] && start
-				UPDATE_STATUS=0
-			else
-				UPDATE_STATUS=100
-				$LOGGER "fail to download $Download_Type://updates1.netgear.com/sw-apps/dynamic-qos/trend/r9000/$version.zip"
-			fi
+	curl https://http.fw.updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/database_versions 2>/dev/null  > /tmp/Trend_Micro.db
+	if [ $? -ne 0 ]; then
+		curl ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/ 2>/dev/null  > /tmp/Trend_Micro.db
+		line=`cat /tmp/Trend_Micro.db | grep netgear-detection`
+		if [ "x$line" != "x" ] ; then
+			judgement_version
+			local ftp_support=1
 		else
-			UPDATE_STATUS=11
-			$LOGGER "[ ok ] Everything is up-to-date."
+			UPDATE_STATUS=100
+			$LOGGER "[ FAIL ] Update failed."
 		fi
 	else
-		UPDATE_STATUS=100
-		$LOGGER "[ FAIL ] Update failed."
+		judgement_version
 	fi
-	return $UPDATE_STATUS		
+	
+	if [ $vs1 -gt $cur_vs1 ] || ([ $vs1 -eq $cur_vs1 ] && [ $vs2 -gt $cur_vs2 ]); then
+		if [ "x$ftp_support" = "x1" ];then
+			$LOGGER "start to get info from ftp://updates1.netgear.com/sw-apps/dynamic-qos/$version"
+			curl ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/$version -o /tmp/$version 2>/dev/null
+		else
+			$LOGGER "start to get info from https://http.fw.updates1.netgear.com/sw-apps/dynamic-qos/$version"
+			curl  https://http.fw.updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/$version.zip -o /tmp/$version.zip 2>/dev/null
+		fi
+
+		if [ "$?" = "0" ]; then
+			[ "$Trend_micro_enable" = "1" ] && shutdown
+			unzip -o /tmp/$version.zip -d  /tm_pattern/
+			version_1=`echo $version | cut -d "." -f -2`
+			sed -i "s/$cur_version/$version_1/g" /TM/database_versions
+			sed -i "s/$old_date/$rel_date/g" /TM/database_versions
+			rm -f /tmp/$version.zip
+			echo " update success !" > /dev/console
+			[ "$Trend_micro_enable" = "1" ] && start
+			UPDATE_STATUS=0
+		else
+			UPDATE_STATUS=100
+			$LOGGER "fail to download
+			ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/$version.zip"
+		fi
+	else
+		UPDATE_STATUS=11
+		$LOGGER "[ ok ] Everything is up-to-date."
+	fi
+	return $UPDATE_STATUS
 }
 
 auto_update() {

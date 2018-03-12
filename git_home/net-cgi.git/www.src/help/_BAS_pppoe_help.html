@@ -1,4 +1,15 @@
 <% help_head() %>
 </HEAD>
 $h_BAS_pppoe
+<script>
+	if("<% cfg_get("support_wan_preference") %>" === "1") {
+	var newNode = document.createElement("p");
+	newNode.innerHTML = "<b>WAN Preference:</b>";
+	var ques = document.getElementsByName("question")[0];
+	ques.insertAdjacentElement("afterEnd", newNode);
+
+	var newNode2 = document.createElement("p");
+	newNode2.innerHTML = "This feature allows you to configure your router to use either the Internet port or the 10G LAN SFP+ port for its Internet connection. By default, your router is configured to use the Internet port for its Internet connection. To change the WAN preference, select a WAN preference radio button and click the <b>Apply</b> button. The WAN Preference status displays on ADVANCED dashboard.";
+	newNode.insertAdjacentElement("afterEnd", newNode2);}
+</script>
 </HTML>

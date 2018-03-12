@@ -1,0 +1,7 @@
+config DNI_COMMON_API
+	bool "support COMMON API to Fix net-cgi security issues"
+	default y
+	help
+	  If DNI common api was enabled, could set this config.
+
+	  If unsure, say N.

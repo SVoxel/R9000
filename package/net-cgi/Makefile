@@ -18,7 +18,7 @@ define Package/net-cgi
   SECTION:=utils
   CATEGORY:=Base system
   DEFAULT:=y
-  DEPENDS:=+libiconv
+  DEPENDS:=+libiconv +libdni-common-api-module +curl
   TITLE:=The mini_httpd CGI interface
 endef
 

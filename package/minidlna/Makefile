@@ -56,7 +56,8 @@ define Build/Configure
 	);
 endef
 
-define Build/Compile    
+define Build/Compile
+	mv $(STAGING_DIR)/usr/include/libavutil/time.h $(STAGING_DIR)/usr/include/libavutil/time.h_
 	$(MAKE) -C $(PKG_BUILD_DIR) \
                 $(TARGET_CONFIGURE_OPTS) \
                 CROSS="$(TARGET_CROSS)" \
@@ -65,6 +66,7 @@ define Build/Compile
                 ARCH="$(ARCH)" \
                 STAGING_DIR="$(STAGING_DIR)" \
 		all
+	mv $(STAGING_DIR)/usr/include/libavutil/time.h_ $(STAGING_DIR)/usr/include/libavutil/time.h
 endef
 
 define Package/minidlna/install

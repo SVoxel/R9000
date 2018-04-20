@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=openssl
 PKG_BASE:=1.0.2
-PKG_BUGFIX:=n
+PKG_BUGFIX:=o
 PKG_VERSION:=$(PKG_BASE)$(PKG_BUGFIX)
 PKG_RELEASE:=1
 PKG_USE_MIPS16:=0
@@ -22,7 +22,7 @@ PKG_SOURCE_URL:=http://www.openssl.org/source/ \
 	http://www.openssl.org/source/old/$(PKG_BASE)/ \
 	ftp://ftp.funet.fi/pub/crypt/mirrors/ftp.openssl.org/source \
 	ftp://ftp.sunet.se/pub/security/tools/net/openssl/source/
-PKG_MD5SUM:=13bdc1b1d1ff39b6fd42a255e74676a4
+PKG_MD5SUM:=44279b8557c3247cbe324e2322ecd114
 
 PKG_LICENSE:=OpenSSL
 PKG_LICENSE_FILES:=LICENSE
@@ -37,7 +37,8 @@ PKG_CONFIG_DEPENDS:= \
 
 include $(INCLUDE_DIR)/package.mk
 
-TARGET_CFLAGS:=-O3 -pipe -mcpu=cortex-a15 -mfpu=neon-vfpv4 -mtune=cortex-a15 -mfloat-abi=hard -fhonour-copts $(FPIC)
+TARGET_CFLAGS:=-O3 -pipe -mcpu=cortex-a15 -mfpu=neon-vfpv4 -funsafe-math-optimizations -mtune=cortex-a15 -mfloat-abi=hard -fhonour-copts $(FPIC) -I$(CURDIR)/include  -ffunction-sections -fdata-sections
+TARGET_LDFLAGS += -Wl,--gc-sections
 
 ifneq ($(CONFIG_CCACHE),)
 HOSTCC=$(HOSTCC_NOCACHE)
@@ -94,8 +95,9 @@ This package contains the OpenSSL command-line utility.
 endef
 
 
-OPENSSL_NO_CIPHERS:= no-idea no-md2 no-mdc2 no-rc5 no-sha0 no-camellia no-krb5
-OPENSSL_OPTIONS:= shared zlib-dynamic no-sse2 no-ssl2
+OPENSSL_NO_CIPHERS:= no-idea no-md2 no-mdc2 no-rc5 no-sha0 no-smime \
+		     no-rmd160 no-aes192 no-ripemd no-camellia no-ans1 no-krb5
+OPENSSL_OPTIONS:= shared no-err threads zlib-dynamic
 
 ifdef CONFIG_OPENSSL_ENGINE_CRYPTO
   OPENSSL_OPTIONS += -DHAVE_CRYPTODEV
@@ -210,8 +212,6 @@ define Package/libopenssl/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/libcrypto.so.* $(1)/usr/lib/
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/libssl.so.* $(1)/usr/lib/
-	(cd $(1)/usr/lib; $(LN) libcrypto.so.1.0.0 libcrypto.so.0.9.8)
-	(cd $(1)/usr/lib; $(LN) libssl.so.1.0.0 libssl.so.0.9.8)
 endef
 
 define Package/openssl-util/install

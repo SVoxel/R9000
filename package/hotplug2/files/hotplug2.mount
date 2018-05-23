@@ -37,9 +37,12 @@ get_volume_from_disk()
 	disk_name=`echo $1 | sed 's/[0-9]//g'`
 	partition_num=`echo $1 | cut -c 4-`
 	volume=`/usr/sbin/vol_id -L /dev/$1`
-	if [ "x$volume" = "x" ];then
+	if [ "x$volume" = "x" ]; then
+		volume=`/usr/sbin/blkid $1 -s LABEL |awk -F'LABEL=' '{print $2}' |awk -F'"' '{print $2}'`
+	fi
+	if [ "x$volume" = "x" ]; then
 		volume=`echo $(/usr/sbin/parted -s /dev/$disk_name print | grep "Number" -A16 | sed -n '2,16p' | awk 'NF>=6{for(n=6;n<=NF;n++)printf $n" ";print     ""}' | sed -n $partition_num"p")`
-		if [ "x$volume" = "x" ];then
+		if [ "x$volume" = "x" ]; then
 			volume="$1"
 		fi
 	fi
@@ -49,7 +52,7 @@ get_volume_from_disk()
 # $---> sda1
 print_log()
 {
-        if [ `length $1` != '4' ];then
+        if [ `length $1` != '4' ]; then
                 return
         fi
 
@@ -69,13 +72,16 @@ print_log()
 	fi
 
 	volume_name=`/usr/sbin/vol_id -L /dev/$1`
+	if [ "x$volume_name" = "x" ]; then
+		volume_name=`/usr/sbin/blkid $1 -s LABEL |awk -F'LABEL=' '{print $2}' |awk -F'"' '{print $2}'`
+	fi
 	if [ ! -n "$volume_name" ]; then
 	       volume_name=$1
 	fi
 	logger "[USB device attached] The USB storage device $1($volume_name) is attached to the router,"
 }
 
-if [ $# -eq 0 ];then
+if [ $# -eq 0 ]; then
 	echo "Must run with devicename."
 	exit 1
 fi
@@ -90,16 +96,16 @@ if [ "x$last_num" != "x" -a "x$last_num" != "x0" ]; then
 else
 	usb_serial=$usb_serial0
 fi
-if [ ! -f $USB_MAP_TABLE -o ! -s $USB_MAP_TABLE ];then
+if [ ! -f $USB_MAP_TABLE -o ! -s $USB_MAP_TABLE ]; then
     echo "$usb_serial,sda,$sd" > $USB_MAP_TABLE
 	mount_point=sda
 else
 	usb_map_info=$(sed -n "/^$usb_serial,sd[a-o],sd[a-o]$/p" $USB_MAP_TABLE)
-	if [ "x$usb_map_info" = "x" ];then
+	if [ "x$usb_map_info" = "x" ]; then
 		tail_map_info=$(tail -n1 $USB_MAP_TABLE |awk -F"," '{print $2}')
 		mount_point=$(echo $USB_MOUNT_POINT |awk -F"$tail_map_info" '{print $2}' |awk -F"," '{print $2}')
-		if [ "x$mount_point" = "x" ];then
-			if [ ! -f $USB_MAP_NEW -o ! -s $USB_MAP_NEW ];then
+		if [ "x$mount_point" = "x" ]; then
+			if [ ! -f $USB_MAP_NEW -o ! -s $USB_MAP_NEW ]; then
 				mount_point=sda
 				sed -i "1s/.*/$usb_serial,$mount_point,$sd/" $USB_MAP_TABLE
 				echo "$usb_serial,$mount_point,$sd" >$USB_MAP_NEW 
@@ -123,7 +129,7 @@ fi
 uniq $USB_MAP_TABLE >/tmp/usb_map_table
 cp -rf /tmp/usb_map_table $USB_MAP_TABLE
 mount_part=$mount_point$(echo $1 |cut -b 4-)
-if [ -d /mnt/$mount_part ];then
+if [ -d /mnt/$mount_part ]; then
 	fuser -m /tmp/mnt/$mount_part |xargs kill -9 2>/dev/null
 	umount /tmp/mnt/$mount_part
 fi
@@ -163,7 +169,7 @@ if [ "x$(parted -s /dev/`echo $1 | sed 's/[0-9]//g'` print noshare | grep $1)" =
 		;;
 		"ext3")
 			mount -t ext3 -o nodev,noatime,barrier=0,data=writeback /dev/$1 /mnt/$mount_part
-			if [ $? -ne 0 ];then
+			if [ $? -ne 0 ]; then
 				mount -t ext4 -o nodev,noatime,barrier=0,data=writeback /dev/$1 /mnt/$mount_part
 			fi
 		;;
@@ -185,7 +191,7 @@ if [ "x$(parted -s /dev/`echo $1 | sed 's/[0-9]//g'` print noshare | grep $1)" =
 		;;
 		"vfat")
 			mount -o usefree,utf8=yes,fmask=0000,dmask=0000 /dev/$1 /mnt/$mount_part
-			if [ $? -ne 0 ];then
+			if [ $? -ne 0 ]; then
 				sleep 2
 				mount -o usefree,utf8=yes,fmask=0000,dmask=0000 /dev/$1 /mnt/$mount_part
 			fi
@@ -230,9 +236,9 @@ lastpartition=$(cat /proc/partitions | grep $diskname | awk '{print $4}' | tail 
 echo "disk name is $diskname last partition is $lastpartition"
 
 partition_num=$(cat /proc/partitions | grep $diskname | wc -l)
-if [ $1 != $lastpartition -a $partition_num -gt 2 ];then
+if [ $1 != $lastpartition -a $partition_num -gt 2 ]; then
 	update_smb $diskname &
-	if [ "x$(pidof afpd)" != "x" ];then
+	if [ "x$(pidof afpd)" != "x" ]; then
 		/usr/sbin/update_afp $diskname &
 	else
 		/etc/init.d/run_afpd start
@@ -249,7 +255,7 @@ if [ $1 = $lastpartition ]; then
 		sleep 2
 	fi
 	update_smb $diskname
-	if [ "x$(pidof afpd)" != "x" ];then
+	if [ "x$(pidof afpd)" != "x" ]; then
         	/usr/sbin/update_afp $diskname &
 	else
 		/etc/init.d/run_afpd start

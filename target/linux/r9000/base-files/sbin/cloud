@@ -80,14 +80,14 @@ update() {
 	echo "start to get info from ftp://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/"
 	retry_count=0
 	while [ 1 ]; do
-		download_proto="ftp"
-		curl $ftp_url/fileinfo.txt -o /tmp/cloud_info 2>/dev/null
-		[ -s /tmp/cloud_info ] && break
-		echo "cannot access $download_proto://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/ or don't find readygeniecloud tarball with version $version"
 		download_proto="https"
 		curl -L $https_url/fileinfo.txt -o /tmp/cloud_info 2>/dev/null
 		[ -s /tmp/cloud_info ] && break
 		echo "cannot access $https_url/fileinfo.txt or don't find readygeniecloud tarball with version $version"
+		download_proto="ftp"
+		curl $ftp_url/fileinfo.txt -o /tmp/cloud_info 2>/dev/null
+		[ -s /tmp/cloud_info ] && break
+		echo "cannot access $download_proto://updates1.netgear.com/sw-apps/ready-genie-cloud/r9000/ or don't find readygeniecloud tarball with version $version"
 		dynamic_sleep
 	done
 	ssl_version=`openssl version | awk '{print $2}'`

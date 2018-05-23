@@ -1,0 +1,199 @@
+<% cfg_set("hijack_language", "1") %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<% hijack_title() %>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" type="text/css" href="style/hijack_style.css" />
+	<link rel="stylesheet" type="text/css" href="/style/top_style.css" />
+	<% hijack_language() %>
+</head>
+<style>
+.apply_bt{width: 128px; background: url(../image/buttons.gif) no-repeat top left; height: 22px; color: #f2f2f2; font-family: Arial; font-weight: Bold; font-size: 14px; background-color: transparent; border: none; cursor: pointer; padding-bottom: 2px;}
+.top_link{font-size:10pt; float:right; margin: 2% 5% 2% 5%;}
+.page_title{width: 80%; padding:15% 10% 0px 25%; height: 20px; font: bold 17px arial; color: #9d98ff; position: absolute; top: 0px; left: 0px;}
+.page_title>div div{height: 22px; color: #404040; font-family: Arial; font-weight: normal; font-size: 14px; margin:10px 20px 10px 0px;}
+</style>
+<script>
+var netgear_region = "<% get_firmware_region() %>";
+
+var wan_internet_cable = "<% cat_file("/tmp/WAN_status") %>".trim();
+var wan_sfp_cable = "<% cat_file("/tmp/SFP_status") %>".trim();
+var wan_valid_ip_address = "<% detwan_valid() %>";
+var wan_preference = "<% cfg_get("wan_preference") %>";
+<% refresh_timestamp("wizard_wan_preference") %>
+var ts = "<% cfg_get("wizard_wan_preference") %>";
+var new_sold_board = "<% cfg_get("new_sold_board") %>";
+
+function wan_preference_status() {
+	var statusStr = "";
+	var el = document.getElementById("wan-port-status");
+	var retried = 0;
+	var totalTry = 3;
+	if(wan_internet_cable === "Link down" || wan_sfp_cable === "Link down") {
+		statusStr = "Error: Make sure that your SFP+ module or cable is connected to the SFP+ port";
+	}
+	else if(wan_valid_ip_address !== "1") {
+		statusStr = "Error: Unable to establish an internet connection";
+	}
+
+	if(statusStr !== "") {
+		el.innerHTML = statusStr;
+		el.style.color = "red";
+		return;
+	}
+
+	if( window.XMLHttpRequest ) {
+		var reqHttp = new XMLHttpRequest();
+	}
+	else {
+		var reqHttp = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+
+	reqHttp.onreadystatechange = function() {
+		if( reqHttp.readyState == 4 && reqHttp.status == 200 ) {
+			var resp = reqHttp.responseText.trim();
+			if(resp !== "Success;" && retried < totalTry) {
+				setTimeout(function() {
+					reqHttp.open("GET", "ajax_ping_result.txt", true);
+					reqHttp.send(null);
+					retried++;
+				}, 500);
+			}
+			else if(resp === "Success;") {
+				statusStr = "Status: Connected to the internet";
+				el.innerHTML = statusStr;
+				el.style.color = "transparent";
+				//el.style.color = "blue";
+			}
+			else if(retried > (totalTry - 1)) {
+				statusStr = "Error: Unable to establish an internet connection";
+				el.innerHTML = statusStr;
+				el.style.color = "red";
+			}
+		}
+	}
+
+	reqHttp.open("GET", "ajax_ping_result.txt", true);
+	reqHttp.send(null);
+}
+
+function have_wan_preference(flag) {
+	if(flag === 1) {
+		document.getElementById("wan_preference_tr1").style.display = "";
+		document.getElementById("wan_preference_tr2").style.display = "";
+		document.getElementById("wan_preference_tr3").style.display = "";
+	}
+	else {
+		this.location.href="/";
+	}
+}
+
+function loadvalue() {
+	var form=document.forms[0];
+
+	if(wan_preference === "1") {
+		form.wan_preference[1].checked = true;
+		form.hid_wan_preference.value = "1";
+	}
+	else {
+		form.wan_preference[0].checked = true;
+		form.hid_wan_preference.value = "0";
+	}
+	<% ajax_ping_start() %>
+	<% hijack_support_flag() %>
+	have_wan_preference(hijack_support_wan_preference);
+	document.getElementById("wan-port-status").style.display = "none";
+	if(top.wizard_wan_preference == "1" || new_sold_board == "1")
+	{
+		if(new_sold_board == "1" && top.wizard_wan_preference != "1")
+			form.target = "_top";
+		document.getElementById("header").style.display = "none";
+		document.getElementById("wan_preference_tr1").style ="padding:5% 10% 0px 10%; height:750px; background:#FFFFFF";
+	}
+ }
+
+function check_wan_preference(cf) {
+
+	if(cf.hid_wan_preference.value == "0")
+		if(top.wizard_wan_preference == "1")
+		{
+			cf.submit_flag.value="hijack_wan_preference";
+			if(top.dsl_enable_flag == "1")
+			{
+				cf.action="/apply.cgi?/BRS_log04_wizardHelp_yes.html timestamp="+ts;
+				cf.submit();
+			}else
+			{
+				if (((top.netgear_region.toUpperCase() == "WW" || top.netgear_region == "") && top.gui_region == "Russian" ) || top.netgear_region.toUpperCase() == "RU"){
+					if(top.have_broadband == "1")
+						location.href = "WIZ_sel_3g_adsl.htm";
+					else{
+						cf.action="/apply.cgi?/RU_detcInetType.html timestamp="+ts;
+						cf.submit();
+					}
+				}else
+				{
+					if((top.have_broadband == "1" && (top.is_ru_version == 1 || top.is_pr_version == 1)) || top.have_lte_flag == "1")
+						location.href = "WIZ_sel_3g_adsl.htm";
+					else{
+						cf.action="/apply.cgi?/BRS_03A_detcInetType.html timestamp="+ts;
+						cf.submit();
+					}
+				}
+			}
+		}
+		else
+			cf.submit();
+	else
+	{
+		wan_preference_status();
+		var el = document.getElementById("wan-port-status");
+		el.style.display = "block";
+		setTimeout(function() {
+				if(el.innerHTML == "Status: Connected to the internet")
+					cf.submit();
+				else
+					document.location.reload();
+		},3000);
+	}
+}
+
+</script>
+<body onload="loadvalue()">
+<% form_submit("apply", "start.htm", "hijack_wan_preference") %>
+<input type="hidden" name="hid_wan_preference" value="0">
+<div id="page_container">
+	<div id="header">
+		<div id="header_top">
+			<div class="top_name">
+				<div class="title_div"></div>
+				<% cd_less_top_hardware_version() %>
+			</div>
+		</div>
+	</div>
+
+	<div class="wizard_body_container">
+		<div class="wizard_content_div">
+			<div class="wizard_words_div" style="padding-top:1%">
+				<div class="page_title" id="wan_preference_tr1" style="display:none">WAN Port Preference
+					<div></br>
+						<div id="wan_preference_tr2" style="display:none">
+						<input onclick='document.forms[0].hid_wan_preference.value="0"'  type="radio" name="wan_preference" id="internet_port" value="0">Internet Port (1 Gbps)
+						</div>
+						<div id="wan_preference_tr3" style="display:none">
+						<input onclick='document.forms[0].hid_wan_preference.value="1"' type="radio" name="wan_preference" id="sfp_port" value="1" checked="true">10G LAN SFP+ Port (10 Gbps)</br></br>
+							<div><span id='wan-port-status' style="color: red"></span></div>
+							<div id="allBtns_div" class="wizard_buttons_div" align="center" style="margin-top:20px;">
+							<script>document.write('<input type="button" name="Next" id="next" class="purple_short_btn" value="'+bh_next_mark+'" onclick="check_wan_preference(document.forms[0])">');</script>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	<div class="bottom_margin"></div>
+</div>
+</form>
+</body>
+</html>

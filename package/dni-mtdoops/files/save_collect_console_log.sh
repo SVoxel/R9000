@@ -54,6 +54,7 @@ dd if=/dev/mtd_crashdump of=/tmp/panic_log.txt bs=131072 count=2
 [ -f /tmp/basic_debug_log.txt ] && unix2dos /tmp/basic_debug_log.txt
 [ -f /tmp/wirless_log1.txt ] && unix2dos /tmp/wireless_log1.txt
 [ -f /tmp/wirless_log2.txt ] && unix2dos /tmp/wireless_log2.txt
+
 collect_log=`cat /tmp/collect_debug`
 
 if [ "x$collect_log" = "x1" ];then
@@ -62,7 +63,21 @@ else
 	zip debug-log.zip NETGEAR_$module_name.cfg  panic_log.txt  Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap wireless_log1.txt wireless_log2.txt
 fi
 
+[ -f /tmp/hostapd.log ] && {
+	for hostapd_log in `cat /tmp/hostapd.log`
+	do
+		unix2dos $hostapd_log
+		zip debug-log.zip $hostapd_log
+		[ $? -eq "0" ] && rm -f $hostapd_log
+	done
+	# Recover back to normal wireless
+	wlan updateconf
+	wlan down
+	wlan up
+}
+rm -f /tmp/hostapd.log
+
 cd /tmp
-rm -rf debug-usb debug_cpu debug_flash debug_mem debug_mirror_on debug_session NETGEAR_$module_name.cfg panic_log.txt Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap wireless_log1.txt wireless_log2.txt
+rm -rf debug-usb debug_cpu debug_wlan debug_flash debug_mem debug_mirror_on debug_session NETGEAR_$module_name.cfg panic_log.txt Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap wireless_log1.txt wireless_log2.txt
 
 echo 0 > /tmp/collect_debug

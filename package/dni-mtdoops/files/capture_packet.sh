@@ -3,23 +3,28 @@
 # As requirement for NTGR Weber, if have usb storage, we will store LAN/WAN packet into usb storage, or store in sdram
 
 dist_path=""
-mnt_path="/mnt/"
+#mnt_path="/mnt/"
 store_locate=`cat /tmp/debug_store_locate`
 wanlan_capture=`cat /tmp/wanlan_capture`
 check_usb_storage_folder()
 {
 	part_list="a b c d e f g"
 	for i in $part_list; do
-
         	[ "X$(df | grep /dev/sd"$i")" = "X" ] && continue
         	#echo "sd$i"
         	j=1
         	while [ $j -le 20 ]; do
                 	tmp=`df | grep /dev/sd"$i""$j"`
-                	mnt_tmp=`ls $mnt_path | grep sd"$i""$j"`
-                	[ "X$tmp" = "X" -o "X$mnt_tmp" = "X" ] && j=$((j+1)) && continue
+			#Since the mounted folder name is not corresponded to filesystem name, eg. /dev/sda1 and /tmp/mnt/sdc1,
+			#use 'df' command to find the correct usb storage folder name instead of original way.
+			[ "X$tmp" = "X" ] && j=$((j+1)) && continue
+			[ "X$tmp" != "X" ] &&  mnt_tmp=`df /dev/sd"$i""$j" | awk '/dev/sd {print $6}' | grep /tmp/mnt/`
+                	#mnt_tmp=`ls $mnt_path | grep sd"$i""$j"`
+			[ "X$mnt_tmp" = "X" ] && j=$((j+1)) && continue
 
-                        dist_path="$mnt_path"sd"$i""$j"
+                        #dist_path="$mnt_path"sd"$i""$j"
+			dist_path=$mnt_tmp
+			#echo "**** dist_path=$dist_path ****"
                         break;
 
                 	j=$((j+1))

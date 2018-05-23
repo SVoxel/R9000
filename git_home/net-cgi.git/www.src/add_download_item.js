@@ -292,6 +292,7 @@ function enable_greendownload(form,type)
 var greenErrorHandling = function(cf) {
 	var is_fail = 0;
 	var type = this_download_type;
+	var mlnet_error=top.mlnet_error;
 
 	if(mlnet_error == "1" && confirm("$greendl_seed_alreay_exist") == true)
 		is_fail = 1;
@@ -384,7 +385,7 @@ function refresh_download_table()
 
 	for( i=0; i< top.green_download_item_num; i++)
 	{
-		var info = item[i];
+		var info = item[i].toString();
 		var each_info = info.split('*');
 
 		if( each_info[6] == "Paused" )
@@ -574,3 +575,26 @@ function Convert(originStr)
 	originStr = originStr.replace(/\]/g, "%5D");
 	return unescape(decodeURIComponent(originStr));
 }
+
+function get_dlclient_result(flag) {
+	if( window.XMLHttpRequest ) {
+		var reqHttp = new XMLHttpRequest();
+	}
+	else {
+		var reqHttp = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+
+	reqHttp.onreadystatechange = function() {
+		if( reqHttp.readyState == 4 && reqHttp.status == 200 ) {
+			var resp = reqHttp.responseText.trim();
+			top.mlnet_error=resp;
+			if(flag == "1")
+				if(top.mlnet_error!= "0")
+					alert(top.mlnet_error);
+		}
+	}
+
+	reqHttp.open("GET", "ajax_get_dlclient_result.txt", true);
+	reqHttp.send(null);
+}
+

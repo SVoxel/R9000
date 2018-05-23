@@ -5,17 +5,19 @@ function dhcponoff()
 	{
 		cf.sysPoolStartingAddr4.disabled =false;
 		cf.sysPoolFinishAddr4.disabled =false;
+		cf.lanLeaseTime.disabled = false;
 	}
 	else
 	{
 		cf.sysPoolStartingAddr4.disabled =true;
 		cf.sysPoolFinishAddr4.disabled =true;
+		cf.lanLeaseTime.disabled = true;
 	}
 }
 
 function valid_add()
 {   
-	if(array_num==64)  
+	if(array_num==253)
 	{
 		alert("$reservation_length_64");
 		return false;
@@ -82,6 +84,13 @@ function checklan(form)
 	form.lan_subnet.value=form.sysLANSubnetMask1.value+'.'+form.sysLANSubnetMask2.value+'.'+form.sysLANSubnetMask3.value+'.'+form.sysLANSubnetMask4.value;
 	var lan_array=form.lan_ipaddr.value.split('.');
 
+	var lease_time = form.lanLeaseTime.value;
+	if(!_isNumeric(lease_time) || parseInt(lease_time) < 1 || parseInt(lease_time) > 24) {
+		alert("Incorrect value; correct values are from 1 to 24.");
+		return false;
+	}
+	cf.hid_lease_time.value = lease_time;
+	
 	form.hid_array_num.value=array_num;
 /*	
 	if(cf.device_name.value=="")

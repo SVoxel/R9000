@@ -2,7 +2,7 @@
 START=30
 
 start() {
-	[ "$($CONFIG get i_opmode)" = "normal" ] && $CONFIG set old_enable_acl_status=$($CONFIG get enable_block_device)
+	[ "$($CONFIG get i_opmode)" = "normal" -o "$($CONFIG get i_opmode)" = "apmode" ] && $CONFIG set old_enable_acl_status=$($CONFIG get enable_block_device)
 	
 	if [ "x$($CONFIG get enable_block_device)" = "x" ]; then
 		echo "No valid configuration for NETGEAR blocking function, please reset to factory default!"

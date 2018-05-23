@@ -102,6 +102,13 @@ function click_next()
         if (document.forms[0].help_choice[0].checked == true){
 			cf.hidden_wiard_select_country.value = cf.country.value;
 			cf.hidden_wiard_select_isp.value = cf.isp.value;
+			if(top.wizard_wan_preference == "1")
+			{
+				cf.submit_flag.value="wizard_isp";
+				cf.action="/apply.cgi?/BRS_wan_preference.html timestamp=<% cfg_get("wizard_isp")%>";
+				cf.submit();
+			}
+			else
 			cf.submit();
 		}
         else  if (cf.help_choice[1].checked == true)

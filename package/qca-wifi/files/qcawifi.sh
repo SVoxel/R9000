@@ -333,6 +333,8 @@ disable_qcawifi() {
 				[ -f "/var/run/wifi-${dev}.pid" ] &&
 					kill "$(cat "/var/run/wifi-${dev}.pid")" || {
 						pids=`ps | grep hostapd | grep "\-d\{1,4\}" | awk '{print $1}'`
+						pids2=`ps | grep wpa_supplicant | grep "\-d\{1,4\}" | awk '{print $1}'`
+						pids="$pids $pids2"
 						for pid in $pids; do
 							found=`cat /proc/$pid/cmdline | grep ${dev}`
 							[ -n "$found" ] && {
@@ -1237,6 +1239,12 @@ enable_qcawifi() {
 		config_get_bool ext_ifu_acs "$vif" ext_ifu_acs
 		[ -n "$ext_ifu_acs" ] && iwpriv "$ifname" ext_ifu_acs "$ext_ifu_acs"
 
+		config_get nrshareflag "$vif" nrshareflag
+		[ -n "$nrshareflag" ] && iwpriv "$ifname" nrshareflag "$nrshareflag"
+
+		config_get scanentryage "$vif" scanentryage
+		[ -n "$scanentryage" ] && iwpriv "$ifname" scanentryage "$scanentryage"
+
 		config_get_bool rrm "$vif" rrm
 		[ -n "$rrm" ] && iwpriv "$ifname" rrm "$rrm"
 
@@ -1660,6 +1668,7 @@ wifischedule_qcawifi()
     local hw_btn_state="$2"
     local band="$3"
     local newstate="$4"
+    local is_guest="$5"
 
     find_qcawifi_phy "$device" || return 1
 
@@ -1667,6 +1676,9 @@ wifischedule_qcawifi()
     config_get vifs "$device" vifs
     for vif in $vifs; do
         config_get ifname "$vif" ifname
+	if [ "$is_guest" = "1" ]; then
+	   [ "$ifname" = "ath0" -o "$ifname" = "ath1" ] && continue # only want to set guest network vap
+	fi
         if [ "$newstate" = "on" -a "$hw_btn_state" = "on" ]; then
             isup=`ifconfig $ifname | grep UP`
             [ -n "$isup" ] && continue
@@ -1714,6 +1726,7 @@ wifischedule_qcawifi()
         fi
     done
 
+    [ "$is_guest" = "1" ] && return
     # update wlan uptime file
     config_get ifname "$vif" ifname
     isup=`ifconfig $ifname | grep UP`

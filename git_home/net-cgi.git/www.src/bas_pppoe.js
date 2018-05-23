@@ -332,6 +332,10 @@ function check_pppoe(form,check)
 				return false;
 		}
 	}
+	if(form.sfp_module.value=="1")
+		form.hid_sfp_module.value = 1;
+	else
+		form.hid_sfp_module.value = 0;
 	form.submit();
 	return true;
 }

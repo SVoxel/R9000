@@ -530,6 +530,9 @@ get_volume_from_disk()
 	partition_num=`echo $1 | cut -c 4-`
 	volume=`/usr/sbin/vol_id -L /dev/$1`
 	if [ "x$volume" = "x" ];then
+		volume=`/usr/sbin/blkid $1 -s LABEL |awk -F'LABEL=' '{print $2}' |awk -F'"' '{print $2}'`
+	fi
+	if [ "x$volume" = "x" ];then
 		volume=`echo $(/usr/sbin/parted -s /dev/$disk_name print | grep "Number" -A16 | sed -n '2,16p' | awk 'NF>=6{for(n=6;n<=NF;n++)printf $n" ";print ""}' | sed -n $partition_num"p")`
 		if [ "x$volume" = "x" ];then
 			volume="`construct_volume $2 $3`"

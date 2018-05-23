@@ -2,7 +2,10 @@
 START=30
 
 start() {
-	/bin/date 030101002018
+	DATE=`/bin/date +%Y%m%d`
+	if [ "$DATE" -lt "20180501" ]; then
+		/bin/date 050101002018
+	fi
 	/usr/sbin/ntpclient
 }
 

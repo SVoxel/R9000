@@ -48,7 +48,7 @@ static char * get_time_zone()
 {
 #define TIME_ZONE_FILE "/tmp/time_zone"
 	int  i = 0;
-	char buf[256];
+	static char buf[256];
 	FILE *fp;
 
 	buf[0] = '\0';
@@ -246,7 +246,7 @@ format_utc:
 			i = 22;
 			goto format_utc;
 		} else /* default case */
-			date_fmt = "%a %b %e %H:%M:%S %Z %Y";
+			date_fmt = "%a %b %e %H:%M:%S UTC %Y";
 	}
 
 	if (*date_fmt == '\0') {

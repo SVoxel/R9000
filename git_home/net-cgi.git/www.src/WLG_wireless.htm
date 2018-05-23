@@ -207,6 +207,14 @@ else if(an_router_flag == 1)
 $bluebar
 <TR>
 	<TD colspan=2><input type="checkbox" name="enable_smart_connect" id="enable_smart_connect" onchange="handle_samrt_connect()">Enable Smart Connect - Let the router intelligently select the best WiFi band 2.4GHz or 5GHz for your WiFi connections. Smart Connect requires the 2.4GHz and 5GHz networks to use the same WiFi network name (SSID), security options and password.</TD>
+<script>
+var endis_wl_radio="<% enable_ap_orNot("bgn") %>";
+if(endis_wl_radio == '0' )
+{
+	document.getElementById("enable_smart_connect").disabled = true;
+	getObj('enable_smart_connect').color = 'gray';
+}
+</script>
 </TR>
 $bluebar
 <TR> 

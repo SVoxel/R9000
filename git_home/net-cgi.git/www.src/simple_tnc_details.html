@@ -39,6 +39,7 @@ if(top.location.href.indexOf("definedLanguage") != -1) {
 	tnc_full_31 = "$tnc_full_31";
 	tnc_full_40 = "$tnc_full_40";
 	tnc_full_terms = "$tnc_full_terms";
+	close_win_mark = "$close_win_mark";
 }
 </script>
 <body>
@@ -63,6 +64,8 @@ if(top.location.href.indexOf("definedLanguage") != -1) {
 				document.write(tnc_full_terms.replace(/(href='[^']+')/g, "$$1" + " target='_blank'"));
 		</script>
 	</div>
-	<div class="button_line"><input type="button" class="delete_bt" name="Close" id="close" value="$close_win_mark" onclick="click_close()"></div>
+	<script>
+		document.write('<div class="button_line"><input type="button" class="delete_bt" name="Close" id="close" value="' + close_win_mark + '" onclick="click_close()"></div>');
+	</script>
 </body>
 </html>

@@ -724,22 +724,43 @@ dni_config_set()
                     fi
                     ;;
                 sched_status)
-                    if [ "$2" = "11g" ]; then
-                        eval `dniconfig set wlg_onoff_sched=$3`
-                    elif [ "$2" = "11a" ]; then
-                        eval `dniconfig set wla_onoff_sched=$3`
-                    elif [ "$2" = "11ad" ]; then
-                        eval `dniconfig set wig_onoff_sched=$3`
-                    fi
+		    is_guest=$4
+		    if [ "$is_guest" = "1" ]; then
+			if [ "$2" = "11g" ]; then
+			    dniconfig set wlg1_schedule=0
+			    dniconfig set wlg_guest_target_time=0
+			elif [ "$2" = "11a" ]; then
+			    dniconfig set wla1_schedule=0
+			    dniconfig set wla_guest_target_time=0
+		    fi
+		    else
+			if [ "$2" = "11g" ]; then
+			    eval `dniconfig set wlg_onoff_sched=$3`
+			elif [ "$2" = "11a" ]; then
+			    eval `dniconfig set wla_onoff_sched=$3`
+			elif [ "$2" = "11ad" ]; then
+			    eval `dniconfig set wig_onoff_sched=$3`
+			fi
+		    fi
                     ;;
                 wl_onoff)
+		    is_guest=$4
                     if [ "$2" = "11g" ]; then
-                        eval `dniconfig set endis_wl_radio=$3`
+		    	[ "$is_guest" = "1" ] && dniconfig set wlg1_endis_guestNet=$3 || dniconfig set endis_wl_radio=$3
                     elif [ "$2" = "11a" ]; then
-                        eval `dniconfig set endis_wla_radio=$3`
+		    	[ "$is_guest" = "1" ] && dniconfig set wla1_endis_guestNet=$3 || dniconfig set endis_wla_radio=$3
                     elif [ "$2" = "11ad" ]; then
                         eval `dniconfig set endis_wig_radio=$3`
                     fi
+		    
+		    #Check if we neet to off guest network LED
+    		    eval wlg_guest_if_onoff=\$onoff_`dniconfig get wlg1_endis_guestNet`
+    		    eval wla_guest_if_onoff=\$onoff_`dniconfig get wla1_endis_guestNet`
+		    if [ "$wlg_guest_if_onoff" = "off" -a "$wla_guest_if_onoff" = "off" ]; then
+		    	dniconfig set guest_status=0
+		    else	
+		    	dniconfig set guest_status=1
+		    fi
                     ;;
                 *)
                     eval `dniconfig set $1=$2`

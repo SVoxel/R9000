@@ -3437,7 +3437,7 @@ function wan_preference_status() {
 	var totalTry = 5;
 	var waiting = 4000;
 	if(wan_preference === "1" && wan_sfp_cable === "Link down") {
-		statusStr = "Error: The SFP+ module is not connected to the port";
+		statusStr = "Error: Make sure that your SFP+ module or cable is connected to the SFP+ port";
 	}
 	else if(wan_preference !== "1" && wan_internet_cable === "Link down") {
 		statusStr = "Error: The cable is not connected to the port";
@@ -3466,6 +3466,7 @@ function wan_preference_status() {
 				setTimeout(function() {
 					reqHttp.open("GET", "ajax_ping_result.txt", true);
 					reqHttp.send(null);
+					retried++;
 				}, 500);
 			}
 			else if(resp === "Success;") {
@@ -3488,14 +3489,20 @@ function wan_preference_status() {
 }
 
 function have_wan_preference(flag) {
-	if(flag === "1") {
+	if(flag === 1) {
 		document.getElementById("wan_preference_tr1").style.display = "";
 		document.getElementById("wan_preference_tr2").style.display = "";
 		document.getElementById("wan_preference_tr3").style.display = "";
 		document.getElementById("wan_preference_hr").style.display = "";
+		document.getElementById("sfp_module_tr1").style.display = "";
+		document.getElementById("sfp_module_tr2").style.display = "";
 		wan_preference_status();
 	}
 	else {
 		document.getElementById("main").style.top = "135px";
 	}
+}
+
+String.prototype.replaceXSSItem = function() {
+	return this.replace(/&#92;/g, "\\").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&#40;/g,"(").replace(/&#41;/g,")").replace(/&#34;/g,'\"').replace(/&#39;/g,"'").replace(/&#35;/g,"#").replace(/&#38;/g,"&");
 }

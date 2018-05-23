@@ -325,13 +325,26 @@ normal_create_brs_and_vifs()
 	Switch_set
 	brctl addif br0 ethlan
 
-	# SFP+ Interface
 	ifconfig eth0 hw ether $sfpdefmac
-	brctl addif br0 eth0
-	ifconfig eth0 up
 
-	ifconfig br0 hw ether $landefmac
-	brctl addif brwan ethwan
+	# WAN Preference: 0 - ethwan as WAN port; 1 - eth0 as WAN port
+	if [ "$($CONFIG get wan_preference)" = "0" ]; then
+		# SFP+ LAN Interface
+		brctl addif br0 eth0
+		ifconfig eth0 up
+
+		ifconfig br0 hw ether $landefmac
+		brctl addif brwan ethwan
+	else
+		# Since WAN port is SFP+ interface, use ethwan as LAN interface
+		brctl addif br0 ethwan
+		ifconfig ethwan up
+
+		# SFP+ WAN Interface
+		brctl addif brwan eth0
+		ifconfig br0 hw ether $landefmac
+	fi
+
 	sw_configvlan "normal"
 }
 

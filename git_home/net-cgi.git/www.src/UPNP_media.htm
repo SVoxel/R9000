@@ -111,7 +111,7 @@ function mediaserver_enable()
 function allow_control_submit(cf)
 {
 	cf.submit_flag.value="iTunes_allow_control";
-	return true;
+	cf.submit();
 }
 </script>
 <input type="hidden" name="media_server_onoff">
@@ -136,7 +136,7 @@ function allow_control_submit(cf)
 </TR>
 <TR id=itunes_display style="display:none">
 	<TD nowrap colspan=2>
-	<input type="checkbox" name="enable_itunes" value="0">
+	<input type="checkbox" name="enable_itunes" id="enable_itunes_ch" value="0">
 	<B>$enable_itunes</B></TD>
 </TR>
 <TR id="itunes_app_passcode" style="display:none">
@@ -146,9 +146,9 @@ function allow_control_submit(cf)
 	<script>
 	var master="<% cfg_get("http_loginname") %>";
 	if( master == "admin" )
-		document.write('<td><input type="submit" name="allow_control" class="new_cancel_bt  ui-corner-all" value="$allow_control" onClick="allow_control_submit(document.forms[0])"></TD>');
+		document.write('<td><input type="button" name="allow_control" id="allow_control" class="new_cancel_bt  ui-corner-all" value="$allow_control" onClick="allow_control_submit(document.forms[0])"></TD>');
 	else
-		document.write('<td><input type="submit" name="allow_control" class="new_greycancel_bt  ui-corner-all" value="$allow_control" disabled></TD>');
+		document.write('<td><input type="button" name="allow_control" id="allow_control" class="new_greycancel_bt  ui-corner-all" value="$allow_control" disabled></TD>');
 	</script>
 </TR>
 <TR><TD colspan=2>&nbsp;</TD></TR>
@@ -173,7 +173,7 @@ function allow_control_submit(cf)
 	</div></td><td>
 	<script>
 	if(consolidate_device_name == "1"){
-		document.write('<input class="new_apply_bt2 ui-corner-all" type="button" name="edit" value="$edit_mark" onClick="edit_devicename(dev_name)">');
+		document.write('<input class="new_apply_bt2 ui-corner-all" type="button" name="edit" id="media_edit" value="$edit_mark" onClick="edit_devicename(dev_name)">');
 	}else{
 		if(itunes_open == 0){
 			var medianame=upnp_media_name.replace(": <% cat_file("/module_name") %>", "");

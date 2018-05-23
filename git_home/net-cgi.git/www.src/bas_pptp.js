@@ -434,6 +434,10 @@ function check_pptp(cf,check)
 					return false;
 		}
 	}
+	if(cf.sfp_module.value=="1")
+		cf.hid_sfp_module.value = 1;
+	else
+		cf.hid_sfp_module.value = 0;
 	cf.submit();
 	return true;
 }

@@ -4,6 +4,7 @@ DNI_CONFIG=/bin/config
 LOGGER="/usr/bin/logger -s -p daemon.info -t TM_update"
 
 Trend_micro_enable=$($DNI_CONFIG get trend_micro_enable)
+skip_https_cert=$($DNI_CONFIG get skip_https_cert_auth)
 device_name=`cat /module_name|tr A-Z a-z`
 local vs1=0
 local cur_vs1=0
@@ -28,9 +29,14 @@ judgement_version(){
 update() {
 	local UPDATE_STATUS=0
 
-	curl https://http.fw.updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/database_versions 2>/dev/null  > /tmp/Trend_Micro.db
+	if [ "x$skip_https_cert" = "x1" ]; then
+		curl -k https://http.fw.updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/database_versions 2>/dev/null  > /tmp/Trend_Micro.db
+	else
+		curl https://http.fw.updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/database_versions 2>/dev/null  > /tmp/Trend_Micro.db
+	fi	
+		
 	if [ $? -ne 0 ]; then
-		curl ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/ 2>/dev/null  > /tmp/Trend_Micro.db
+		curl ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/database_versions 2>/dev/null  > /tmp/Trend_Micro.db
 		line=`cat /tmp/Trend_Micro.db | grep netgear-detection`
 		if [ "x$line" != "x" ] ; then
 			judgement_version
@@ -45,11 +51,15 @@ update() {
 	
 	if [ $vs1 -gt $cur_vs1 ] || ([ $vs1 -eq $cur_vs1 ] && [ $vs2 -gt $cur_vs2 ]); then
 		if [ "x$ftp_support" = "x1" ];then
-			$LOGGER "start to get info from ftp://updates1.netgear.com/sw-apps/dynamic-qos/$version"
-			curl ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/$version -o /tmp/$version 2>/dev/null
+			$LOGGER "start to get info from ftp://updates1.netgear.com/sw-apps/dynamic-qos/$version.zip"
+			curl ftp://updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/$version.zip -o /tmp/$version.zip 2>/dev/null
 		else
 			$LOGGER "start to get info from https://http.fw.updates1.netgear.com/sw-apps/dynamic-qos/$version"
-			curl  https://http.fw.updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/$version.zip -o /tmp/$version.zip 2>/dev/null
+			if [ "x$skip_https_cert" = "x1" ]; then
+				curl -k https://http.fw.updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/$version.zip -o /tmp/$version.zip 2>/dev/null
+			else
+				curl https://http.fw.updates1.netgear.com/sw-apps/dynamic-qos/trend/$device_name/$version.zip -o /tmp/$version.zip 2>/dev/null
+			fi
 		fi
 
 		if [ "$?" = "0" ]; then

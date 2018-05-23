@@ -38,6 +38,10 @@ wanmac()
 		*) mac="wan_factory_mac" ;;
 	esac
 
+	if [ "$($CONFIG get wan_preference)" = "1" ]; then
+		mac="sfp_factory_mac"
+	fi
+
 	echo $($CONFIG get $mac)
 }
 
@@ -362,6 +366,44 @@ setup_wan_interface() # $1: manually
 	esac
 }
 
+brx_allnifs() # $1: brx
+{
+	brctl show $1 | awk '!/bridge/ {print $NF}' | grep "eth\|ath\|host0.\|bond0."
+}
+
+update_brx_vifs()
+{
+	local nif nif_brwan_existed nif_br0_existed
+
+	if [ "$($CONFIG get wan_preference)" = "0"  ] ; then
+		for nif in $(brx_allnifs "brwan"); do
+			[ "$nif" = eth0 ] && brctl delif brwan $nif
+			[ "$nif" = ethwan ] && nif_brwan_existed=1
+		done
+
+		for nif in $(brx_allnifs "br0"); do
+			[ "$nif" = ethwan ] && brctl delif br0 $nif
+			[ "$nif" = eth0 ] && nif_br0_existed=1
+		done
+
+		[ "$nif_brwan_existed" != "1" ] && brctl addif brwan ethwan
+		[ "$nif_br0_existed" != "1" ] && brctl addif br0 eth0
+	else
+		for nif in $(brx_allnifs "brwan"); do
+			[ "$nif" = ethwan ] && brctl delif brwan $nif
+			[ "$nif" = eth0 ] && nif_brwan__existed=1
+		done
+
+		for nif in $(brx_allnifs "br0"); do
+			[ "$nif" = eth0 ] && brctl delif br0 $nif
+			[ "$nif" = ethwan ] && nif_br0__existed=1
+		done
+
+		[ "$nif_brwan_existed" != "1" ] && brctl addif brwan eth0
+		[ "$nif_br0_existed" != "1" ] && brctl addif br0 ethwan
+	fi
+}
+
 start_stage0() # $1: boot/start, $2: manually
 {
 	[ "x$2" = "xmanually" ] && echo "***** The net-wan command is called manually!!! *****"
@@ -369,9 +411,22 @@ start_stage0() # $1: boot/start, $2: manually
 	mac_value=$(wanmac)
 	$CONFIG set cur_wanmac="$mac_value"
 
-	ifconfig ethwan hw ether $mac_value
+	# update brwan & br0 interfaces: ethwan for 1G Internet Port; eth0 for 10G SFP+ port.
+	update_brx_vifs
+	if [ "$($CONFIG get wan_preference)" = "1" ]; then
+		ifconfig eth0 hw ether $mac_value
+	else
+		ifconfig ethwan hw ether $mac_value
+	fi
+
 	ifconfig $WAN_IF hw ether $mac_value
-	ifconfig ethwan up
+	if [ "$($CONFIG get wan_preference)" = "1" ]; then
+		ifconfig eth0 up
+	else
+		ifconfig ethwan up
+	fi
+
+	set_sfp_mode
 	ifconfig $WAN_IF up
 
 	/etc/init.d/dni-qos $1
@@ -383,11 +438,23 @@ start_stage0() # $1: boot/start, $2: manually
 	# If not wait, the `udhcpc` CAN'T obtain IP address in its selecting time.
 	[ "$changing_mode" = "1" ] && sleep 5
 	setup_wan_interface $2
-
+	if [ "x`grep -n '"connected"' /tmp/openvpn/client/data/openvpn_client.stat`" != "x" ]; then
+		/usr/bin/openvpn_client.sh reconnect &
+	fi
+	
 	/etc/init.d/upnp $1 &                # upnp daemon
 	/etc/init.d/ddns $1 &                # DDNS daemon
 	restart_ipv6 $1 &
 	[ "$1" = "start" ] && /TM/QoSControl restart
+}
+
+set_sfp_mode()
+{
+	if [ "$($CONFIG get sfp_module)" = "1" ]; then
+		echo "1" > /proc/sfp_mode
+	else
+		echo "0" > /proc/sfp_mode
+	fi
 }
 
 start() # $1: manually
@@ -397,6 +464,7 @@ start() # $1: manually
 	start_stage0 start $1
 	/etc/init.d/ntpclient start
 	/etc/init.d/cron restart
+	/etc/openvpn/client/ovpn_client_apply.sh reconnect
 }
 
 stop()
@@ -444,7 +512,11 @@ stop()
 
 	ifconfig $WAN_IF 0.0.0.0 down
 	ifconfig $WAN_IF mtu 1500
-	ifconfig ethwan down
+	if [ "$($CONFIG get wan_preference)" = "1" ]; then
+		ifconfig eth0 down
+	else
+		ifconfig ethwan down
+	fi
 
 	/etc/init.d/dni-qos stop
 }

@@ -11,10 +11,19 @@ function click_next()
 {
 	if (document.forms[0].WANDetc[0].checked == true)
 	{
+		if(top.wizard_wan_preference == "1")
+		{
+			document.forms[0].submit_flag.value="ru_wizard_detwan";
+			document.forms[0].action="/func.cgi?/BRS_wan_preference.html timestamp=<% cfg_get("ru_wizard_detwan")%>";
+			document.forms[0].submit();
+		}
+		else
+		{
 		if(top.have_broadband == "1")
 			location.href = "WIZ_sel_3g_adsl.htm";
 		else
 			document.forms[0].submit();
+		}
 	}else
 	{
 		if(top.dsl_enable_flag == 0)

@@ -2,6 +2,15 @@
 
 # Collect basi debug information
 
+#Enable hostapd debug log
+enable_hostapd_debug=`/bin/config get enable_hostapd_debug`
+[ "$enable_hostapd_debug" == "1" ] && {
+	uci set wireless.wlg.hostapd_debug_level=2
+	uci set wireless.wla.hostapd_debug_level=2
+	wlan down; wlan up
+	sleep 30
+}
+
 #Connection issue debug
 iwpriv ath0 dbgLVL 0x11C00180
 iwpriv ath1 dbgLVL 0x11C00180

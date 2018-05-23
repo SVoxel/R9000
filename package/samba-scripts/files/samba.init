@@ -32,14 +32,14 @@ start()
 
     # detect SATA disk
     /usr/sbin/detectSATA start
+    /etc/init.d/dbus start
+    /etc/init.d/avahi-daemon start
 
     if [ "x$(cat /tmp/usbdisknum)" = "x" -o $(cat /tmp/usbdisknum) -eq 0 ]; then
 	    exit;
     fi
     # update smb.conf and start samba if needed
     /usr/sbin/update_smb
-    /etc/init.d/dbus start
-    /etc/init.d/avahi-daemon start
     /etc/init.d/run_afpd start
 }
 

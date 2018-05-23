@@ -8,11 +8,20 @@ START=99
 
 #only run on base, MR2.x  use /tmp/orbi_type judge the orbi type
 start() {
-#	if [ "$(cat /tmp/orbi_type)" = "Base" ]; then
-		killall -9  aws-iot
-		rm /var/run/aws_iot.pid
+	local enable_ra=`/bin/config get agree_collect_TC`
+
+	killall -9  aws-iot
+	rm /var/run/aws_iot.pid
+	if [ "$enable_ra" != "1" ]; then
+		/usr/sbin/aws-iot -t 86400 -o eventtype4
+		/bin/config set aws_start_flag=2
+		/bin/config commit
+	else
 		/usr/sbin/aws-iot
-#	fi
+		/bin/config set aws_start_flag=1
+		/bin/config commit
+	fi
+
 }
 
 stop() 
@@ -69,10 +78,10 @@ boot()
 #	if [ "$(cat /tmp/orbi_type)" != "Base" ]; then
 #		exit 1
 #	fi
-	local enable_ra=`/bin/config get agree_collect_TC`
-	if [ "$enable_ra" != "1" ]; then
-		exit 1
-	fi
+#	local enable_ra=`/bin/config get agree_collect_TC`
+#	if [ "$enable_ra" != "1" ]; then
+#		exit 1
+#	fi
 	if [ -s /etc/reboot_reason ]; then
 		local reboot_reason=`cat  /etc/reboot_reason`
 		/bin/config set lastRebootReason=$reboot_reason
@@ -106,7 +115,7 @@ boot()
 			Nov) mon="11";;
 			Dec) mon="12";;
 		esac
-		date $mon$day$hour$min$year
+		#date $mon$day$hour$min$year
 	fi
 	dd if=$panic_partion of=/tmp/crash_log bs=131072 count=2
 	local crash_newline=`cat /tmp/crash_log | wc -l`

@@ -700,6 +700,11 @@ function click_adv_action(id)
 			goto_formframe("NTP_debug.htm");
 			menu_color_change('ntp');
 		}
+		else if( id == "vpn_client" && top.vpn_client_flag == "1")
+		{
+			goto_formframe("vpn_client.htm");
+			menu_color_change('vpn_client');
+		}
         }
 	change_menu_height();
 }

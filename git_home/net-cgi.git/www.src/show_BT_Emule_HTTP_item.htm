@@ -1,4 +1,4 @@
-<% http_header("style/form.css", "add_download_item.js") %>
+<% http_header("style/form.css", "add_download_item.js", "/funcs.js") %>
 <script>
 var file_num = 0;
 var autorefresh_onoff="<% cfg_get("green_enable_autorefresh_status") %>";
@@ -8,7 +8,7 @@ var delay_time=(1000*60)/refresh_time; //that is how long to refresh page once
 <% list_downloaded_file()%>
 var lan_ip="<% cfg_sed_xss("lan_ipaddr") %>";
 var samba_path="<% get_samba_path() %>";
-var mlnet_error="<% get_dlclient_result() %>";
+get_dlclient_result("0");
 var max_concurrent_tasks="<% cfg_get("green_download_max_tasks_run") %>";
 var fileTP_max_concurrent_tasks="<% cfg_get("green_download_fileTP_max_tasks") %>";
 var green_download_enable="<% cfg_get("green_download_enable") %>";

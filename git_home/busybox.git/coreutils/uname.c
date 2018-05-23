@@ -41,7 +41,7 @@
 
 typedef struct {
 	struct utsname name;
-	char processor[14];			/* for "unknown" */
+	char processor[8];			/* for "unknown" */
 } uname_info_t;
 
 static const char options[] = "snrvmpa";
@@ -89,7 +89,7 @@ int uname_main(int argc, char **argv)
 	}
 #endif
 
-	strcpy(uname_info.processor, "Alpine AL-514");
+	strcpy(uname_info.processor, "unknown");
 
 	delta = utsname_offset;
 	do {

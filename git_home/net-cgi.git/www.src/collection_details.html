@@ -20,6 +20,7 @@ if(top.location.href.indexOf("definedLanguage") != -1) {
 	tnc_collect_2 = "$tnc_collect_2";
 	tnc_collect_3 = "$tnc_collect_3";
 	tnc_collect_4 = "$tnc_collect_4";
+	close_win_mark = "$close_win_mark";
 }
 </script>
 <body>
@@ -31,6 +32,8 @@ if(top.location.href.indexOf("definedLanguage") != -1) {
 			document.write("<p>" + tnc_collect_4 + "</p>");
 		</script>
 	</div>
-	<div class="button_line"><input type="button" class="delete_bt" name="Close" id="close" value="$close_win_mark" onclick="click_close()"></div>
+	<script>
+		document.write('<div class="button_line"><input type="button" class="delete_bt" name="Close" id="close" value="' + close_win_mark + '" onclick="click_close()"></div>');
+	</script>
 </body>
 </html>

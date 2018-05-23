@@ -43,8 +43,12 @@ function loadvalue()
 	if("<% cfg_get("enable_hostapd_debug") %>" === "1")
 		document.forms[8].enable_hostapd_debug.checked = true;
 
-	document.forms[9].fan_speed.value = "<% cfg_get("fan_speed") %>";
+	if("<% cfg_get("enable_11k") %>" == "1")
+		document.forms[9].enable_11k.checked = true;
+	else
+		document.forms[9].enable_11k.checked = false;
 
+	document.forms[10].fan_speed.value = "<% cfg_get("fan_speed") %>";
 	refresh_start();
 }
 
@@ -130,9 +134,19 @@ function click_hostapd()
 	cf.action="/apply.cgi?/debug_detail.htm timestamp="+ts;
 	cf.submit();
 }
-function click_fan()
+function click_11k()
 {
 	var cf = document.forms[9];
+	if(cf.enable_11k.checked == true)
+		cf.hid_11k.value = "1";
+	else
+		cf.hid_11k.value = "0";
+	cf.action="/apply.cgi?/debug_detail.htm timestamp="+ts;
+	cf.submit();
+}
+function click_fan()
+{
+	var cf = document.forms[10];
 	cf.action="/apply.cgi?/debug_detail.htm timestamp="+ts;
 	cf.submit();
 }
@@ -251,6 +265,12 @@ function refresh_start()
 <input type="hidden" name="submit_flag" value="debug_info" />
 <input type="hidden" name="hid_hostapd" />
 <input type="checkbox" name="enable_hostapd_debug" onclick="click_hostapd();"><b>Enable hostapd debug</b>
+</form>
+<br/>
+<form method="post" action="/apply.cgi?/debug_detail.htm" target="formframe">
+<input type="hidden" name="submit_flag" value="debug_info" />
+<input type="hidden" name="hid_11k" />
+<input type="checkbox" name="enable_11k" onclick="click_11k();"><b>Enable 11k</b>
 </form>
 </div>
 

@@ -322,7 +322,7 @@ hostapd_set_bss_options() {
 		append "$var" "config_methods=$config_methods" "$N"
 
 		# fix the overlap session of WPS PBC for dual band AP
-		macaddr=$(cat /sys/class/net/${device}/address)
+		macaddr=$(cat /sys/class/net/${bridge}/address)
 		uuid=$(echo "$macaddr" | sed 's/://g')
 		[ -n "$uuid" ] && {
 			append "$var" "uuid=87654321-9abc-def0-1234-$uuid" "$N"
@@ -638,6 +638,9 @@ EOF
 		if [ "$ifname" = "ath0" ]; then
 			sleep 1
 		fi
+		# WAR: kill old hostapd pid again
+		old_pid=`ps -ww | grep -v grep | grep wifi-${ifname}.pid | awk -F ' ' '{print $1}'`
+		kill $old_pid
 		if [ -z "$hostapd_debug" ]; then
 			hostapd -P /var/run/wifi-$ifname.pid -B /var/run/hostapd-$ifname.conf -e $entropy_file
 		else

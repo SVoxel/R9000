@@ -2094,7 +2094,7 @@ function handle_samrt_connect() {
 	handle_sync_input();
 	sync_broadcast();
 
-	if(!enable_smart_connect.checked) {
+	if(!cf.enable_smart_connect.checked) {
 		cf.hid_enable_smart_connect.value = "0";
 		toggle_an_edit();
 		return;

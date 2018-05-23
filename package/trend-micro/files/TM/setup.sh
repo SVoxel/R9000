@@ -28,7 +28,7 @@ udb_mod=tdts_udb.ko
 fw_mod=tdts_udbfw.ko
 rule=rule.trf
 agent=tdts_rule_agent
-NTPCLIENT=ntpclient
+NTPCLIENT=ntpclient-qos
 NTPDATE=ntpdate
 LIGHTTPD=lighttpd
 LIC_FOLDER=tm_key
@@ -57,6 +57,7 @@ start)
 
 	# sync ntp                                                               
 	if `command -v $NTPCLIENT >/dev/null 2>&1` ; then
+		killall $NTPCLIENT
 		$NTPCLIENT -h time.stdtime.gov.tw -s
 		echo "$NTPCLIENT -h time.stdtime.gov.tw -s";
 	else

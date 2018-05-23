@@ -30,10 +30,19 @@ function ckeck_gray1()
 function click_next()
 {
 	if (document.forms[0].WANDetc[0].checked == true){
+		if(top.wizard_wan_preference == "1")
+		{
+			document.forms[0].submit_flag.value="wizard_detwan";
+			document.forms[0].action="/func.cgi?/BRS_wan_preference.html timestamp=<% cfg_get("wizard_detwan")%>";
+			document.forms[0].submit();
+		}
+		else
+		{
 		if((top.have_broadband == "1" && (top.is_ru_version == 1 || top.is_pr_version == 1)) || top.have_lte_flag == "1")
 			location.href = "WIZ_sel_3g_adsl.htm";
 		else
 			document.forms[0].submit();
+		}
 	}
 	else
 	{

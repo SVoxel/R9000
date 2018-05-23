@@ -8,6 +8,7 @@ on_led_qcawifi () {
     local security_type=$2
     local radio_type=$3
     local led_option=$4
+    local is_guest=$4
     local g_ap_setup_locked=0
     local a_ap_setup_locked=0
 	CURRENT_GUEST_STATUS=`dniconfig get guest_status` 
@@ -36,6 +37,7 @@ on_led_qcawifi () {
 	fi
 
 	[ "${CURRENT_GUEST_STATUS}" = "1" ] && eval ${GUEST_WIFI_LED_ON} || eval ${GUEST_WIFI_LED_OFF}
+	[ "$is_guest" = "1" ] && return
     #[ "$radio_num" -gt "0" ] && eval ${WIFI_LED_ON} || eval ${WIFI_LED_OFF}
 
 	if [ "$radio_num" -gt "0" ]; then
@@ -112,6 +114,7 @@ off_led_qcawifi () {
     local security_type=$2
     local radio_type=$3
     local led_option=$4
+    local if_guest=$5
     local g_ap_setup_locked=0
     local a_ap_setup_locked=0
 
@@ -133,6 +136,10 @@ off_led_qcawifi () {
     BLINK_11A_OFF="echo 0 > /sys/class/net/${a_device}/led"
 	ANTENNA_LED_ON="echo 1 > /proc/simple_config/antenna_led"
 	ANTENNA_LED_OFF="echo 0 > /proc/simple_config/antenna_led"
+    
+    CURRENT_GUEST_STATUS=`dniconfig get guest_status` 
+    [ "${CURRENT_GUEST_STATUS}" = "1" ] && eval ${GUEST_WIFI_LED_ON} || eval ${GUEST_WIFI_LED_OFF}
+    [ "$is_guest" = "1" ] && return
 
 	if eval "type config_get_$CONFIGS" 2>/dev/null >/dev/null; then
 		eval "config_get_$CONFIGS tmp_radio_type wig_radio_type"
@@ -141,7 +148,6 @@ off_led_qcawifi () {
     [ "$tmp_radio_type" = "none" ] && eval ${WIFI_LED_OFF}
 
     eval ${ANTENNA_LED_OFF}
-    eval ${GUEST_WIFI_LED_OFF}
     [ "$radio_num" -gt "0" ] && eval ${WIFI_LED_ON}
     [ "$radio_num" -gt "0" -a "$led_option" != "2" ] && eval ${ANTENNA_LED_ON}
 

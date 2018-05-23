@@ -47,6 +47,13 @@ met:
 #include "al_init_eth_kr.h"
 #include "al_hal_serdes_internal_regs.h"
 
+#include <asm/uaccess.h>
+#ifdef CONFIG_PROC_FS
+#include <linux/proc_fs.h>
+#include <linux/seq_file.h>
+#endif
+
+
 /* delay before checking link status with new serdes parameters (uSec) */
 #define AL_ETH_LM_LINK_STATUS_DELAY	1000
 /* delay before checking link status after reconfiguring the retimer (mSec) */
@@ -76,7 +83,7 @@ met:
 		else				\
 			al_dbg(__VA_ARGS__);	\
 	} while (0)
-
+static int sfp_mode_g = 0;
 static int al_eth_sfp_detect(struct al_eth_lm_context	*lm_context,
 			     enum al_eth_lm_link_mode	*new_mode)
 {
@@ -86,6 +93,7 @@ static int al_eth_sfp_detect(struct al_eth_lm_context	*lm_context,
 	uint8_t sfp_cable_tech;
 	uint8_t sfp_da_len;
 
+	if (sfp_mode_g == 0){
 	do {
 		rc = lm_context->i2c_read(lm_context->i2c_context,
 					  lm_context->sfp_bus_id,
@@ -115,7 +123,13 @@ static int al_eth_sfp_detect(struct al_eth_lm_context	*lm_context,
 					  SFP_I2C_HEADER_10G_DA_LEN_IDX,
 					  &sfp_da_len);
 	} while (0);
-
+	}
+	if (sfp_mode_g != 0)
+	{
+		rc = 0;
+		sfp_da_len = 2;
+		sfp_cable_tech = SFP_10G_DA_PASSIVE; 
+	}
 	if (rc) {
 		if (rc == -ETIMEDOUT) {
 			/* ETIMEDOUT is returned when no SFP is connected */
@@ -432,6 +446,44 @@ int al_eth_lm_retimer_config(struct al_eth_lm_context	*lm_context)
 	return 0;
 }
 
+#if defined(CONFIG_PROC_FS)
+int sfpmode_read( char *page, char **start, off_t off, int count, int *eof, void *data )
+{
+	printk("sfp mode is %s\n", sfp_mode_g ? "DAC mode" : "Auto");
+	return 0; 
+}
+
+ssize_t sfpmode_write(struct file *filp, const char __user *buff, unsigned long len, void *data )
+{
+	char line[16];
+	memset(line, 0, 16);
+	if (copy_from_user( line, buff, len ))
+		return -EFAULT;
+	
+	sfp_mode_g = line[0]-'0';
+
+	return len;
+}
+
+static const struct file_operations proc_sfpmode_operations = {
+	.read           = sfpmode_read,
+	.write          = sfpmode_write,
+};
+
+static int sfp_file_flag = 0;
+void create_sfpmode_proc_entry()
+{
+	if (!sfp_file_flag)
+	{
+		sfp_file_flag = 1;
+		proc_create("sfp_mode", 0666, NULL, &proc_sfpmode_operations);
+		sfp_mode_g = 0;
+		printk("ccccccccccccccccccccccccccccc");
+	}
+	printk("create sfp mode proc\n");
+}
+#endif
+
 /*****************************************************************************/
 /***************************** API functions *********************************/
 /*****************************************************************************/
@@ -485,9 +537,11 @@ int al_eth_lm_init(struct al_eth_lm_context	*lm_context,
 	lm_context->rx_param_dirty = 1;
 	lm_context->tx_param_dirty = 1;
 
+#if defined(CONFIG_PROC_FS)
+	create_sfpmode_proc_entry();
+#endif
 	return 0;
 }
-
 
 int al_eth_lm_link_detection(struct al_eth_lm_context	*lm_context,
 			     al_bool			*link_fault,

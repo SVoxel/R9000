@@ -28,9 +28,10 @@ var netgear_region=top.netgear_region;
 
 //add a new checkox 'Enable automatic Internet connection reset at'
 var bas_auto_conn_flag="<% cfg_get("bas_auto_conn_flag") %>";
-var bas_conn_time_num="<% cfg_get("bas_conn_time_num") %>";
-if ( bas_conn_time_num == "" ) // to fix bug 23294
-	bas_conn_time_num="0";
+var bas_conn_time_num="<% cfg_sed_xss("bas_conn_time_num") %>";
+bas_conn_time_num=parseInt(bas_conn_time_num,10);
+if ( bas_conn_time_num>47||bas_conn_time_num<0||isNaN(bas_conn_time_num))
+	bas_conn_time_num=0;
 var auto_conn_flag=parent.parent.auto_conn_flag;
 var autoconn_flag=(auto_conn_flag == 1 && ((gui_region == "German" &&  (netgear_region == "" || netgear_region.toUpperCase() == "WW")) || netgear_region.toUpperCase() == "GR")) ? 1 : 0;
 
@@ -55,6 +56,7 @@ var wan_internet_cable = "<% cat_file("/tmp/WAN_status") %>".trim();
 var wan_sfp_cable = "<% cat_file("/tmp/SFP_status") %>".trim();
 var wan_valid_ip_address = "<% detwan_valid() %>";
 var wan_preference = "<% cfg_get("wan_preference") %>";
+var sfp_module = "<% cfg_get("sfp_module") %>";
 
 function change_web_format()
 {
@@ -111,7 +113,7 @@ function loadvalue()
 		document.getElementById("auto_conn_play").style.display="";
 	else
 		document.getElementById("auto_conn_play").style.display="none";
-	form.auto_conn_time.options[eval(bas_conn_time_num)].selected =true;
+	form.auto_conn_time.options[bas_conn_time_num].selected =true;
 			
 	if( pppoe_empty == "0" )
 	{
@@ -249,7 +251,11 @@ function loadvalue()
 	    form.hid_wan_preference.value = "0";
 	}
 	<% ajax_ping_start() %>
-	have_wan_preference("<% cfg_get("support_wan_preference") %>");
+	have_wan_preference(parent.support_wan_preference);
+	if(sfp_module === "1")
+		form.sfp_module.options[1].selected = true;
+	else
+		form.sfp_module.options[0].selected = true;
 }
 function show_idleout(form,time)
 {
@@ -287,6 +293,7 @@ function show_idleout(form,time)
 <input type="hidden" name="hid_enable_vpn">
 <input type="hidden" name="hidden_pwd_change" value="0">
 <input type="hidden" name="hid_wan_preference" value="0">
+<input type="hidden" name="hid_sfp_module" value="0">
 
 <div class="fix_button">
 <TABLE width=100% border=0 cellpadding=0 cellspacing=2>
@@ -305,7 +312,7 @@ else
 
 <div id="bas_top">
 <TABLE cellspacing=5 cellPadding=0 width=100% border=0>
-<TR id="wan_preference_tr1" style="display:none"><TD nowrap><B>WAN Preference</B></TD></TR>
+<TR id="wan_preference_tr1" style="display:none"><TD nowrap><B>WAN Port Preference</B></TD></TR>
 <TR id="wan_preference_tr2" style="display:none">
 	<TD nowrap>
 		<input onclick='document.forms[0].hid_wan_preference.value="0"'  type="radio" name="wan_preference" id="internet_port" value="0">Internet Port (1 Gbps)
@@ -315,6 +322,17 @@ else
 	<TD nowrap>
 		<input onclick='document.forms[0].hid_wan_preference.value="1"' type="radio" name="wan_preference" id="sfp_port" value="1" checked="true">10G LAN SFP+ Port (10 Gbps)
 		<span id='wan-port-status' style="margin-left: 70px; color: red"></span>
+	</TD>
+</TR>
+<TR id="sfp_module_tr1" style="display:none">
+	<TD nowrap colspan=2><B>SFP+ Module Detection</B></A></TD>
+</TR>
+<TR id="sfp_module_tr2" style="display:none">
+	<TD nowrap colspan=2>
+	<select name="sfp_module" id="sfp_module">
+		<option value="0">$auto_mark</option>
+		<option value="1">DAC mode only</option>
+	</select>
 	</TD>
 </TR>
 <TR id="wan_preference_hr" style="display:none"><TD colspan=2><img src=/liteblue.gif width=100% height=12></TD></TR>
@@ -335,7 +353,7 @@ $bluebar
 </TABLE>
 </div> <!-- bas_top -->
 
-<div id="main" class="main_bas" style="top: 220px;">
+<div id="main" class="main_bas" style="top: 260px;">
 <TABLE cellspacing=5 cellPadding=0 width=100% border=0>
 
 <TR>

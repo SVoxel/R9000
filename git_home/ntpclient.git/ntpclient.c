@@ -417,6 +417,10 @@ int rfc1305print(char *data, struct ntptime *arrival, struct ntptime *udp_send_n
 	daylight_saving_setting();
 #endif
 #endif
+	/*
+	 * Update guest wifi schedule after get time
+	 */
+	 system("/sbin/guest_sched.sh update");
 
 	/* 
 	 * When time updates, and selects "Per Schedule" for "Block Sites" && "Block Services",

@@ -366,6 +366,17 @@ generate_disablecoext()
     uci set wireless.${1}.disablecoext=${wl_value:-0}
 }
 
+generate_rrm()
+{
+    if [ "x$(config get enable_11k)" = "x1" ]; then
+        uci set wireless.${1}.rrm='1'
+	uci set wireless.${1}.nrshareflag='3'
+	uci set wireless.${1}.scanentryage='600'
+    else
+        uci set wireless.${1}.rrm='0'
+    fi
+}
+
 generate_security()
 {
     eval wl_sectype=\$`echo $1`_sectype
@@ -819,6 +830,7 @@ if [ "$update_conf" = "wifi" -o "$update_conf" = "all" ]; then
         generate_doth "wlg"
         generate_disablecoext "wlg"
         generate_security "wlg"
+	generate_rrm "wlg"
         generate_protocol_setting "wlg"
         generate_acl "wlg"
         generate_wds "wlg"
@@ -846,6 +858,7 @@ if [ "$update_conf" = "wifi" -o "$update_conf" = "all" ]; then
         generate_doth "wla"
         generate_disablecoext "wla"
         generate_security "wla"
+	generate_rrm "wla"
         generate_protocol_setting "wla"
         generate_acl "wla"
         generate_wds "wla"
@@ -867,6 +880,7 @@ if [ "$update_conf" = "wifi" -o "$update_conf" = "all" ]; then
         generate_ssid "wlg_guest"
         generate_vhtng "wlg_guest"
         generate_security "wlg_guest"
+	generate_rrm "wlg_guest"
         generate_hide_ssid "wlg_guest"
         generate_protocol_setting "wlg_guest"
         generate_acl "wlg_guest"
@@ -889,6 +903,7 @@ if [ "$update_conf" = "wifi" -o "$update_conf" = "all" ]; then
         generate_mode "wla_guest"
         generate_ssid "wla_guest"
         generate_security "wla_guest"
+	generate_rrm "wla_guest"
         generate_hide_ssid "wla_guest"
         generate_protocol_setting "wla_guest"
         generate_acl "wla_guest"

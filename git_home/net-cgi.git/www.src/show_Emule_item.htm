@@ -4,14 +4,10 @@
 <% list_downloaded_file("D")%>
 var lan_ip="<% cfg_sed_xss("lan_ipaddr") %>";
 var samba_path="<% get_samba_path() %>";
-var mlnet_error="<% get_dlclient_result() %>";
+get_dlclient_result("1");
 var fileTP_max_concurrent_tasks="<% cfg_get("green_download_fileTP_max_tasks") %>";
 <% cfg_set("mlnet_error", "0") %>
 <% config_commit() %>
-if( mlnet_error != "0" )
-{
-	alert(mlnet_error);
-}
 function loadvalue()
 {
 

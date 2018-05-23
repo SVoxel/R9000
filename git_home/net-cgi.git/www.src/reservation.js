@@ -1,7 +1,7 @@
 function check_reservation_add(cf,flag)
 {
 	var rsvipaddr = new Array();
-	if( array_num == 64 && flag== 'add')
+	if( array_num == 253 && flag== 'add')
 	{
 		alert("$reservation_length_64");
 		return false;

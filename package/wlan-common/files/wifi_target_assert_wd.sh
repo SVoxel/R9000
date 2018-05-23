@@ -86,85 +86,66 @@ check_hostapd(){
         done
 }
 
+check_hostapd_connect()
+{
+	local athdev=$1
+	local wifidev=$2
+	
+	hostapd_cli -i "$athdev" -p /var/run/hostapd-${wifidev} all_sta > /tmp/${wifidev}_${athdev}_all_sta
+	hostapdWPAPTKState=`cat /tmp/${wifidev}_${athdev}_all_sta |grep hostapdWPAPTKState|awk -F '=' '{print $2}'`
+	[ "$hostapdWPAPTKState" = "11" ] && hostapdWPAPTKState_flag=1
+}
+
 check_hostapd_EAP_common()
 {
 	local athdev=$1
 	local wifidev=$2
-	local wifi_enable=0
-	local wl_guest_enable=0
-	local is_guest_net=0
 	local hostap_is_run=
-	local enable=1
 	
-	[ "x$athdev" = "x" -o "x$wifidev" = "x" ] && return 0
+	hostap_is_run=`ps -www|grep hostapd |grep $athdev.conf`
 	
-	if [ $athdev = "ath0" -o $athdev = "ath01" ]; then
-		ath_pre="wla"
-		wifi_enable=`config get endis_wla_radio`
-	elif [ $athdev = "ath1" -o $athdev = "ath11" ]; then
-		ath_pre="wl"
-		wifi_enable=`config get endis_wl_radio`
+	if [ "x$hostap_is_run" = "x" ]; then
+		echo "start hostapd for ${wifidev}-${athdev} ......."
+		hostapd -P /var/run/wifi-${athdev}.pid -B /var/run/hostapd-${athdev}.conf -e /var/run/entropy-${athdev}.bin
+                sleep 3
+                hostapd_cli -i ${athdev} -P /var/run/hostapd_cli-${athdev}.pid -a /lib/wifi/wps-hostapd-update-uci -p /var/run/hostapd-${wifidev} -B
+		### when restart hostap, also init the old static data.
+		dot11RSNA4WayHandshakeFailures_${athdev}_old=0
+		dot11RSNAEapReceived_${athdev}_old=0
+		dot11RSNAEapFailedToSend_${athdev}_old=0
+		### hostap disappear and restart, NO need to check EAP M1 this time
+		return 0
 	fi
 	
-	### wifi disable, NO check.	
-	[ "x$wifi_enable" != "x$enable" ] && return 0
-	
-	if [ $athdev = "ath11" ]; then
-		ath_pre="wlg1"
-		is_guest_net=1
-		wl_guest_enable=`config get wlg1_endis_guestNet`		
-	elif [ $athdev = "ath01" ]; then
-		ath_pre="wla1"
-		is_guest_net=1
-		wl_guest_enable=`config get wla1_endis_guestNet`		
-	fi
-	[ $is_guest_net = $enable -a $wl_guest_enable != $enable ] && return 0
 
-	### Get the encrypt from nvram ###
-	sectype=`config get ${ath_pre}_sectype`
-	[ "x$sectype" != "x3" -a "x$sectype" != "x4" -a "x$sectype" != "x5" -a "x$sectype" != "x6" ] && return 0
-	[ -f "/var/run/hostapd-${athdev}.conf" ] && encrypt_mode=`cat /var/run/hostapd-${athdev}.conf |grep wpa_key_mgmt|grep -e PSK -e EAP`
-	if [ "x$encrypt_mode" != "x" ]; then		
-		hostap_is_run=`ps -www|grep hostapd |grep $athdev.conf`
-		
-		if [ "x$hostap_is_run" = "x" ]; then
-			echo "start hostapd for ${wifidev}-${athdev} ......."
-			hostapd -P /var/run/wifi-${athdev}.pid -B /var/run/hostapd-${athdev}.conf -e /var/run/entropy-${athdev}.bin
-                        sleep 3
-                        hostapd_cli -i ${athdev} -P /var/run/hostapd_cli-${athdev}.pid -a /lib/wifi/wps-hostapd-update-uci -p /var/run/hostapd-${wifidev} -B
-			### when restart hostap, also init the old static data.
-			dot11RSNA4WayHandshakeFailures_${athdev}_old=0
-			dot11RSNAEapReceived_${athdev}_old=0
-			### hostap disappear and restart, NO need to check EAP M1 this time
-			return 0
-		fi
-		
-		hostapd_cli -i "$athdev" -p /var/run/hostapd-${wifidev} mib > /tmp/${wifidev}_${athdev}_mibinfo 
-		
-		dot11RSNA4WayHandshakeFailures=`cat /tmp/${wifidev}_${athdev}_mibinfo |grep dot11RSNA4WayHandshakeFailures|awk -F '=' '{print $2}'`
-		dot11RSNAEapReceived=`cat /tmp/${wifidev}_${athdev}_mibinfo |grep dot11RSNAEapReceived|awk -F '=' '{print $2}'`			
-		eval dot11RSNA4WayHandshakeFailures_old=\${dot11RSNA4WayHandshakeFailures_${athdev}_old}
-		eval dot11RSNAEapReceived_old=\${dot11RSNAEapReceived_${athdev}_old}
-				
-		## No EAP M1 send out, need restart hostapd for ath device
-		if [ $dot11RSNA4WayHandshakeFailures -gt 0 -a "x$dot11RSNAEapReceived" = "x$dot11RSNAEapReceived_old" ]; then
-			echo "As EAP-M1 no send, Restart hostapd for ${wifidev}-${athdev} ......."
-			#### restart hostapd for this vap.
-			for pid in `pidof hostapd`; do               
-			grep -E "${athdev}" /proc/$pid/cmdline >/dev/null && \
-				kill $pid                                    
-			done
-            iwpriv "$wifidev" pdev_reset 5
-            sleep 3
-            wlan vap "$wifidev" "$athdev"
-			dot11RSNA4WayHandshakeFailures=0
-			dot11RSNAEapReceived=0
-		fi
-		
-		## update the data for next compare
-		eval dot11RSNA4WayHandshakeFailures_${athdev}_old=$dot11RSNA4WayHandshakeFailures
-		eval dot11RSNAEapReceived_${athdev}_old=$dot11RSNAEapReceived
+	hostapd_cli -i "$athdev" -p /var/run/hostapd-${wifidev} mib > /tmp/${wifidev}_${athdev}_mibinfo 
+	
+	dot11RSNA4WayHandshakeFailures=`cat /tmp/${wifidev}_${athdev}_mibinfo |grep dot11RSNA4WayHandshakeFailures|awk -F '=' '{print $2}'`
+	dot11RSNAEapReceived=`cat /tmp/${wifidev}_${athdev}_mibinfo |grep dot11RSNAEapReceived|awk -F '=' '{print $2}'`			
+	dot11RSNAEapFailedToSend=`cat /tmp/${wifidev}_${athdev}_mibinfo |grep dot11RSNAEapFailedToSend|awk -F '=' '{print $2}'`			
+	eval dot11RSNA4WayHandshakeFailures_old=\${dot11RSNA4WayHandshakeFailures_${athdev}_old}
+	eval dot11RSNAEapReceived_old=\${dot11RSNAEapReceived_${athdev}_old}
+	eval dot11RSNAEapFailedToSend_old=\${dot11RSNAEapFailedToSend_${athdev}_old}
+			
+	EapFailedToSendNum=`expr $dot11RSNAEapFailedToSend - $dot11RSNAEapFailedToSend_old`
+	## In 2 minutes, failed to send eap m1 more than twice, need restart hostapd for ath device
+	if [ $EapFailedToSendNum -ge 2 ]; then
+		echo "EapFailedToSendNum > 2: As EAP-M1 failed to send, restart all hostapd"
+		hostapd_reload=1
+		dot11RSNAEapFailedToSend=0
 	fi
+	
+	if [ $dot11RSNA4WayHandshakeFailures -gt $dot11RSNA4WayHandshakeFailures_old -a "x$dot11RSNAEapReceived" = "x$dot11RSNAEapReceived_old" ]; then
+		echo "dot11RSNA4WayHandshakeFailures ++ : As EAP-M1 failed to send, restart all hostapd"
+		hostapd_reload=1
+		dot11RSNA4WayHandshakeFailures=0
+		dot11RSNAEapReceived=0
+	fi
+	
+	## update the data for next compare
+	eval dot11RSNA4WayHandshakeFailures_${athdev}_old=$dot11RSNA4WayHandshakeFailures
+	eval dot11RSNAEapReceived_${athdev}_old=$dot11RSNAEapReceived
+	eval dot11RSNAEapFailedToSend_${athdev}_old=$dot11RSNAEapFailedToSend
 }
 
 check_hostapd_EAP()
@@ -177,6 +158,21 @@ check_hostapd_EAP()
 	hostapd_EAP_InterVal_cnt=0
 	bridge_mode=`config get bridge_mode`
 	[ "x$bridge_mode" = "x1" ] && return 0
+
+	[ -z "$vaps" ] && return 0
+
+	### check if any clients connected, if yes, skip EAP checking ###
+	hostapdWPAPTKState_flag=0
+	for t_vap in $vaps
+	do
+                if [ "$t_vap" = "ath0" -o "$t_vap" = "ath01" ]; then
+	                check_hostapd_connect $t_vap wifi0
+                else
+	                check_hostapd_connect $t_vap wifi1
+                fi
+	done
+	# If any vap has connected device, just return
+	[ "$hostapdWPAPTKState_flag" = "1" ] && return 0
 
         for t_vap in $vaps
         do
@@ -235,6 +231,31 @@ check_qos_conf()
 	fi
 }
 
+# Generate WPA/WPA2 vap list
+check_eap_vap(){
+	local vap_list=$1
+	local m_vap=""
+
+	for athdev in $vap_list
+	do
+		case $athdev in
+			ath0) ath_pre="wla" ;;
+			ath1) ath_pre="wl" ;;
+			ath01) ath_pre="wla1" ;;
+			ath11) ath_pre="wlg1" ;;
+		esac
+
+		### Get the encrypt from nvram ###
+		sectype=`config get ${ath_pre}_sectype`
+		[ "x$sectype" != "x3" -a "x$sectype" != "x4" -a "x$sectype" != "x5" -a "x$sectype" != "x6" ] && continue
+		[ -f "/var/run/hostapd-${athdev}.conf" ] && encrypt_mode=`cat /var/run/hostapd-${athdev}.conf |grep wpa_key_mgmt|grep -e PSK -e EAP`
+		if [ "x$encrypt_mode" != "x" ]; then		
+			m_vap="$m_vap $athdev"	
+		fi
+	done
+	eap_monitor_vap=$m_vap
+}
+
 check_user_operate_wifi(){
         local m_vap=""
 
@@ -268,10 +289,14 @@ check_dhcp6c_process()
 
 
 wifi_reload=0
+hostapd_reload=0
 wifi0_int_counter=0
 wifi1_int_counter=0
 hostapd_EAP_InterVal_cnt=0
 hostapd_EAP_InterVal=6 ### check if hostapd is running every 2 minute. ###
+
+### define hostapdWPAPTKState_flag ###
+hostapdWPAPTKState_flag=0
 
 ### define dot11RSNA4WayHandshakeFailures/dot11RSNAEapReceived for every athdev 
 dot11RSNA4WayHandshakeFailures_ath0_old=0
@@ -282,12 +307,18 @@ dot11RSNAEapReceived_ath0_old=0
 dot11RSNAEapReceived_ath01_old=0
 dot11RSNAEapReceived_ath1_old=0
 dot11RSNAEapReceived_ath11_old=0
+dot11RSNAEapFailedToSend_ath0_old=0
+dot11RSNAEapFailedToSend_ath01_old=0
+dot11RSNAEapFailedToSend_ath1_old=0
+dot11RSNAEapFailedToSend_ath11_old=0
 monitor_vap=""
+eap_monitor_vap=""
 
 #recovery dhcp6c
 recovery_num=0
 ipv6_type="dhcp"
 
+sleep 30
 
 while [ TRUE ]
 do
@@ -300,6 +331,8 @@ do
         check_qos_conf
 
         monitor_vap=$(check_user_operate_wifi) 
+	# Generate vap list for hostapd EAP M1 wtd
+	check_eap_vap "$monitor_vap"
 
         if [ "$(echo $monitor_vap | sed 's/ //g')" = "" ]; then
                 continue
@@ -317,11 +350,12 @@ do
         check_hostapd "$monitor_vap"
 
         ### check for no eap M1 send ###
-        check_hostapd_EAP "$monitor_vap"
+        check_hostapd_EAP "$eap_monitor_vap"
 
-        if [ "$wifi_reload" = "1" ]; then
+        if [ "$wifi_reload" = "1" -o "$hostapd_reload" = "1" ]; then
+		[ "$wifi_reload" = "1" ] && collect_dump
                 wifi_reload=0
-                collect_dump
+		hostapd_reload=0
                 uci set wireless.qcawifi.module_reload=1	
                 echo 1 > /tmp/wifi_down #1 means this wifi reload is triggered by wifi watchdog, not GUI
                 iwpriv wifi0 pdev_reset 5
@@ -334,10 +368,10 @@ do
         fi
 
         ### check vap not up ###
-        check_vap_not_up "$monitor_vap"
+        #check_vap_not_up "$monitor_vap"
 
 	#check dhcp6c process
-	if [ "x`config get ipv6_type`" = "pppoe"  ]; then
+	if [ "x`config get ipv6_type`" = "xpppoe"  ]; then
 		if [ "x`config get ipv6_sameinfo`" = "x1" ]; then
 			ipaddr=`ifconfig ppp0 | grep "inet addr" | cut -f2 -d: | cut -f1 -d' '`
 		else

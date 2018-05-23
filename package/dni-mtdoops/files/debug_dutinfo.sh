@@ -4,6 +4,7 @@ CPU_INFO=/tmp/debug_cpu
 MEM_INFO=/tmp/debug_mem
 FLASH_INFO=/tmp/debug_flash
 SESSION_INFO=/tmp/debug_session
+WLAN_DRV_INFO=/tmp/debug_wlan
 
 cpu_usage()
 {
@@ -52,8 +53,13 @@ flash_usage()
 	echo "158MB/512MB" > $FLASH_INFO
 }
 
+wlan_drv_version()
+{
+	echo "4.0.1756.382" > $WLAN_DRV_INFO
+}
+
 dist_path=""
-mnt_path="/mnt/"
+#mnt_path="/mnt/"
 
 check_usb_storage_folder()
 {
@@ -64,10 +70,16 @@ check_usb_storage_folder()
 		j=1
 		while [ $j -le 20 ]; do
 			tmp=`df | grep /dev/sd"$i""$j"`
-			mnt_tmp=`ls $mnt_path | grep sd"$i""$j"`
-			[ "X$tmp" = "X" -o "X$mnt_tmp" = "X" ] && j=$((j+1)) && continue
+			#Since the mounted folder name is not corresponded to filesystem name, eg. /dev/sda1 and /tmp/mnt/sdc1,
+		        #use 'df' command to find the correct usb storage folder name instead of original way.
+			[ "X$tmp" = "X" ] && j=$((j+1)) && continue
+			[ "X$tmp" != "X" ] &&  mnt_tmp=`df /dev/sd"$i""$j" | awk '/dev/sd {print $6}' | grep /tmp/mnt/`
+			#mnt_tmp=`ls $mnt_path | grep sd"$i""$j"`
+			[ "X$mnt_tmp" = "X" ] && j=$((j+1)) && continue
 
-			dist_path="$mnt_path"sd"$i""$j"
+			#dist_path="$mnt_path"sd"$i""$j"
+			dist_path=$mnt_tmp
+			#echo "**** dist_path=$dist_path ****"
 			break;
 
 			j=$((j+1))
@@ -80,6 +92,7 @@ cpu_usage
 mem_usage
 session_usage
 flash_usage
+wlan_drv_version
 check_usb_storage_folder
 if [ "X$dist_path" != "X" ]; then
 	echo 1 > /tmp/debug-usb

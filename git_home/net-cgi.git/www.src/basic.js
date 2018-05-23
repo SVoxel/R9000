@@ -454,6 +454,11 @@ function click_action(id)
 			basic_menu_color_change('usb_backup');
 			goto_formframe("USB_backup.htm");
 		}
+                else if( id == "vpn_client" && top.vpn_client_flag == "1")
+		{
+			basic_menu_color_change('vpn_client');
+			goto_formframe('vpn_client.htm');
+		}
 
         }
 }

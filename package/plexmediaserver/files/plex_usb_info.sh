@@ -15,7 +15,8 @@ plex_drive(){
 			sd=`cat /proc/partitions |grep $line|awk '{print $4}'|egrep sd[a-z] |sed -n "$i"p`
 			id=`vol_id /dev/"$sd" 2>/dev/null |grep ID_FS_UUID|cut -d= -f2`
 			path_tmp=`mount |grep "dev/$sd" |sed -n '1p' |grep "/tmp/mnt" |awk -F" " '{print $3}'`
-			[ "x$path_tmp" = "x" -o "x`vol_id /dev/$sd 2>/dev/null |head -1`" = "x" ] && i=`expr $i + 1` && continue
+			[ "x$path_tmp" = "x" -o "x`df |grep \"tmp/mnt\" |awk '{print $1}' |grep \"$sd\"`" != "x/dev/$sd" ] && i=`expr $i + 1` && continue
+			#[ "x$path_tmp" = "x" -o "x`vol_id /dev/$sd 2>/dev/null |head -1`" = "x" ] && i=`expr $i + 1` && continue
 			[ "x`parted -s /dev/$line print | grep \"Partition Table\" | awk '{print $3}'`" != "xloop" -a "x`parted -s /dev/$line print noshare | grep $sd`" != "x" ] && i=`expr $i + 1` && continue
 			path=`mount |grep "dev/$sd" |sed -n '1p' |grep "/tmp/mnt" |grep rw |awk -F" " '{print $3}'`
 			if [ "x$path" = "x" -a "x`config get plex_file_path`" = "x$path_tmp" ];then

@@ -19,6 +19,9 @@ basic_wlan_info=1
 qca_debug_tool=1
 qtn_section_debug=0
 
+enable_acs_report=0
+dbgLVL_mask=0x11C00180
+
 
 while getopts "b:a:w:q:" opt;do
     case "$opt" in
@@ -106,6 +109,8 @@ advanced_sys_info_func(){
 
 basic_wlan_info_func(){
         vif_ap_list=`iwconfig 2>/dev/null | grep -e Mode:Master -B1 | grep -e IEEE | awk '{print $1}'`
+	vif_sta_list=`iwconfig 2>/dev/null | grep -e Mode:Managed -B1 | grep -e IEEE | awk '{print $1}'`
+	vif_list="$vif_ap_list $vif_sta_list"
         wifi_list=`ifconfig | grep "^wifi" | awk '{print $1}'`
             
         print_section_hd 'Show Wireless Settings' >> $2
@@ -151,6 +156,19 @@ qca_debug_tool_func(){
                 athstats -i $w >> $2
                 echo "" >> $2
             done
+
+	    print_section_hd "wifitool" >> $2
+	    for vap in $vif_ap_list; do
+	    	echo "[VAP: $vap]" >> $2
+		echo "ACS report" >> $2
+		wifitool $vap acsreport >> $2
+		echo "" >> $2
+	    done
+
+            for vap in $vif_list; do
+	    	iwpriv $vap dbgLVL $dbgLVL_mask
+            done
+	    
         fi
 }
 
@@ -167,6 +185,15 @@ qtn_debug_func(){
 
 file_num=1
 
+#Enable hostapd debug log
+enable_hostapd_debug=`/bin/config get enable_hostapd_debug`
+[ "$enable_hostapd_debug" == "1" ] && {
+	uci set wireless.wlg.hostapd_debug_level=2
+	uci set wireless.wla.hostapd_debug_level=2
+	wlan down; wlan up
+	sleep 30
+}
+
 #enable dynamic debug for 11ad
 #[ -f /proc/sys/kernel/printk ] && echo '8' > /proc/sys/kernel/printk 
 #if [ -f /sys/kernel/debug/dynamic_debug/control ]; then
@@ -175,6 +202,10 @@ file_num=1
 #        echo "module wil6210 format 'DBG[TXRX]'" -p > /sys/kernel/debug/dynamic_debug/control
 #fi
 
+# ACS report, don't need to put in loop
+iwpriv ath0 acsreport 1
+iwpriv ath1 acsreport 1
+
 while true
 do
         print_section_hd "$(date -R) start " /tmp/wireless_log${file_num}.txt
@@ -182,6 +213,7 @@ do
         advanced_sys_info_fun $advanced_sys_info /tmp/wireless_log${file_num}.txt
         basic_wlan_info_func $basic_wlan_info /tmp/wireless_log${file_num}.txt
         qtn_debug_func $qtn_debug /tmp/wireless_log${file_num}.txt
+	qca_debug_tool_func $qca_debug_tool /tmp/wireless_log${file_num}.txt
         print_section_hd "$(date -R) end " /tmp/wireless_log${file_num}.txt
         filesize=`ls -l /tmp/wireless_log${file_num}.txt | awk '{print $5}'`
 	if [ $filesize -ge 5242880 ]; then
@@ -194,7 +226,7 @@ do
 		# Once 1 file has reached the maximum(5MB), start write to another file
 		[ -f /tmp/wireless_log${file_num}.txt ] && rm -rf /tmp/wireless_log${file_num}.txt
 	fi
-        sleep 60
+        sleep 5
 done
 
 

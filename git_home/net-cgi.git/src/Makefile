@@ -63,7 +63,6 @@ CFLAGS += -DNTPST_POSTION=$(NTPST_POSTION)
 CFLAGS += -DSTAMAC_POSTION=$(STAMAC_POSTION)
 CFLAGS += -DPOT_MTD=$(POT_MTD)
 CFLAGS += -DMAX_POST_SIZE=$(MAX_POST_SIZE)
-CFLAGS += -DREADYCLOUD=$(READYCLOUD)
 CFLAGS += -DGENIECLOUD=$(GENIECLOUD)
 CFLAGS += -DAP_MODE_DETECTION=$(AP_MODE_DETECTION)
 CFLAGS += -DGUEST_MANAGE=$(GUEST_MANAGE)
@@ -80,7 +79,17 @@ CFLAGS += -DHAVE_BT_IGMP=$(HAVE_BT_IGMP)
 CFLAGS += -DENABLE_VLAN_PPPOE_SUPPORT=$(ENABLE_VLAN_PPPOE_SUPPORT)
 CFLAGS += -DDFS_RADAR_DETECT=$(DFS_RADAR_DETECT)
 CFLAGS += -DLAN_PORT_NUM=$(LAN_PORT_NUM)
-CFLAGS += -DTNC_REQUEST=$(TNC_REQUEST)
+CFLAGS += -DSOAP_SECURITY=$(SOAP_SECURITY)
+ifeq ($(TNC_REQUEST), 1)
+CFLAGS += -DTNC_REQUEST=1
+else
+CFLAGS += -DTNC_REQUEST=0
+endif
+ifeq ($(AUTO_UPGRADE), 1)
+CFLAGS += -DAUTO_UPGRADE=1
+else
+CFLAGS += -DAUTO_UPGRADE=0
+endif
 CFLAGS += -DAUTO_UPGRADE=$(AUTO_UPGRADE)
 
 ifdef DEGRADE_VERSION
@@ -88,6 +97,11 @@ CFLAGS += -DDEGRADE_VERSION=$(DEGRADE_VERSION)
 endif
 ifdef DEGRADE_FEATURE
 CFLAGS += -DDEGRADE_FEATURE=$(DEGRADE_FEATURE)
+endif
+
+ifeq ($(READYCLOUD), 1)
+FILES += readycloud_apply.o readycloud_asp.o
+CFLAGS += -DREADYCLOUD
 endif
 
 ifeq ($(SUPER_WIFI), 1)
@@ -308,6 +322,9 @@ endif
 ifeq ($(DFS_JAPAN), 1)
 CFLAGS += -DDFS_JAPAN
 endif
+ifeq ($(AUTO_5G_CHANNEL), 1)
+CFLAGS += -DAUTO_5G_CHANNEL
+endif
 ifeq ($(MODE_IS_300_OR_150), 1)
 CFLAGS += -DMODE_IS_300_OR_150
 endif
@@ -446,6 +463,9 @@ endif
 ifeq ($(HAVE_VPN),1)
 CFLAGS += -DHAVE_VPN
 endif
+ifeq ($(HAVE_VPN_CLIENT),1)
+CFLAGS += -DHAVE_VPN_CLIENT
+endif
 CFLAGS += -DHAVE_PPTP_VPN=$(HAVE_PPTP_VPN)
 
 ifeq ($(HAVE_FB_WIFI),1)
@@ -503,6 +523,31 @@ FILES += plex_apply.o plex_asp.o
 CFLAGS += -DHAVE_PLEX
 endif
 
+ifeq ($(HAVE_SMART_CONNECT), 1)
+CFLAGS += -DHAVE_SMART_CONNECT
+endif
+
+ifeq ($(SOAP_SECURITY), 1)
+CFLAGS += -DSOAP_SECURITY	
+endif
+
+ifeq ($(HAVE_FORCESHIELD), 1)
+FILES += forceshield_asp.o
+CFLAGS += -DHAVE_FORCESHIELD
+endif
+
+ifeq ($(APPEND_JS_CSS), 1)
+CFLAGS += -DAPPEND_JS_CSS
+endif
+
+ifeq ($(CACHE_JS), 1)
+CFLAGS += -DCACHE_JS
+endif
+
+ifeq ($(SUPPORT_WAN_PREFERENCE), 1)
+CFLAGS += -DSUPPORT_WAN_PREFERENCE
+endif
+
 CFLAGS += -DUSE_MTD_UTIL=$(USE_MTD_UTIL)
 CFLAGS += -DADV_COEXISTENCE=$(ADV_COEXISTENCE)
 CFLAGS += -DBASIC_COEXISTENCE=$(BASIC_COEXISTENCE)
@@ -526,7 +571,7 @@ net-cgi : $(FILES)
 usb_cfg : usbdisk.o usb_cfg.o print.o
 	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -liconv -ldni-common-api	
 
-inetd : http_scan.o
+inetd : http_scan.o 
 	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -ldni-common-api
 
 remote_smb_conf remote_user_conf remote_share_conf readycloud_unregister: usbdisk.o remote_smb_conf.o print.o

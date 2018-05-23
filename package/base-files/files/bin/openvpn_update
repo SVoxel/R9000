@@ -91,8 +91,11 @@ config_random_date()
 	/etc/init.d/openvpn regenerate_cert_file
 	while [ 1 ]
 	do
-		vpn_DD=`cat /tmp/openvpn/client.crt |grep Before|cut -d : -f 2-|cut -d " " -f 3`
-		vpn_YY=`cat /tmp/openvpn/client.crt |grep Before|cut -d : -f 2-|cut -d " " -f 5`
+		vpn_DD=`openssl x509 -in /tmp/openvpn/client.crt -text -noout |grep Before|cut -d : -f 2-|cut -d " " -f 3`
+		vpn_YY=`openssl x509 -in /tmp/openvpn/client.crt -text -noout |grep Before|cut -d : -f 2-|cut -d " " -f 5`
+		if [ $vpn_DD -lt 10 ]; then
+			vpn_DD=`echo 0$vpn_DD`
+		fi
 		if [ "x$vpn_DD" = "x$DD" -a "x$vpn_YY" = "x$YY" ];then
 			break
 		else

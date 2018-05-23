@@ -61,6 +61,7 @@ var green_refresh_time=0;
 var green_download_item_num=0;
 var green_downloading_item_num=0
 var green_download_item_queuen_num=0;
+var mlnet_error=0;
 <% plc_devs_detection() %>
 <% web_flag() %>
 <% ru_web_flag() %>
@@ -110,6 +111,7 @@ var old_wds_endis_fun_a="<% cfg_get("wla_wds_endis_fun") %>";
 var security_mode_a="<% cfg_get("wla_sectype") %>";
 var dis_lang_crl = "<% cfg_get("Enable_GUIStringTable") %>";
 var device_mode = "<% cfg_get("modem_mode") %>";
+var wizard_wan_preference = parent.support_wan_preference;
 if( wds_support_wpa == 1 && gui_region == "Chinese" && (netgear_region == "" || netgear_region.toUpperCase() == "WW"))
 {
 	if((security_mode=="3" ||  security_mode=="4" || security_mode == "5") && old_wds_endis_fun == "1")
@@ -129,6 +131,12 @@ function loadvalue()
 {
 	var form = document.forms[0];
 	change_size();
+
+	if(document.location.search.indexOf('vpn_on_updating=1') !== -1) {
+		goto_formframe('vpn_upgrade_process.htm');
+		return;
+	}
+
 	if(lang_select == "Auto" && browser_lang != gui_region)
 	{
 		if(bgn_pr_wds_support_wpa == 1 || an_pr_wds_support_wpa == 1 || dis_lang_crl == "0" )
@@ -252,6 +260,7 @@ function loadvalue()
 		<% advanced_sub_menu("lacp", "long_name", "lacp_head", "advanced_lacp")%>
 		<% advanced_sub_menu("priozone", "sub_back", "priority_zone", "advanced_priozone")%>
 		<% advanced_sub_menu("devmode", "sub_back", "dsl_device_mode", "advanced_devmode")%>
+		<% advanced_sub_menu("vpn_client", "sub_back", "vpn_client", "adv_vpn_client")%>
 	</dl>	
 	</div>	
 </div>

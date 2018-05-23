@@ -13,7 +13,7 @@ dev_inproc(){
 	while read LINE
 	do
 		dev=`echo "$1" | cut -c 10-`
-		if [ "$LINE" = "$dev" ];then
+		if [ "$LINE" = "$dev" ]; then
 			return 0
 			break
 		fi
@@ -29,7 +29,7 @@ isdafake(){
 	sleep 1
 	while read LINE
 	do
-		if [ "$LINE" = "$divnam" ];then
+		if [ "$LINE" = "$divnam" ]; then
 			return 1
 			break
 		fi
@@ -56,9 +56,12 @@ get_volume_from_disk()
 	disk_name=`echo $1 | sed 's/[0-9]//g'`
 	partition_num=`echo $1 | cut -c 4-`
 	volume=`/usr/sbin/vol_id -L /dev/$1`
-	if [ "x$volume" = "x" ];then
+	if [ "x$volume" = "x" ]; then
+		volume=`/usr/sbin/blkid $1 -s LABEL |awk -F'LABEL=' '{print $2}' |awk -F'"' '{print $2}'`
+	fi
+	if [ "x$volume" = "x" ]; then
 		volume=`echo $(/usr/sbin/parted -s /dev/$disk_name print | grep "Number" -A16 | sed -n '2,16p' | awk 'NF>=6{for(n=6;n<=NF;n++)printf $n" ";print     ""}' | sed -n $partition_num"p")`
-		if [ "x$volume" = "x" ];then
+		if [ "x$volume" = "x" ]; then
 			volume="$1"
 		fi
 	fi
@@ -68,7 +71,7 @@ get_volume_from_disk()
 # $---> sda1
 print_log()
 {
-        if [ `length $1` != '4' ];then
+        if [ `length $1` != '4' ]; then
                 return
         fi
 
@@ -88,6 +91,9 @@ print_log()
 	fi
 
 	volume_name=`/usr/sbin/vol_id -L /dev/$1`
+	if [ "x$volume_name" = "x" ]; then
+		volume_name=`/usr/sbin/blkid $1 -s LABEL |awk -F'LABEL=' '{print $2}' |awk -F'"' '{print $2}'`
+	fi
 	if [ ! -n "$volume_name" ]; then
 	       volume_name=$1
 	fi
@@ -115,7 +121,7 @@ umount_all()
 	fi
 	
 	for i in * ; do
-		if [ "$i" = "*" ];then
+		if [ "$i" = "*" ]; then
 			# if there are no sub folders in the cur folder,"i" var would be '*',
 			# and ignore it and jump over
 			continue
@@ -210,7 +216,7 @@ umount_part()
 		/usr/sbin/detach_afp_shares "$umount_dir"
 		sync
 		umount "$umount_dir"
-		if [ $? -eq 0 ];then
+		if [ $? -eq 0 ]; then
 			break
 		else
 			[ "x`mount | grep $umount_dir`" = "x" ] && break; 
@@ -219,7 +225,7 @@ umount_part()
 			usb_pid=`fuser -m "$umount_dir"`
 			[ "x$usb_pid" != "x" ] && kill -9 $usb_pid 2>/dev/null
 			umount "$umount_dir"
-			if [ $? -eq 0 ];then
+			if [ $? -eq 0 ]; then
 				break
 			else
 				let c=$c+1
@@ -250,15 +256,15 @@ umount_part()
 		fi
 	fi
 	rmdir "$umount_dir"
-	if [ $? -ne 0 ];then
-			# kill some possible tasks who is accessing usb disk to block umount command
-			#/etc/init.d/samba stop; FIXME: commented by ASL
-			kill -9 `pidof minidlna`
-			sleep 1
-			/usr/sbin/detach_afp_shares "$umount_dir"
-			sync
-			umount "$umount_dir"
-			rmdir "$umount_dir"
+	if [ $? -ne 0 ]; then
+		# kill some possible tasks who is accessing usb disk to block umount command
+		#/etc/init.d/samba stop; FIXME: commented by ASL
+		kill -9 `pidof minidlna`
+		sleep 1
+		/usr/sbin/detach_afp_shares "$umount_dir"
+		sync
+		umount "$umount_dir"
+		rmdir "$umount_dir"
 	fi
 
 }
@@ -333,13 +339,13 @@ ftp_down_upload()
 service_stop()
 {
 	killall minidlna
-	if [ "x$(cat /tmp/usbdisknum)" = "x" -o $(cat /tmp/usbdisknum) -eq 0 ];then
+	if [ "x$(cat /tmp/usbdisknum)" = "x" -o $(cat /tmp/usbdisknum) -eq 0 ]; then
 		killall -9 smbd
 		killall -9 nmbd
 		/etc/init.d/forked-daapd stop
 		/etc/init.d/run_afpd stop
 	fi
-	if [ "x`config get plex_file_path | grep "$1"`" = "x" ];then
+	if [ "x`config get plex_file_path | grep "$1"`" = "x" ]; then
 		/etc/plexmediaserver/cmdplexmediaserver stop
 	else
 		/etc/plexmediaserver/cmdplexmediaserver stop 1
@@ -351,7 +357,7 @@ service_stop()
 
 
 mount_point=$(mount |grep "/dev/$1" |grep "/mnt" |awk '{print $3}' |awk -F"/" '{print $4}')
-if [ "x$mount_point" != "x" ];then
+if [ "x$mount_point" != "x" ]; then
 	mount_part=$mount_point
 else
 	mount_part=$1
@@ -379,7 +385,7 @@ else
 fi
 
 echo `date` stop smbd at hotplug2.umount >> /tmp/debug_smb
-if [ "x$(cat /tmp/usbdisknum)" != "x" -a $(cat /tmp/usbdisknum) -gt 0 ];then
+if [ "x$(cat /tmp/usbdisknum)" != "x" -a $(cat /tmp/usbdisknum) -gt 0 ]; then
 	/usr/sbin/update_smb 
 	/usr/sbin/update_afp 
 	/sbin/cmdftp start 

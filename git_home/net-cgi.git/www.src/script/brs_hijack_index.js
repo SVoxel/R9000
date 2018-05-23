@@ -61,6 +61,9 @@ function loadValue()
 			content_frame.setAttribute("src", "BRS_01_checkNet_ping.html"); //the first page (not support ap
 	}
 
+	if(support_wan_preference == "1" && set_wan_preference != "1")
+		content_frame.setAttribute("src", "BRS_wan_preference.html");
+
 	if(tnc_request_flag == 1) {
 		if(new_sold_board == "1" && agree_full_TC != "1")
 			content_frame.setAttribute("src", "BRS_full_conditions.html");

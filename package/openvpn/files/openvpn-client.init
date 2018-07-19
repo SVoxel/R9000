@@ -1,6 +1,7 @@
 #!/bin/sh /etc/rc.common
 START=99
 
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
 CONFIG=/bin/config
 PROG=/usr/sbin/openvpn
 PID_FILE=/var/run/openvpn-client.pid
@@ -10,7 +11,7 @@ BRIDGE_MODE=$($CONFIG get bridge_mode)
 EXTENDER_MODE=$($CONFIG get extender_mode)
 OPENVPN_CONF_DIR=/etc/openvpn/config/client
 CHECK_HOST=www.google.com
-OPT_ARGS="--fast-io --sndbuf 393216 --rcvbuf 393216 --tun-mtu 1500 --mssfix 1460"
+OPT_ARGS="--fast-io --nice -20 --auth-nocache --sndbuf 786432 --rcvbuf 786432 --tun-mtu 1500 --mssfix 1460"
 
 start() {
 	# Check existence of /etc/openvpn/config/client/*.ovpn file
@@ -37,7 +38,7 @@ start() {
 	# Check if OpenVPN server is enabled
 	if [ "$($CONFIG get vpn_enable)" = "1" ]; then
 		echo "Error: OpenVPN server is enabled. Disable it to start OpenVPN client." | tee -a $LOG_FILE
-		/sbin/ledcontrol -n wan -c red -s on
+		ledcontrol -n wan -c red -s on
 		exit 1
 	fi
 
@@ -66,13 +67,13 @@ start() {
 	done
 
 	# Start OpenVPN client
-	$PROG $OPT_ARGS --writepid $PID_FILE --cd $OPENVPN_CONF_DIR --log-append $LOG_FILE --config $OVPN_CLIENT_CONF --script-security 2 --up /etc/openvpn/ovpnclient-up.sh --down /etc/openvpn/ovpnclient-down.sh --daemon --push "sndbuf 393216" --push "rcvbuf 393216"
+	$PROG $OPT_ARGS --writepid $PID_FILE --cd $OPENVPN_CONF_DIR --log-append $LOG_FILE --config $OVPN_CLIENT_CONF --script-security 2 --up /etc/openvpn/ovpnclient-up.sh --down /etc/openvpn/ovpnclient-down.sh --daemon --push "sndbuf 786432" --push "rcvbuf 786432"
 	echo "Please wait..."
-	sleep 20
+	sleep 15
 	ifconfig | grep -q tun0
 	if [ $? -ne 0 ]; then
 		echo "Error: OpenVPN client start failed." | tee -a $LOG_FILE
-		/sbin/ledcontrol -n wan -c red -s on
+		ledcontrol -n wan -c red -s on
 		if [ -f $PID_FILE ]; then
 			kill `cat $PID_FILE` 
 			rm -f $PID_FILE
@@ -86,14 +87,34 @@ start() {
 }
 
 stop() {
+	# Kamoj: Light Amber LED
+	/etc/openvpn/ovpnclient-down.sh
+
+	# Kill OpenVPN client using its pid
 	if [ -f $PID_FILE ]; then
 		kill `cat $PID_FILE` 
 		rm -f $PID_FILE
 	fi
 
+	# Kamoj: kill openvpn in those cases the pid_file didn't exist or contained wrong pid
+	while [[ $(ps | grep -vE "rc.common|grep" | grep -c "/usr/sbin/openvpn" ) -gt 0 ]] ; do
+		echo  "`date` Voxel: Error: openvpn-client stop: process was not killed properly 2, try a new kill!" | tee -a $LOG_FILE
+		OPENVPN_PID=`ps | grep -vE "rc.common|grep" | grep "/usr/sbin/openvpn" | awk '{ print $1 }'`
+		kill -9 $OPENVPN_PID
+	done
+
 	# Restart firewall	
 	net-wall rule
 	net-wall start
+
+	# Kamoj: There is a bug leaving an entry in "ip route" when stopping the openvpn-client, fix it:
+	# ip route show table local
+	echo  "`date` Voxel: OpenVPNclient stop run: ip route del:" | tee -a $LOG_FILE
+	sleep 2
+	wan=`ip route | awk '/^default/{print $NF}'`
+	route=`ip route | grep "dev $wan" | grep -vE "default|kernel|scope|link"`
+	[ "$route" != "" ] && ip route del `ip route | grep "dev $wan" | grep -vE "default|kernel|scope|link"`
+	sleep 2 && ip route  | tee -a $LOG_FILE
 }
 
 restart() {

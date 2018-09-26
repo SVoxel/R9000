@@ -1,5 +1,7 @@
 #!/bin/sh
 
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
 cpu_usage_file="/tmp/cpu_usage_file"
 top_usage_file="/tmp/top_usage_file"
 top_usage_tmp_file="/tmp/top_usage_tmp_file"
@@ -40,4 +42,3 @@ case "$1" in
         top_usage $2
     ;;
 esac
-

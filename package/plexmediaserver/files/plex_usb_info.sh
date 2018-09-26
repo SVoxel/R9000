@@ -1,5 +1,7 @@
 #!/bin/sh
 
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
 rm -rf /tmp/plex_curUSB_info
 rm -rf /tmp/usb_check
 ls -l /sys/block |grep sd |awk '{print $9}' > /tmp/usb_par
@@ -93,7 +95,7 @@ plex_library(){
 		#echo $media_err
 		if [ "x$media_err" != "x" ];then
 			[ $path_old != $path_new ] && config set plex_select_usb="$uuid,$path_new"
-			[ "x`/bin/ps -w|grep cmdplexmediaserver |grep stop |grep -v grep 2>/dev/null`" = "x" ] && echo "Plex library drive plugged !!"
+			[ "x`ps -w|grep cmdplexmediaserver |grep stop |grep -v grep 2>/dev/null`" = "x" ] && echo "Plex library drive plugged !!"
 			config set plex_library_change=0
 		else
 			config set plex_library_change=1

@@ -1,5 +1,7 @@
 #!/bin/sh
 
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
 config="/bin/config"
 taskset="/usr/sbin/taskset"
 plexmediaserver_status=$($config get plexmediaserver_enable)
@@ -31,16 +33,16 @@ scan_disk_exists()
 
 plex_stop()
 {
-    /bin/ps -w|grep cmdplexmediaserver |grep start |grep -v grep | awk '{print $1}' | xargs kill -9 2>/dev/null
-    plex_stop_exist=`/bin/ps -w | grep "./plexmediaserver.sh stop" | grep -v "grep"`
+    ps -w|grep cmdplexmediaserver |grep start |grep -v grep | awk '{print $1}' | xargs kill -9 2>/dev/null
+    plex_stop_exist=`ps -w | grep "./plexmediaserver.sh stop" | grep -v "grep"`
     [ "x$plex_stop_exist" != "x" ] && return
     [ "x$plexmediaserver_script" != "x" ] && cd `dirname $plexmediaserver_script` && $taskset -c $plexmediaserver_cpu_cores ./plexmediaserver.sh stop
-    /bin/ps -w | grep "Plex" | grep -v grep | awk '{print $1}' | xargs kill -9 2>/dev/null
+    ps -w | grep "Plex" | grep -v grep | awk '{print $1}' | xargs kill -9 2>/dev/null
 }
 
 plex_start()
 {
-    plex_start_exist=`/bin/ps -w | grep "./plexmediaserver.sh start" | grep -v "grep"`
+    plex_start_exist=`ps -w | grep "./plexmediaserver.sh start" | grep -v "grep"`
     [ "x$plex_start_exist" != "x" ] && return
 	if [ "x`ls /tmp/plex_current_version 2>/dev/null`" = "x" ];then
 		if [ "x`ls $plexmediaserver_mtd_mount_point/plex_current_version 2>/dev/null`" != "x" ];then
@@ -80,7 +82,7 @@ plex_start()
                 $taskset -c $plexmediaserver_cpu_cores /etc/plexmediaserver/nice.sh 
             fi
             sleep 3
-            if [ "x`/bin/ps -w | grep "Plex Media Server" | grep -v grep`" != "x" ];then
+            if [ "x`ps -w | grep "Plex Media Server" | grep -v grep`" != "x" ];then
                 echo "Start Plex Media Server Sucessfully." > /dev/console
                 [ "x`config get plex_process_run`" != "x1" ] && config set plex_process_run=1
                 break
@@ -115,7 +117,7 @@ case "$1" in
                 /etc/plexmediaserver/plexmediaserver_monitor.sh stop
             	killall plex_remote.sh 2>/dev/null
             elif [ ! -f /tmp/plex_curUSB_info ];then
-                /bin/ps -w|egrep "Plex Media Serv|Plex Media Scan|Plex Transcoder|Plex New Transc" |egrep -v egrep |awk '{print $1}' |xargs kill -9 2>/dev/null 
+                ps -w|egrep "Plex Media Serv|Plex Media Scan|Plex Transcoder|Plex New Transc" |egrep -v egrep |awk '{print $1}' |xargs kill -9 2>/dev/null 
                 library_path=`config get plex_file_path |awk -F"/" '{print $4}'`
                 [ "x$library_path" != "x" ] && fuser -k /dev/$library_path
                 plex_stop
@@ -129,7 +131,7 @@ case "$1" in
         /etc/plexmediaserver/plex_usb_info.sh fresh
         [ ! -f /tmp/plex_curUSB_info -o "x`config get plex_library_change`" = "x1" ] && echo "No USB Drive for plex" && return
         [ "x`config get plexmediaserver_enable`" != "x1" ] && return
-        [ "x`config get plex_library_change`" = "x1" -o "x`/bin/ps -w|grep "Plex Media Serv" |grep -v grep |awk '{print $1}'`" != "x" ] && return 
+        [ "x`config get plex_library_change`" = "x1" -o "x`ps -w|grep "Plex Media Serv" |grep -v grep |awk '{print $1}'`" != "x" ] && return 
         while true
         do
             if [ ! -f /tmp/plex_ntp_updated ];then
@@ -147,4 +149,3 @@ case "$1" in
         /etc/plexmediaserver/plexmediaserver_monitor.sh start &
     ;;
 esac
-

@@ -1,10 +1,12 @@
 #!/bin/sh
 
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
 oc () { "$@" >> /dev/console 2>&1 ; } # stdout & stderr to /dev/console
 
 #plex_download_url="https://plex.tv/downloads/details/1?channel=0&build=linux-openwrt-armv7&distro=netgear"
 plex_download_url="ftp://updates1.netgear.com/sw-apps/plex/r9000/"
-plex_download_url_https="https://updates1.netgear.com/sw-apps/plex/r9000/"
+plex_download_url_https="https://http.fw.updates1.netgear.com/sw-apps/plex/r9000/"
 plex_version_name="*.*.*.*"
 plex_filter_name="plexmediaserver-r9k-"$plex_version_name"-armv7.tgz"
 plex_volume_name="plexmediaserver"
@@ -36,7 +38,7 @@ newer_version() # current version $1: x.x.x.x, latest version $2: x.x.x.x,
 #Check whether there have a new plex version in netgear server 
 plex_check()
 {
-    [ `/bin/ps -w | grep "plexmediaserver_upgrade.sh" | grep "check" | grep -v grep | wc -l` -gt 2 ] && return
+    [ `ps -w | grep "plexmediaserver_upgrade.sh" | grep "check" | grep -v grep | wc -l` -gt 2 ] && return
 	[ "x`config get plex_update_run`" = "x3" -o "x`config get plex_update_run`" = "x4" ] && return
 	[ "x`config get plex_update_run`" = "x2" -a "x$1" = "xauto" ] && return
     [ "x$1" != "xauto" ] && config set plex_update_run=2 && config commit
@@ -50,8 +52,8 @@ plex_check()
     curl --connect-timeout 30 --keepalive-time 30 --retry 1 $plex_download_url_https"verify_binary.txt" -o $plex_check_tmp2 2>/dev/null 
     plex_echo=`echo $?`
     if [ $plex_echo -ne 0 ];then
-	curl --insecure --connect-timeout 30 --keepalive-time 30 $plex_download_url"verify_binary.txt" -o $plex_check_tmp2 2>/dev/null 
-	plex_echo=`echo $?`
+    	curl --insecure --connect-timeout 30 --keepalive-time 30 $plex_download_url"verify_binary.txt" -o $plex_check_tmp2 2>/dev/null 
+    	plex_echo=`echo $?`
     else
 	plex_download_url=$plex_download_url_https
     fi
@@ -197,14 +199,14 @@ plex_upgrade()
         fi
     fi
     $plex_init_script_path stop 1
-    [ "x`/bin/ps -w | grep Plex | grep -v grep`" != "x" ] && oc echo "plex upgrade: stop Plex failed!" && echo "4" > $plex_upgrade_result && config set plex_update_run=0 && config commit && return 0
+    [ "x`ps -w | grep Plex | grep -v grep`" != "x" ] && oc echo "plex upgrade: stop Plex failed!" && echo "4" > $plex_upgrade_result && config set plex_update_run=0 && config commit && return 0
     rm -rf $plex_partition_mount_point/*
     sync
     tar -zxf /tmp/$1 -C $plex_partition_mount_point/ 2>/dev/null
         targetdir=`ls /tmp/$1 | awk -F "-" '{print $3"-"$4}'`
 	cp -p -f /etc/plexmediaserver/libpthread-0.9.33.2.so $plex_partition_mount_point/$targetdir
 	ln -sf libpthread-0.9.33.2.so $plex_partition_mount_point/$targetdir/libpthread.so.0
-	version=`ls /tmp/$1 | awk -F "-" '{print $3"."$4}' |grep -v "debug" 2>/dev/null`
+	version=`ls /tmp/$1 |awk -F "-" '{print $3"."$4}' |grep -v "debug" 2>/dev/null`
 	cat $plex_latest_version |grep $version  |grep -v "debug" >$plex_current_version
 	if [ "x`cat $plex_current_version |awk '{print $1}' 2>/dev/null`" = "x" ];then
 		name=$1
@@ -220,13 +222,13 @@ plex_upgrade()
     sync
     [ `echo $?` -ne 0 ] && oc echo "plex upgrade: untar plex packet failed!" && echo "5" > $plex_upgrade_result && rm -rf $plex_partition_mount_point/* && config set plex_update_run=0 && config commit && return 0
     [ "x`config get plexmediaserver_enable`" = "x1" ] && $plex_init_script_path start
-    [ "x`config get plexmediaserver_enable`" = "x1" -a "x`/bin/ps -w | grep Plex | grep -v grep`" = "x" ] && oc echo "plex upgrade: start Plex failed!"
+    [ "x`config get plexmediaserver_enable`" = "x1" -a "x`ps -w | grep Plex | grep -v grep`" = "x" ] && oc echo "plex upgrade: start Plex failed!"
     oc echo "plex upgrade:  plex upgrade successful" && echo "0" > $plex_upgrade_result && config set plex_update_run=1 && config set plex_have_new=0 && config commit && return 0
 }
 
 plex_auto_update()
 {
-    [ `/bin/ps -w | grep "plexmediaserver_upgrade.sh" | grep "auto_update" | grep -v grep | wc -l` -gt 2 ] && return
+    [ `ps -w | grep "plexmediaserver_upgrade.sh" | grep "auto_update" | grep -v grep | wc -l` -gt 2 ] && return
     if [ "x`ls /tmp/plex_current_version 2>/dev/null`" = "x" ];then
         if [ "x`ls $plex_partition_mount_point/plex_current_version 2>/dev/null`" != "x" ];then
             cp  $plex_partition_mount_point/plex_current_version /tmp/
@@ -234,7 +236,7 @@ plex_auto_update()
     fi
     while true
     do
-        pid=`/bin/ps -w | grep "Plex Media Server" | grep -v grep`
+        pid=`ps -w | grep "Plex Media Server" | grep -v grep`
         if [ "x$pid" != "x" ];then
             break
         else
@@ -261,7 +263,7 @@ plex_auto_update()
 
 plex_update()
 {
-    [ `/bin/ps -w | grep "plexmediaserver_upgrade.sh" | egrep "init_update|manual_update|auto_sched_update" | grep -v grep | wc -l` -gt 3 ] && return
+    [ `ps -w | grep "plexmediaserver_upgrade.sh" | egrep "init_update|manual_update|auto_sched_update" | grep -v grep | wc -l` -gt 3 ] && return
     [ "x$1" = "x1" -a "x`ls $plex_partition_mount_point/plex_current_version 2>/dev/null`" != "x" ] && return
 	[ "x$1" = "x1" -a "x`config get plexmediaserver_enable`" != "x1" ] && config set plex_retry_flag=0 && config commit && return
 	sleep 5
@@ -322,7 +324,7 @@ dynamic_sleep_time(){
 }
 
 plex_update_retry(){
-	[ `/bin/ps -w | grep "plexmediaserver_upgrade.sh" | grep "retry_update" | grep -v grep | wc -l` -gt 2 ] && return
+	[ `ps -w | grep "plexmediaserver_upgrade.sh" | grep "retry_update" | grep -v grep | wc -l` -gt 2 ] && return
 	retry_times=`config get plex_retry_flag`
 	if [ "x$retry_times" = "x0" -o "x$retry_times" = "x" ];then
 		retry_times=1
@@ -372,7 +374,7 @@ plex_check_network(){
 }
 
 plex_check_update(){
-	[ `/bin/ps -w | grep "plexmediaserver_upgrade.sh" | grep "check_update" | grep -v grep | wc -l` -gt 2 ] && return
+	[ `ps -w | grep "plexmediaserver_upgrade.sh" | grep "check_update" | grep -v grep | wc -l` -gt 2 ] && return
 	update_state=`config get plex_update_run`
 	if [ "x$update_state" = "x" -o "x$update_state" = "x-1" -o "x$update_state" = "x0" -o "x$update_state" = "x1" ];then
 		if [ "x`config get plex_retry_flag`" != "x" -a "x`config get plex_retry_flag`" != "x0" ];then
@@ -395,7 +397,7 @@ plex_check_update(){
 				return 1
 			fi
 			if [ "x`config get plex_have_new`" = "x1" ];then
-				[ "x`/bin/ps -w | grep "plexmediaserver_upgrade.sh" | egrep "manual_update|auto_sched_update" | grep -v grep`" != "x" ] && echo "plex will be resum updated." && return 1
+				[ "x`ps -w | grep "plexmediaserver_upgrade.sh" | egrep "manual_update|auto_sched_update" | grep -v grep`" != "x" ] && echo "plex will be resum updated." && return 1
 				echo "plex will be re updated."
 				config set plex_update_run=-1
 				config set plex_download_percent=0
@@ -413,7 +415,7 @@ plex_check_update(){
 				return 1
 			fi
 			if [ "x`config get plexmediaserver_enable`" = "x1" ];then
-				[ "x`/bin/ps -w | grep "plexmediaserver_upgrade.sh" | grep "init_update" | grep -v grep`" != "x" ] && echo "plex will be resum updated." && return 1
+				[ "x`ps -w | grep "plexmediaserver_upgrade.sh" | grep "init_update" | grep -v grep`" != "x" ] && echo "plex will be resum updated." && return 1
 				echo "plex will be re updated."
 				config set plex_update_run=-1
 				config set plex_download_percent=0
@@ -434,7 +436,7 @@ plex_check_update(){
 				return 1
 			fi
 			if [ "x`config get plexmediaserver_enable`" = "x1" ];then 
-				[ "x`/bin/ps -w | grep "plexmediaserver_upgrade.sh" | egrep "init_update|manual_update|auto_sched_update" | grep -v grep`" != "x" ] && echo "plex will be resum updated." && return 1
+				[ "x`ps -w | grep "plexmediaserver_upgrade.sh" | egrep "init_update|manual_update|auto_sched_update" | grep -v grep`" != "x" ] && echo "plex will be resum updated." && return 1
 				echo "plex will be re updated."
 				config set plex_update_run=-1
 				config set plex_download_percent=0
@@ -455,7 +457,7 @@ plex_check_update(){
 
 plex_download_percent()
 {
-	[ `/bin/ps -w | grep "plexmediaserver_upgrade.sh" | grep "download_percent" | grep -v grep | wc -l` -gt 2 ] && return
+	[ `ps -w | grep "plexmediaserver_upgrade.sh" | grep "download_percent" | grep -v grep | wc -l` -gt 2 ] && return
 	plex_download_state=`config get plex_update_run`
 	[ "x$plex_download_state" = "x" -o "x$plex_download_state" = "x-1" ] && return
 	[ "x$plex_download_state" = "x0" -o "x$plex_download_state" = "x1" ] && return
@@ -498,9 +500,9 @@ plex_library_reset()
 	    #Stop Plex Media Server before reset library
 	    echo "Stop Plex Media Server before reset library."
 	    $plex_init_script_path stop 1
-	    [ "x`/bin/ps -w | grep "Plex" | grep -v grep`" != "x" ] && {
+	    [ "x`ps -w | grep "Plex" | grep -v grep`" != "x" ] && {
 	        echo "Stop Plex Media Server fail, will force kill Plex."
-	        /bin/ps -w | grep "Plex" | grep -v plexmediaserver | grep -v grep | awk '{print $1}' | xargs kill -9 2>/dev/null
+	        ps -w | grep "Plex" | grep -v plexmediaserver | grep -v grep | awk '{print $1}' | xargs kill -9 2>/dev/null
 	    }
 	fi
 	#Delete Plex Library in selected USB Drive
@@ -563,4 +565,3 @@ case "$1" in
         plex_library_reset
     ;;
 esac
-

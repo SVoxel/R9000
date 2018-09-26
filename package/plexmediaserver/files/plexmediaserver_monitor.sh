@@ -1,5 +1,7 @@
 #!/bin/sh
 
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
 plex_monitor_current_pid=$$
 plex_monitor_current_name=`echo $0 | awk -F "/" '{print $NF}'`
 plex_montior_operation=""
@@ -54,7 +56,7 @@ irq_restore()
 
 plex_monitoring()
 {
-    if [ "x`/bin/ps -w | egrep "Plex Media Scan|Plex Transcoder|Plex New Transc" | egrep -v egrep`" = "x" ];then
+    if [ "x`ps -w | egrep "Plex Media Scan|Plex Transcoder|Plex New Transc" | egrep -v egrep`" = "x" ];then
 			plex_montior_operation="stop"
 	else
 		double=1
@@ -79,7 +81,7 @@ plex_monitoring()
 	fi
     #Set different value to plex_process_run,plex gui will warning different information.
     #value=0 means plex start failed,value=1 means plex start successful,value=2 means cannot get ntp time,value=3 means plex process crash.
-    [ "x`/bin/ps -w | grep "Plex Media Server" | grep -v grep`" = "x" -a "x`config get plexmediaserver_enable`" = "x1" ] && config set plex_process_run=3 && plex_montior_operation="" && logger -- "[PLEX]You Plex Media Server is crash for unknow issue, please re-enable it,"
+    [ "x`ps -w | grep "Plex Media Server" | grep -v grep`" = "x" -a "x`config get plexmediaserver_enable`" = "x1" ] && config set plex_process_run=3 && plex_montior_operation="" && logger -- "[PLEX]You Plex Media Server is crash for unknow issue, please re-enable it,"
     [ "x$plex_montior_operation" = "x" ] && irq_restore && exit
     [ "$plex_montior_operation" = "start" ] && irq_change
     [ "$plex_montior_operation" = "stop" ] && irq_restore
@@ -96,13 +98,13 @@ plex_monitor_start()
 
 plex_monitor_stop()
 {
-    /bin/ps -w | egrep "$plex_monitor_current_name start|$plex_monitor_current_name stop" | egrep -v "egrep" | awk '{print $1}' | grep -v "$plex_monitor_current_pid" | xargs kill -9 2>/dev/null
+    ps -w | egrep "$plex_monitor_current_name start|$plex_monitor_current_name stop" | egrep -v "egrep" | awk '{print $1}' | grep -v "$plex_monitor_current_pid" | xargs kill -9 2>/dev/null
     plex_monitoring
 }
 
 case "$1" in
     start)
-        /bin/ps -w | egrep "$plex_monitor_current_name start" | egrep -v "egrep" | awk '{print $1}' | grep -v "$plex_monitor_current_pid" | xargs kill -9 2>/dev/null
+        ps -w | egrep "$plex_monitor_current_name start" | egrep -v "egrep" | awk '{print $1}' | grep -v "$plex_monitor_current_pid" | xargs kill -9 2>/dev/null
         plex_monitor_start
     ;;
     stop)
@@ -112,4 +114,3 @@ case "$1" in
         irq_backup
     ;;
 esac
-

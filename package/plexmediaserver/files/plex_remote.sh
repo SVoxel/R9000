@@ -1,5 +1,7 @@
 #!/bin/sh
 
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
 old_port=""
 new_port=""
 
@@ -7,7 +9,7 @@ plex_remote_start()
 {
 while true 
 do
-    [ "x`/bin/ps -w | grep "Plex Media Server" | grep -v grep`" = "x" ] && exit
+    [ "x`ps -w | grep "Plex Media Server" | grep -v grep`" = "x" ] && exit
     xml_path=`config get plex_file_path`
     cat $xml_path/"Library/Application Support/Plex Media Server"/Preferences.xml > /tmp/xml.txt
     content=`cat /tmp/xml.txt`
@@ -27,7 +29,7 @@ done
 
 case "$1" in
     start)
-        /bin/ps -w | egrep "plex_remote.sh start" | egrep -v "egrep" | awk '{print $1}' | grep -v $$ | xargs kill -9 2>/dev/null
+        ps -w | egrep "plex_remote.sh start" | egrep -v "egrep" | awk '{print $1}' | grep -v $$ | xargs kill -9 2>/dev/null
         plex_remote_start
         ;;
 esac

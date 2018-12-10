@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=wget
-PKG_VERSION:=1.19.5
+PKG_VERSION:=1.20
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@GNU/$(PKG_NAME)
-PKG_MD5SUM:=2db6f03d655041f82eb64b8c8a1fa7da
+PKG_MD5SUM:=9f1515d083b769e9ff7642ce6016518e
 PKG_MAINTAINER:=Maxim Storchak <m.storchak@gmail.com>
 PKG_LICENSE:=GPL-3.0+
 PKG_LICENSE_FILES:=COPYING
@@ -21,6 +21,9 @@ PKG_LICENSE_FILES:=COPYING
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
+
+TARGET_CFLAGS += -ffunction-sections -fdata-sections
+TARGET_LDFLAGS += -Wl,--gc-sections
 
 define Package/wget/Default
   SECTION:=net
@@ -87,6 +90,7 @@ define Package/wget/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/wget $(1)/usr/bin/wget-ssl
+	$(INSTALL_BIN) files/wgdl $(1)/usr/sbin
 	(cd $(1)/usr/bin;  $(LN) /usr/bin/wget-ssl wget)
 	(cd $(1)/usr/sbin; $(LN) /usr/bin/wget-ssl wget)
 endef

@@ -644,3 +644,38 @@ tnc_full_terms="<p align='center'><p align='right'> <em>Nazadnje posodobljeno:</
 apply_mark="Uporabi"
 close_win_mark="Zapri okno"
 
+//BRS_wan_preference.html
+bh_wan_preference="Nastavitve vrat WAN"
+bh_wan_port="Internetna vrata (1 Gb/s)"
+bh_wan_lan_spf="10-Gb vrata LAN SFP+ (10 Gb/s)"
+bh_sfp_error1="Napaka: Prepričajte se, da je modul SFP+ ali kabel priklopljen v vrata SFP+."
+bh_sfp_error2="Napaka: Kabel ni priklopljen v vrata."
+bh_sfp_error3="Napaka: Internetne povezave ni mogoče vzpostaviti."
+bh_sfp_connected="Stanje: Internetna povezava je vzpostavljena"
+
+//BRS_03C_haveOrange.html
+bh_my_isp="Moj profil ponudnika internetnih storitev"
+bh_login_name="Prijavno ime"
+bh_orange_login="Prijava"
+bh_enable_orange_tv="Omogoči Orange TV"
+bh_orange_pppoe="PPPoE za Orange France"
+bh_orange_dhcp="DHCP za Orange France"
+bh_orange_france="Orange France"
+
+bh_select_my_isp="Ponudnika internetnih storitev želim izbrati na seznamu profilov."
+bh_must_enter_passwd="Vnesti morate geslo."
+bh_must_change_passwd="Ne morete uporabiti privzetega skrbniškega gesla. Skrbniško geslo morate spremeniti."
+bh_passwd_condition="Priporočamo, da geslo izpolnjuje naslednje zahteve:"
+bh_password_reset_conditions5_1="Geslo mora vsebovati od 6 do 32 znakov."
+bh_password_reset_conditions6="Vsebovati mora največ dva enaka zaporedna znaka."
+bh_password_reset_tip3="Poleg tega priporočamo, da geslo izpolnjuje vsaj tri od naslednjih štirih zahtev:"
+bh_password_reset_conditions1="Vsebovati mora vsaj eno veliko črko."
+bh_password_reset_conditions2="Vsebovati mora vsaj eno malo črko."
+bh_password_reset_conditions3="Vsebovati mora vsaj eno številko."
+bh_password_reset_conditions4="Vsebovati mora vsaj en poseben znak, na primer @#& ..."
+bh_secure_passwd="Zaščitite svoje geslo"
+bh_recommend_passwd_protect="Vaše skrbniško geslo ni varno. Priporočamo, da geslo zamenjate z močnejšim, ki izpolnjuje naše zahteve za varnostna gesla. Močnejše geslo varuje vaše omrežje pred zunanjimi grožnjami."
+bh_orbi_skip_mark="Preskoči"
+bh_password_reset="Ponastavitev gesla usmerjevalnika"
+bh_verify_passwd_reset="Preverili smo vašo zahtevo za ponastavitev gesla. Spodaj vnesite novo geslo, izpolnite druga polja in kliknite gumb <b>Naprej</b>."
+

@@ -644,3 +644,38 @@ tnc_full_terms="<p align='center'><p align='right'> <em>Last Updated:</em> [Mar 
 apply_mark="Apply"
 close_win_mark="Close Window"
 
+//BRS_wan_preference.html
+bh_wan_preference="WAN Port Preference"
+bh_wan_port="Internet Port (1 Gbps)"
+bh_wan_lan_spf="10G LAN SFP+ Port (10 Gbps)"
+bh_sfp_error1="Error: Make sure that your SFP+ module or cable is connected to the SFP+ port."
+bh_sfp_error2="Error: The cable is not connected to the port."
+bh_sfp_error3="Error: Unable to establish an Internet connection."
+bh_sfp_connected="Status: Connected to the Internet"
+
+//BRS_03C_haveOrange.html
+bh_my_isp="My ISP Profile"
+bh_login_name="Login Name"
+bh_orange_login="Login"
+bh_enable_orange_tv="Enable Orange TV"
+bh_orange_pppoe="Orange France PPPoE"
+bh_orange_dhcp="Orange France DHCP"
+bh_orange_france="Orange France"
+
+bh_select_my_isp="I want to select my Internet Service Provider (ISP) from the profile list."
+bh_must_enter_passwd="You must enter a password."
+bh_must_change_passwd="You cannot use the default admin password. You must change the admin password."
+bh_passwd_condition="We recommend that your password meets the following conditions:"
+bh_password_reset_conditions5_1="Contains 6 to 32 characters"
+bh_password_reset_conditions6="Contains no more than two identical characters in a row"
+bh_password_reset_tip3="In addition, we recommend that your password meets three of the following four conditions:"
+bh_password_reset_conditions1="At least one uppercase character"
+bh_password_reset_conditions2="At least one lowercase character"
+bh_password_reset_conditions3="At least one number"
+bh_password_reset_conditions4="At least one special character, such as @#&..."
+bh_secure_passwd="Secure Your Password"
+bh_recommend_passwd_protect="Your admin password is not secure. We recommend that you change your password to a stronger password that meets our password requirements. A stronger password protects your network against external threats."
+bh_orbi_skip_mark="Skip"
+bh_password_reset="Router Password Reset"
+bh_verify_passwd_reset="We verified your password reset request. Enter a new password below, complete the other fields, then click the <b>Next</b> button."
+

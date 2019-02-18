@@ -121,6 +121,9 @@ $ECHO -n > "$SR33_FILE"
 $ECHO -n > "$CSR121_FILE"
 $ECHO -n > "$CSR249_FILE"
 
+local orange_vlan_enable_bridge=$($CONFIG get enable_orange)
+
+
 case "$1" in
 	deconfig)
 	if [ "$interface" = "brwan" ]; then
@@ -242,16 +245,10 @@ case "$1" in
 				if compare_the_same_subnet "$ip" "$i" "$subnet"; then
 					$ROUTE add -net $i netmask 255.255.255.255 dev $interface
 				fi
-				#VLAN832 is for Orange Internet WAN; VLAN838 is for VOD
-				if [ "$interface" != "br838" ]; then
-					$ROUTE add default gw $i dev $interface
-				fi
+				$ROUTE add default gw $i dev $interface
 			done
-			#VLAN832 is for Orange Internet WAN; VLAN838 is for VOD
-			if [ "$interface" != "br838" ]; then
-				$CONFIG set wan_dhcp_gateway=$router
-			fi
 
+			$CONFIG set wan_dhcp_gateway=$router
 		fi
 
 		# Run /sbin/wan-ipup after checking ipconflict
@@ -365,7 +362,7 @@ case "$1" in
 			# If upgrade FW, need to update stremboost database
 			sb_update_database
 		fi
-	else
+	elif [ "$orange_vlan_enable_bridge" = "1" ]; then  
 		echo "*** Enter WAN $interface DHCP bound state with IP $ip and netmask $NETMASK..."
 		$IFCONFIG $interface $ip $BROADCAST $NETMASK
 		if [ -n "$router" ]; then
@@ -379,25 +376,8 @@ case "$1" in
 			done
 		fi
 
-		#configure firewall for non-default WAN
-		$IPTABLES -D INPUT  -p 2 -i $interface -j ACCEPT
-		$IPTABLES -I INPUT 7 -p 2 -i $interface -j ACCEPT
-		$IPTABLES -D INPUT  -i $interface -j brwan_in
-		$IPTABLES -I INPUT 9 -i $interface -j brwan_in
-		$IPTABLES -D FORWARD  -p udp -i $interface -o br0 -d 224.0.0.0/4 -j ACCEPT
-		$IPTABLES -I FORWARD 1 -p udp -i $interface -o br0 -d 224.0.0.0/4 -j ACCEPT
-		$IPTABLES -D FORWARD -p udp --dport 5000 -i br0 -o $interface -j ACCEPT
-		$IPTABLES -I FORWARD 1 -p udp --dport 5000 -i br0 -o $interface -j ACCEPT
-		$IPTABLES -D FORWARD -p tcp --dport 8554 -i br0 -o $interface -j ACCEPT
-		$IPTABLES -I FORWARD 1 -p tcp --dport 8554 -i br0 -o $interface -j ACCEPT
-		$IPTABLES -D FORWARD -p tcp --dport 443 -i br0 -o $interface -j ACCEPT
-		$IPTABLES -I FORWARD 1 -p tcp --dport 443 -i br0 -o $interface -j ACCEPT
-		$IPTABLES -D OUTPUT  -p 2 -o $interface -j ACCEPT 
-		$IPTABLES -I OUTPUT 1 -p 2 -o $interface -j ACCEPT 
-		$IPTABLES -t nat -D POSTROUTING -o $interface -j brwan_masq
-		$IPTABLES -t nat -A POSTROUTING -o $interface -j brwan_masq
-		$IPTABLES -t nat -D PREROUTING -p udp -i $interface -d 224.0.0.0/4 -j ACCEPT 
-		$IPTABLES -t nat -A PREROUTING -p udp -i $interface -d 224.0.0.0/4 -j ACCEPT 
+		# restart firewall
+		$FIREWALL restart
 
 		#start igmpproxy
 		/sbin/cmdigmp start 
@@ -407,6 +387,7 @@ case "$1" in
 		echo "Enter renew"
 	if [ "$interface" = "brwan" ]; then		
 		old_ip=$($CONFIG get wan_dhcp_ipaddr)
+		old_subnet=$($CONFIG get wan_dhcp_netmask)
 		$IFCONFIG $interface $ip $BROADCAST $NETMASK && $CONFIG set wan_dhcp_ipaddr=$ip && $CONFIG set wan_dhcp_oldip=$ip && $CONFIG set wan_dhcp_netmask=$subnet
 
 		if [ "x${vendor_specific}" != "x" ]; then
@@ -574,7 +555,7 @@ case "$1" in
 
 			$CONFIG set dhcpc_lease_obtain="$(cat /proc/uptime | awk -F. '{print $1}')"
 			
-			if [ "$old_ip" != "$($CONFIG get wan_dhcp_ipaddr)" ]; then
+			if [ "$old_ip" != "$($CONFIG get wan_dhcp_ipaddr)" -o "$old_subnet" != "$($CONFIG get wan_dhcp_netmask)" -o "$old_router" != "$($CONFIG get wan_dhcp_gateway)" ]; then
 				# restart firewall
 				$FIREWALL restart
 				echo "ip change for firewall restart"
@@ -617,7 +598,7 @@ case "$1" in
 			# If upgrade FW, need to update stremboost database
 			sb_update_database
 		fi
-	else
+	elif [ "$orange_vlan_enable_bridge" = "1" ]; then
 		echo "*** Enter WAN $interface DHCP renew state with IP $ip and netmask $NETMASK..."
 		$IFCONFIG $interface $ip $BROADCAST $NETMASK
 		if [ -n "$router" ]; then 
@@ -631,29 +612,12 @@ case "$1" in
 				fi
 			done
 		fi
+		
+		# restart firewall
+		$FIREWALL restart
 
-		#configure firewall for non-default WAN
-		$IPTABLES -D INPUT -p 2 -i $interface -j ACCEPT
-		$IPTABLES -I INPUT 7 -p 2 -i $interface -j ACCEPT
-		$IPTABLES -D INPUT -i $interface -j brwan_in
-		$IPTABLES -I INPUT 9 -i $interface -j brwan_in
-		$IPTABLES -D FORWARD -p udp -i $interface -o br0 -d 224.0.0.0/4 -j ACCEPT
-		$IPTABLES -I FORWARD 1 -p udp -i $interface -o br0 -d 224.0.0.0/4 -j ACCEPT 
-		$IPTABLES -D FORWARD -p udp --dport 5000 -i br0 -o $interface -j ACCEPT
-		$IPTABLES -I FORWARD 1 -p udp --dport 5000 -i br0 -o $interface -j ACCEPT
-		$IPTABLES -D FORWARD -p tcp --dport 8554 -i br0 -o $interface -j ACCEPT
-		$IPTABLES -I FORWARD 1 -p tcp --dport 8554 -i br0 -o $interface -j ACCEPT
-		$IPTABLES -D FORWARD -p tcp --dport 443 -i br0 -o $interface -j ACCEPT
-		$IPTABLES -I FORWARD 1 -p tcp --dport 443 -i br0 -o $interface -j ACCEPT
-		$IPTABLES -D OUTPUT -p 2 -o $interface -j ACCEPT
-		$IPTABLES -I OUTPUT 1 -p 2 -o $interface -j ACCEPT
-		$IPTABLES -t nat -D POSTROUTING -o $interface -j brwan_masq
-		$IPTABLES -t nat -A POSTROUTING -o $interface -j brwan_masq 
-		$IPTABLES -t nat -D PREROUTING -p udp -i $interface -d 224.0.0.0/4 -j ACCEPT 
-		$IPTABLES -t nat -A PREROUTING -p udp -i $interface -d 224.0.0.0/4 -j ACCEPT 
-
-		 #start igmpproxy 
-		 /sbin/cmdigmp start 
+		#start igmpproxy 
+		/sbin/cmdigmp start 
 	fi
 		;;
 esac

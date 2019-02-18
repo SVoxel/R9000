@@ -934,8 +934,8 @@ void show_arp_table(void)
 	if (fp == 0) 
 		return;
 
-	system("wlan stainfo > " WLAN_STA_FILE);
-	
+	dni_system(NULL, "wlan stainfo > " WLAN_STA_FILE);
+
 	for (i = 0; i < (NEIGH_HASHMASK + 1); i++) {
 		for (pprev = &arp_tbl[i], u = *pprev; u; ) {
 			if (u->active == 0) {

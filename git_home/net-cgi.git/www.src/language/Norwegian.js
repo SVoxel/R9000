@@ -644,3 +644,38 @@ tnc_full_terms="<p align='center'><p align='right'> <em>Sist oppdatert:</em> [27
 apply_mark="Bruk"
 close_win_mark="Lukk vindu"
 
+//BRS_wan_preference.html
+bh_wan_preference="WAN-portpreferanse"
+bh_wan_port="Internett-port (1 Gbps)"
+bh_wan_lan_spf="10G LAN SFP+-port (10 Gbps)"
+bh_sfp_error1="Feil: Sørg for at SFP+-modulen eller kabelen er koblet til SFP+-porten."
+bh_sfp_error2="Feil: Kabelen er ikke tilkoblet porten."
+bh_sfp_error3="Feil: Kan ikke opprette en Internett-tilkobling."
+bh_sfp_connected="Status: Koblet til Internett"
+
+//BRS_03C_haveOrange.html
+bh_my_isp="Min Internett-leverandørprofil"
+bh_login_name="Påloggingsnavn"
+bh_orange_login="Logg på"
+bh_enable_orange_tv="Aktiver Orange TV"
+bh_orange_pppoe="Orange France PPPoE"
+bh_orange_dhcp="Orange France DHCP"
+bh_orange_france="Orange France"
+
+bh_select_my_isp="Jeg vil velge Internett-leverandør (ISP) fra profillisten."
+bh_must_enter_passwd="Du må skrive et passord."
+bh_must_change_passwd="Du kan ikke bruke standard admin-passord. Du må endre admin-passordet."
+bh_passwd_condition="Vi anbefaler at passordet ditt oppfyller følgende krav:"
+bh_password_reset_conditions5_1="Inneholder 6 til 32 tegn"
+bh_password_reset_conditions6="Inneholder ikke mer enn to like tegn etter hverandre"
+bh_password_reset_tip3="I tillegg anbefaler vi at passordet oppfyller tre av følgende fire krav:"
+bh_password_reset_conditions1="Minst én stor bokstav"
+bh_password_reset_conditions2="Minst én liten bokstav"
+bh_password_reset_conditions3="Minst ett tall"
+bh_password_reset_conditions4="Minst ett spesialtegn, for eksempel @#&..."
+bh_secure_passwd="Sikre passordet"
+bh_recommend_passwd_protect="Admin-passordet ditt er ikke sikkert. Vi anbefaler at du endrer passordet til et sterkere passord som oppfyller passordkravene våre. Et sterkere passord beskytter nettverket ditt mot eksterne trusler."
+bh_orbi_skip_mark="Hopp over"
+bh_password_reset="Tilbakestilling av ruterpassord"
+bh_verify_passwd_reset="Vi har bekreftet forespørselen din om tilbakestilling av passord. Angi et nytt passord nedenfor, fyll ut de andre feltene, og klikk på <b>Neste</b>."
+

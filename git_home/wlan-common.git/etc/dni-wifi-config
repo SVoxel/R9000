@@ -33,8 +33,8 @@ wep_auth_type_1="shared"
 wep_auth_type_2="auto"
 
 preamble_0="auto"
-preamble_1="short"
-preamble_2="long"
+preamble_1="long"
+preamble_2="short"
 
 [ -f /etc/ath/wifi.conf ] && . /etc/ath/wifi.conf
 if [ "$wla_exist" = "on" ]; then
@@ -92,6 +92,78 @@ tpscale_12=10
 dniconfig()
 {
     /bin/config $@
+}
+
+#band1=1 band2=2 band31=3 band32=4 band4=5
+wla_deal_ht160(){
+    local first_chan=$1
+    local second_chan=$2
+    local chan=
+    local freq=
+    local freq2=
+    local time=1
+    local dif_freq=0
+    # Per NTGR, CE and FCC support DFS HT80 + non-DFS HT80
+    # Other country only support non-DFS HT80 + non-DFS HT80
+    case $wla_country in
+	4 | 10)
+	    for chan in $first_chan $second_chan
+	    do
+		case $chan in
+		    36|40|44|48)
+			freq="5210";;
+		    52|56|60|64)
+			freq="5290";;
+		    100|104|108|112)
+			freq="5530";;
+		    116|120|124|128)
+			freq="5610";;
+		    132|136|140|144)
+			freq="5690";;
+		    149|153|157|161)
+			freq="5775";;
+		esac
+		eval "freq${time}=$freq"
+		time=$((time + 1))
+		chan=0
+	    done
+	    #echo "===chan1=$chan1 chan2=$chan2 freq=$freq===" > /dev/console
+
+	    if [ "x${freq1}" = "x${freq2}" ]; then
+		echo "===[$0]:error match >> exit ===" > /dev/console
+		exit 0
+	    elif [ "${freq1}" -gt "${freq2}" ]; then
+		dif_freq=`expr ${freq1} - ${freq2}`
+	    else
+		dif_freq=`expr ${freq2} - ${freq1}`
+	    fi
+
+	    if [ "$dif_freq" = "80" ]; then
+		wla_htmode=HT160
+	    else
+		wla_htmode=HT80_80
+		wla_cfreq2=${freq2}
+	    fi
+	    ;;
+	10|11|1|2|3|7|13|8|20|9)
+		case $first_chan in
+		    36|40|44|48)
+		        wla_cfreq2=5775
+			wla_htmode=HT80_80
+			;;
+		    149|153|157|161)
+		        wla_cfreq2=5210
+			wla_htmode=HT80_80
+			;;
+		    *)
+		        wla_htmode=HT80
+			;;
+		esac
+	    ;;
+	*)
+		wla_htmode=HT80
+	    ;;
+	esac
 }
 
 doth_should_enable()
@@ -272,16 +344,14 @@ if [ -n "$DNI_CONFIG" ]; then
 
     if [ "$wla_if_onoff" = "on" -o "$FORCE_CREATE_wla_VAP" = "on" ]; then
         wla_channel=`dniconfig get wla_hidden_channel`
+        wla_second_channel=`dniconfig get wla_sec_channel`
         if [ "$wla_channel" = "0" ]; then wla_channel="auto"; fi
         wla_chmode=`dniconfig get wla_simple_mode`
 
-        # wireless region is NA and mode is 1733M, when enable HT160, change mode to HT80_80
-        # wireless region is EU and mode is 1733M, when enable HT160, change mode to HT160
         wla_country=`dniconfig get wl_country`
         wl_ht160=`dniconfig get wla_ht160`
-        if [ "$wl_ht160" = "1" -a "$wla_country" = "2" -a "$wla_chmode" = "9" ]; then
-            wla_chmode="10"
-        elif [ "$wl_ht160" = "1" -a "$wla_country" = "10" -a "$wla_chmode" = "9" ]; then
+
+        if [ "$wl_ht160" = "1" -a "$wla_chmode" = "9" ]; then
             wla_chmode="10"
         fi
 
@@ -335,21 +405,10 @@ if [ -n "$DNI_CONFIG" ]; then
                 wla_hwmode=11ac;
                 wla_htmode=HT80;
                 ;;
+
             10)
-                wla_hwmode=11ac;
-                wla_htmode=HT80_80;
-                case "$wla_channel" in
-                    36|40|44|48)
-                        wla_cfreq2=5775;
-                        ;;
-                    149|153|157|161)
-                        wla_cfreq2=5210;
-                        ;;
-                esac
-                ;;
-            11)
-                wla_hwmode=11ac;
-                wla_htmode=HT160;
+                wla_hwmode=11ac
+                wla_deal_ht160 $wla_channel $wla_second_channel
                 ;;
             *)
                 wla_hwmode=11na;

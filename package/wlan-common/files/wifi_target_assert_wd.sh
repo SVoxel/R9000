@@ -92,8 +92,15 @@ check_hostapd_connect()
 	local wifidev=$2
 	
 	hostapd_cli -i "$athdev" -p /var/run/hostapd-${wifidev} all_sta > /tmp/${wifidev}_${athdev}_all_sta
-	hostapdWPAPTKState=`cat /tmp/${wifidev}_${athdev}_all_sta |grep hostapdWPAPTKState|awk -F '=' '{print $2}'`
-	[ "$hostapdWPAPTKState" = "11" ] && hostapdWPAPTKState_flag=1
+	cat /tmp/${wifidev}_${athdev}_all_sta | grep hostapdWPAPTKState > /tmp/.ptkstate_all_sta
+	while read line
+	do
+		hostapdWPAPTKState=`echo $line |awk -F '=' '{print $2}'`
+		[ "$hostapdWPAPTKState" = "11" ] && { 
+			hostapdWPAPTKState_flag=1
+		}
+	done < /tmp/.ptkstate_all_sta
+	rm -f /tmp/.ptkstate_all_sta
 }
 
 check_hostapd_EAP_common()

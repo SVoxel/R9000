@@ -167,12 +167,12 @@ br_create() # $1: brname
 
 br_allbrs()
 {
-	awk '/br[0-9w]/ {print $1}' /proc/net/dev |sed 's/://g'
+	awk '/br[0-9wo]/ {print $1}' /proc/net/dev |sed 's/://g'
 }
 
 br_allnifs() # $1: brx
 {
-	brctl show $1 | awk '!/bridge/ {print $NF}' | grep "eth\|ath\|host0.\|bond0."
+	brctl show $1 | awk '!/bridge/ {print $NF}' | grep "eth\|sfp\|ath\|host0.\|bond0."
 }
 
 op_del_all_brs_vifs()
@@ -183,14 +183,18 @@ op_del_all_brs_vifs()
 
 	for brx in $(br_allbrs); do
 		ifconfig $brx down
-		for nif in $(br_allnifs $brx); do 
+		for nif in $(br_allnifs $brx); do
 			ifconfig $nif down
 			brctl delif $brx $nif
 			case "$nif" in
 			ethlan|ethwan)
 				;;
-			eth*|bond0.*)
+			eth0.*|eth1.*|eth2.*|bond0.*)
 				vconfig rem $nif
+				;;
+			sfpwan)
+				ifconfig sfpwan down
+				vconfig rem sfpwan || ip link set dev sfpwan name eth0
 				;;
 			esac
 		done
@@ -201,6 +205,7 @@ op_del_all_brs_vifs()
 	vconfig rem ethlan || ip link set dev ethlan name $RawEthLan
 	ifconfig ethwan down
 	vconfig rem ethwan || ip link set dev ethwan name $RawEthWan
+
 	#[ -n "$RawEth" ] && ifconfig $RawEth down || {
 	#	ifconfig $RawEthLan down
 	#	ifconfig $RawEthWan down
@@ -398,16 +403,28 @@ iptv_create_brs_and_vifs()
 
 	# SFP+ Interface
 	ifconfig eth0 hw ether $sfpdefmac
-	brctl addif br0 eth0
-	ifconfig eth0 up
 
-	ifconfig br0 hw ether $landefmac
-	#brctl addif brwan ethwan
 	if [ "$iptv_vlan_enable" = "1" ]; then
-		vlan_create_internet_vif 10 0 
+		vlan_create_internet_vif 10 0
 	else
-		brctl addif brwan ethwan
+		# WAN Preference: 0 - ethwan as WAN port; 1 - eth0 as WAN port
+		if [ "$($CONFIG get wan_preference)" = "0" ]; then
+			brctl addif br0 eth0
+			ifconfig eth0 up
+			ifconfig br0 hw ether $landefmac
+
+			brctl addif brwan ethwan
+		else
+			# Since WAN port is SFP+ interface, use ethwan as LAN interface
+			brctl addif br0 ethwan
+			ifconfig ethwan up
+			ifconfig br0 hw ether $landefmac
+
+			brctl addif brwan eth0
+			ifconfig eth0 up
+		fi
 	fi
+
 	sw_configvlan "iptv" $($CONFIG get iptv_mask)
 }
 
@@ -464,6 +481,7 @@ vlan_create_br_and_vif() # $1: vid, $2: pri
 vlan_create_internet_vif() # $1: vid, $2: pri
 {
 	local brx="br$1"
+	local landefmac=$($CONFIG get lan_factory_mac)
 
 	if nif_existed $brx; then
 		ifconfig $brx down
@@ -496,8 +514,33 @@ vlan_create_internet_vif() # $1: vid, $2: pri
 			ip link set dev $RawEthWan.$1 name ethwan
 		fi
 	fi
-	vlan_set_vif_pri ethwan $2
-	brctl addif brwan ethwan
+
+	# WAN Preference(WAN interface): 0 - ethwan; 1 - sfpwan(eth0.vid)
+	if [ "$($CONFIG get wan_preference)" = "0" ]; then
+		brctl addif br0 eth0
+		ifconfig eth0 up
+		ifconfig br0 hw ether $landefmac
+		
+		vlan_set_vif_pri ethwan $2
+		brctl addif brwan ethwan
+	else
+		brctl addif br0 ethwan
+		ifconfig ethwan up
+		ifconfig br0 hw ether $landefmac
+
+		# While VLAN is enabled for bridge group, add eth0 into brwan
+		if [ "$($CONFIG get vlan_type)" = "0" -a "$($CONFIG get iptv_vlan_enable)" = "1" ]; then
+			brctl addif brwan eth0
+			ifconfig eth0 up
+		else
+			ifconfig eth0 up
+			vconfig add eth0 $1 && ifconfig eth0.$1 down
+			ip link set dev eth0.$1 name sfpwan
+
+			vlan_set_vif_pri sfpwan $2
+			brctl addif brwan sfpwan
+		fi
+	fi
 }
 
 vlan_create_intranet_vif() # $1: vid, $2: pri
@@ -635,8 +678,6 @@ vlan_create_brs_and_vifs()
 
 	# SFP+ Interface
 	ifconfig eth0 hw ether $sfpdefmac
-	brctl addif br0 eth0
-	ifconfig eth0 up
 
 	sw_configvlan "vlan" "start"
 	for i in 0 1 2 3 4 5 6 7 8 9 10; do

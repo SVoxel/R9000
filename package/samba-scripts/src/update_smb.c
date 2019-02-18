@@ -72,6 +72,7 @@ struct share_info
 #define READYCLOUD_ACCESS "readycloud_access"
 #define READYCLOUD_ENABLE "readycloud_enable"
 
+#define USER_ROOT "root"
 #define USER_ADMIN "admin"
 #define USER_GUEST "guest"
 #define USER_ANONYMOUS "anonymous"
@@ -291,7 +292,7 @@ static void add_smbd_share_info(FILE *fp, char *displayname, char *reader, char 
 		if (!strcmp(config_get("usb_passwdNet"), "1")) {
 			fprintf(fp, "  guest ok=no\n");
 			fprintf(fp, "  read only=yes\n");
-			fprintf(fp, "  write list=%s %s\n", USER_ADMIN, writelist);
+			fprintf(fp, "  write list=%s, %s %s\n", USER_ROOT, USER_ADMIN, writelist);
 		}
 		else if (strcmp(writer, USER_GUEST) == 0){
 			fprintf(fp, "  guest ok=yes\n");
@@ -300,7 +301,7 @@ static void add_smbd_share_info(FILE *fp, char *displayname, char *reader, char 
 		else {
 			fprintf(fp, "  guest ok=no\n");
 			fprintf(fp, "  read only=yes\n");
-			fprintf(fp, "  write list=%s %s\n", USER_ADMIN, writelist);
+			fprintf(fp, "  write list=%s, %s %s\n", USER_ROOT, USER_ADMIN, writelist);
 		}
 	}
 	else{
@@ -345,7 +346,7 @@ static void add_smbd_share_info(FILE *fp, char *displayname, char *reader, char 
 		if (!strcmp(config_get("usb_passwdNet"), "1")) {
 			sprintf(writelist + strlen(writelist), "%s ", readycloud_user_value);
 			fprintf(fp, "  read only=yes\n");
-			fprintf(fp, "  write list=%s %s\n", USER_ADMIN, writelist);
+			fprintf(fp, "  write list=%s, %s %s\n", USER_ROOT, USER_ADMIN, writelist);
 		}
 		else if(strstr(pwrite_access, USER_ANONYMOUS)){
 			fprintf(fp, "  read only=no\n");
@@ -353,7 +354,7 @@ static void add_smbd_share_info(FILE *fp, char *displayname, char *reader, char 
 		else if(strstr(pwrite_access, USER_EVERYONE)){
 			sprintf(writelist + strlen(writelist), "%s ", readycloud_user_value);
 			fprintf(fp, "  read only=yes\n");
-			fprintf(fp, "  write list=%s %s\n", USER_ADMIN, writelist);
+			fprintf(fp, "  write list=%s, %s %s\n", USER_ROOT, USER_ADMIN, writelist);
 		}
 		else{
 			pw = strtok(pwrite_access, ",");
@@ -366,7 +367,7 @@ static void add_smbd_share_info(FILE *fp, char *displayname, char *reader, char 
 				pw = strtok(NULL, ",");
 			}
 			fprintf(fp, "  read only=yes\n");
-			fprintf(fp, "  write list=%s %s\n", USER_ADMIN, writelist);
+			fprintf(fp, "  write list=%s, %s %s\n", USER_ROOT, USER_ADMIN, writelist);
 		}
 	
 	}

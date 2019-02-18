@@ -48,7 +48,8 @@ define Package/samba-scripts/install
 	install -m0644 ./files/smb.conf $(1)/etc/config/samba
 	install -m0644 ./files/passwd $(1)/usr/config
 	install -m0644 ./files/group $(1)/usr/config
-	install -m0755 ./files/update_user_v_02 $(1)/usr/sbin/update_user
+	install -m0755 ./files/update_user_v_02_security $(1)/usr/sbin/update_user
+	install -m0755 ./files/save_shadow $(1)/usr/sbin/save_shadow
 	install -m0755 ./files/detectSATA $(1)/usr/sbin/detectSATA
 	install -m0755 $(PKG_BUILD_DIR)/update_smb $(1)/usr/sbin/update_smb
 	-rm -f $(1)/etc/gshadow

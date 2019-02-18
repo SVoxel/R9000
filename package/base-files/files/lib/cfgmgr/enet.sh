@@ -161,6 +161,68 @@ bond_hashstop(){
 	$ssdk_sh trunk hashmode set 0xf
 }
 
+sw_disbale_eee(){
+	$ssdk_sh_id 0 debug phy set 0x1 0xd 0x7
+	$ssdk_sh_id 0 debug phy set 0x1 0xe 0x3c
+	$ssdk_sh_id 0 debug phy set 0x1 0xd 0x4007
+	$ssdk_sh_id 0 debug phy set 0x1 0xe 0x00
+	$ssdk_sh_id 0 debug phy set 0x1 0x00 0x1200
+
+	$ssdk_sh_id 0 debug phy set 0x2 0xd 0x7
+	$ssdk_sh_id 0 debug phy set 0x2 0xe 0x3c
+	$ssdk_sh_id 0 debug phy set 0x2 0xd 0x4007
+	$ssdk_sh_id 0 debug phy set 0x2 0xe 0x00
+	$ssdk_sh_id 0 debug phy set 0x2 0x00 0x1200
+
+	$ssdk_sh_id 0 debug phy set 0x3 0xd 0x7
+	$ssdk_sh_id 0 debug phy set 0x3 0xe 0x3c
+	$ssdk_sh_id 0 debug phy set 0x3 0xd 0x4007
+	$ssdk_sh_id 0 debug phy set 0x3 0xe 0x00
+	$ssdk_sh_id 0 debug phy set 0x3 0x00 0x1200
+
+	$ssdk_sh_id 0 debug phy set 0x4 0xd 0x7
+	$ssdk_sh_id 0 debug phy set 0x4 0xe 0x3c
+	$ssdk_sh_id 0 debug phy set 0x4 0xd 0x4007
+	$ssdk_sh_id 0 debug phy set 0x4 0xe 0x00
+	$ssdk_sh_id 0 debug phy set 0x4 0x00 0x1200
+
+	$ssdk_sh_id 0 debug phy set 0x5 0xd 0x7
+	$ssdk_sh_id 0 debug phy set 0x5 0xe 0x3c
+	$ssdk_sh_id 0 debug phy set 0x5 0xd 0x4007
+	$ssdk_sh_id 0 debug phy set 0x5 0xe 0x00
+	$ssdk_sh_id 0 debug phy set 0x5 0x00 0x1200
+
+	$ssdk_sh_id 1 debug phy set 0x1 0xd 0x7
+	$ssdk_sh_id 1 debug phy set 0x1 0xe 0x3c
+	$ssdk_sh_id 1 debug phy set 0x1 0xd 0x4007
+	$ssdk_sh_id 1 debug phy set 0x1 0xe 0x00
+	$ssdk_sh_id 1 debug phy set 0x1 0x00 0x1200
+
+	$ssdk_sh_id 1 debug phy set 0x2 0xd 0x7
+	$ssdk_sh_id 1 debug phy set 0x2 0xe 0x3c
+	$ssdk_sh_id 1 debug phy set 0x2 0xd 0x4007
+	$ssdk_sh_id 1 debug phy set 0x2 0xe 0x00
+	$ssdk_sh_id 1 debug phy set 0x2 0x00 0x1200
+	
+	$ssdk_sh_id 1 debug phy set 0x3 0xd 0x7
+	$ssdk_sh_id 1 debug phy set 0x3 0xe 0x3c
+	$ssdk_sh_id 1 debug phy set 0x3 0xd 0x4007
+	$ssdk_sh_id 1 debug phy set 0x3 0xe 0x00
+	$ssdk_sh_id 1 debug phy set 0x3 0x00 0x1200
+
+	$ssdk_sh_id 1 debug phy set 0x4 0xd 0x7
+	$ssdk_sh_id 1 debug phy set 0x4 0xe 0x3c
+	$ssdk_sh_id 1 debug phy set 0x4 0xd 0x4007
+	$ssdk_sh_id 1 debug phy set 0x4 0xe 0x00
+	$ssdk_sh_id 1 debug phy set 0x4 0x00 0x1200
+
+	$ssdk_sh_id 1 debug phy set 0x5 0xd 0x7
+	$ssdk_sh_id 1 debug phy set 0x5 0xe 0x3c
+	$ssdk_sh_id 1 debug phy set 0x5 0xd 0x4007
+	$ssdk_sh_id 1 debug phy set 0x5 0xe 0x00
+	$ssdk_sh_id 1 debug phy set 0x5 0x00 0x1200
+}
+
 sw_init()                                                                                            
 {                                                                                                    
 	echo "switch init"
@@ -250,6 +312,7 @@ sw_init()
 	$ssdk_sh_id 1 debug phy set 0x4 0xd 0x4007
 	$ssdk_sh_id 1 debug phy set 0x4 0xe 0x00
 	$ssdk_sh_id 1 debug phy set 0x4 0x00 0x1200
+	sw_disbale_eee
 }                                                                                                    
 
 sw_printconf_add_switch()
@@ -445,6 +508,7 @@ sw_user_lan_ports_vlan_config() # $1: vlanid $2: LAN Ports, $3: Is_Bridge_VLAN $
 	local vlan_mode="$6"
 	local vlan_enable_bridge=$($CONFIG get enable_orange)
 	local iptv_vlan_enable=$($CONFIG get iptv_vlan_enable)
+	local wan_preference=$($CONFIG get wan_preference)
 
 	local sw0_trunk_ports="0 5 4 6"
 	local sw0_access_ports=""
@@ -482,7 +546,7 @@ sw_user_lan_ports_vlan_config() # $1: vlanid $2: LAN Ports, $3: Is_Bridge_VLAN $
 
 	if [ "$is_iptv_vlan" = "1" ]; then	
 		if [ "$iptv_vlan_enable" = "1" -o "$vlan_enable_bridge" = "1" ]; then
-			if ["$vlan_enable_bridge" = "1"]; then
+			if [ "$vlan_enable_bridge" = "1" ]; then
 				sw0_trunk_ports="3 4 6"
 			else	
 				sw0_trunk_ports="3 5 4 6"
@@ -509,7 +573,11 @@ sw_user_lan_ports_vlan_config() # $1: vlanid $2: LAN Ports, $3: Is_Bridge_VLAN $
 
 		if [ "$iptv_vlan_enable" = "1" ]; then
 			echo "*** FreeISP access ports settings"
-			sw0_access_ports="2 1"
+			if [ "$wan_preference" = "0" ]; then
+				sw0_access_ports="2 1"
+			else
+				sw0_access_ports="3 2 1"
+			fi
 			sw1_access_ports="4 3 2 1"
 		fi
 	fi

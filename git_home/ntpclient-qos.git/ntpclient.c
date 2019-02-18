@@ -40,7 +40,6 @@ typedef uint32_t __u32;
 #define JAN_1970        0x83aa7e80      /* 2208988800 1970 - 1900 in seconds */
 #define NTP_PORT (123)
 #define DAY_TIME 86400
-#define NETGEAR_PERIOD 20
 
 /* How to multiply by 4294.967296 quickly (and not quite exactly)
  * without using floating point or greater than 32-bit integers.
@@ -332,7 +331,7 @@ int setup_transmit(int usd, char *host, unsigned short port)
 	return 1;
 }
 
-void primary_loop(int usd, int num_probes, int cycle_time)
+int primary_loop(int usd, int num_probes, int cycle_time)
 {
 	fd_set fds;
 	struct sockaddr sa_xmit;
@@ -340,6 +339,9 @@ void primary_loop(int usd, int num_probes, int cycle_time)
 	struct timeval to;
 	struct ntptime udp_send_ntp;
 	int steady_state = 0;
+	int sync_result = 0;
+
+	printf("Listening...\n");	
 
 	probes_sent = 0;
 	sa_xmit_len = sizeof(sa_xmit);
@@ -358,6 +360,7 @@ void primary_loop(int usd, int num_probes, int cycle_time)
 					|| (to.tv_sec == DAY_TIME)) {
 				if (steady_state != 1 
 					&& probes_sent >= num_probes && num_probes != 0) {
+					sync_result = 0;
 					break;
 				}
 				steady_state = 0;
@@ -386,16 +389,19 @@ void primary_loop(int usd, int num_probes, int cycle_time)
 		}
 
 		if (steady_state == 1) {
-			//to.tv_sec = DAY_TIME;
-			//to.tv_usec = 0;
-			exit(0);
+		//	to.tv_sec = DAY_TIME;
+		//	to.tv_usec = 0;
+			sync_result = 1;
+			break;
 		} else if (probes_sent >= num_probes && num_probes != 0) {
+			sync_result = 0;
 			break;
 		}
 	}
 	/*when program is out of primary loop,the NTP server is fail,so delete the file.*/
 	system("rm -f /tmp/ntp_updated");
-	return;
+
+	return sync_result;
 }
 
 /****************************************************************************
@@ -520,14 +526,13 @@ int main(int argc, char *argv[]) {
 	   the initializations here provide default behavior */
 	unsigned short udp_local_port = 0;   /* default of 0 means kernel chooses */
 	int probe_count = 1;            /* default of 0 means loop forever */
-	int cycle_time = 15;          /* request timeout in seconds */
-	int min_interval = 0;
-	int max_interval = 0;
+	//int interval_time = 3;
+	int request_count = 1;
 	char *hostname = NULL;          /* must be set */
-	char *sec_host = "0.0.0.0";
 	char *ntps = "0.0.0.0";
 	struct timeval to;
 	FILE *fp = NULL;
+	int sync_ok = 0;
 
 	unsigned long seed = 0;
 
@@ -558,74 +563,48 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	if (strcmp(sec_host, "0.0.0.0") == 0)
-		sec_host = hostname;
-
-	if (min_interval > max_interval || min_interval < 0 || max_interval < 0) 
-	{
-		exit(1);
-	} 
-	else if (max_interval == 0) 
-	{
-		max_interval = cycle_time;
-		min_interval = cycle_time;
-	} 
-	else
-	{
-		cycle_time = min_interval + rand()%(max_interval-min_interval+1);
-	}
 	daemon(1, 1);
 
-
 	while(1) {
-		ntps = (strcmp(ntps, hostname) == 0) ? sec_host : hostname;
+		ntps = hostname;
 
 		/* Startup sequence */
 		if ((usd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 			perror ("socket");
-			goto cont;
+			sleep(3);
+			continue;
 		}
 
 		if (!wan_conn_up() && config_match("ap_mode", "0") && config_match("bridge_mode", "0")) {
-			/* printf("The WAN connection is NOT up!\n"); */
+			printf("The WAN connection is NOT up!\n");
 			close(usd);
-			goto cont;
+			sleep(3);
+			continue;
 		}
 
 		if (!setup_receive(usd, INADDR_ANY, udp_local_port)
 		    || !setup_transmit(usd, ntps, NTP_PORT)) 
 		{
 			close(usd);
-			to.tv_sec = cycle_time;
-			to.tv_usec = 0;
-			select(1, NULL, NULL, NULL, &to);
-			goto loop;
+			sleep(3);
+			continue;
 		}
 
-		primary_loop(usd, probe_count, 5);
-		close(usd);
-	loop:
-		/* [NETGEAR Spec 8.6]:Subsequent queries will double the preceding query interval 
-		 * until the interval has exceeded the steady state query interval, at which point 
-		 * and new random interval between 15.00 and 60.00 seconds is selected and the 
-		 * process repeats.
-		 */
-
-		if ((cycle_time * 2) > DAY_TIME)
-			cycle_time = min_interval + rand()%(max_interval-min_interval+1);
-		else
-			cycle_time = cycle_time * 2;
-		continue;
-
-	cont:	
-		/* [NETGEAR Spec 8.6]: we will wait randomly calculated period of 0 to 240 seconds 
-		 * before issuing the first NTP query upon subsequent power-ons or resets. 
-		 */
+		sync_ok = primary_loop(usd, probe_count, 5);
 		
-		to.tv_sec = rand() % (NETGEAR_PERIOD + 1);
-		to.tv_usec = 0;
-		select(1, NULL, NULL, NULL, &to);
-
+		close(usd);
+		if (sync_ok)
+		{
+			break;
+		}
+		else
+		{
+			request_count++;
+			if (request_count > 10)
+				exit(1);
+			else
+				continue;
+		}		
 	}
 	
 	return 0;

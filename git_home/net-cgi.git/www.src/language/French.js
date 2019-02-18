@@ -644,3 +644,38 @@ tnc_full_terms="<p align='center'><p align='right'> <em>Dernière mise à jour :
 apply_mark="Appliquer"
 close_win_mark="Fermer la fenêtre"
 
+//BRS_wan_preference.html
+bh_wan_preference="Préférence de port WAN"
+bh_wan_port="Port Internet (1 Gbit/s)"
+bh_wan_lan_spf="Port de réseau local SFP+ 10 Gigabit (10 Gbit/s)"
+bh_sfp_error1="Erreur : Vérifiez que votre module SFP+ ou votre câble est bien connecté au port SFP+."
+bh_sfp_error2="Erreur : Le câble n'est pas connecté au port."
+bh_sfp_error3="Erreur : Impossible d'établir une connexion Internet."
+bh_sfp_connected="Statut : Connecté à Internet"
+
+//BRS_03C_haveOrange.html
+bh_my_isp="Mon profil FAI"
+bh_login_name="Nom d'utilisateur"
+bh_orange_login="Connexion"
+bh_enable_orange_tv="Activer la TV Orange"
+bh_orange_pppoe="PPPoE Orange France"
+bh_orange_dhcp="DHCP Orange France"
+bh_orange_france="Orange France"
+
+bh_select_my_isp="Je souhaite sélectionner mon fournisseur d'accès à Internet (FAI) dans la liste de profils."
+bh_must_enter_passwd="Vous devez entrer un mot de passe."
+bh_must_change_passwd="Vous ne pouvez pas utiliser le mot de passe administrateur par défaut. Vous devez modifier le mot de passe administrateur."
+bh_passwd_condition="Nous vous recommandons d'utiliser un mot de passe répondant aux conditions suivantes :"
+bh_password_reset_conditions5_1="Comporte entre 6 et 32 caractères"
+bh_password_reset_conditions6="Ne comporte pas plus de deux caractères identiques à la suite"
+bh_password_reset_tip3="En outre, nous vous recommandons d'utiliser un mot de passe répondant à trois des quatre conditions suivantes :"
+bh_password_reset_conditions1="Au moins un caractère majuscule"
+bh_password_reset_conditions2="Au moins un caractère minuscule"
+bh_password_reset_conditions3="Au moins un chiffre"
+bh_password_reset_conditions4="Au moins un caractère spécial, tel que @#&..."
+bh_secure_passwd="Sécurisez votre mot de passe"
+bh_recommend_passwd_protect="Votre mot de passe administrateur n'est pas sécurisé. Nous vous recommandons de modifier votre mot de passe avec un mot de passe plus sûr, qui répond à nos exigences en matière de mots de passe. Un mot de passe plus sûr protège votre réseau contre les menaces externes."
+bh_orbi_skip_mark="Ignorer"
+bh_password_reset="Mot de passe du routeur réinitialisé"
+bh_verify_passwd_reset="Nous avons vérifié votre demande de réinitialisation du mot de passe. Saisissez un nouveau mot de passe ci-dessous, remplissez les autres champs, puis cliquez sur le bouton <b>Suivant</b>."
+

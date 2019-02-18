@@ -123,6 +123,11 @@ function check_device_edit_apply(cf)
 	var value_name = cf.name_tag.value.replace(/\\/g,"\\\\");
 	var value_mac = edit_mac_addr;
 
+	if(value_name == "")
+	{
+		sAlert("$device_name_null");
+		return false;
+	}
 	if(value_priority == "" || value_type == "") {
 		sAlert("Value of priority or type cannot be NULL!");
 		return false;

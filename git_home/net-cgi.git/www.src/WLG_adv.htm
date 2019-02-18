@@ -103,6 +103,7 @@ var wl_disablecoext="<% cfg_get("wl_disablecoext") %>";
 var endis_beamforming = "<% cfg_get("wla_implicit_bf") %>";
 var enable_ht160 = "<% cfg_get("wla_ht160") %>";
 var grey_ht160 = "<% cfg_get("grey_wla_ht160") %>";
+var enable_11k = "<% cfg_get("enable_11k") %>";
 var enable_mu="<% cfg_get("wla_mu_mimo") %>";
 
 var super_wifi_value="<% cfg_get("wl_super_wifi") %>";
@@ -281,6 +282,10 @@ function change_web_format()
 		document.getElementById("wladv_ht160").style.display="";
 	else
 		document.getElementById("wladv_ht160").style.display="none";
+	if(top.enable_11k_flag == 1)
+		document.getElementById("wladv_11k").style.display="";
+	else
+		document.getElementById("wladv_11k").style.display="none";
 	if(top.mu_mimo_flag == 1)
 		document.getElementById("wladv_mu").style.display="";
 	else
@@ -612,6 +617,10 @@ function loadvalue()
 		form.enable_ht160.checked = true;
 	else
 		form.enable_ht160.checked = false;
+	if(enable_11k == "1")
+		form.enable_11k.checked = true;
+	else
+		form.enable_11k.checked = false;
 
 	/*bug28582 There should be only one "Keep Existing Wireless Settings" option.*/
 	if (wps_status == '5' || (an_router_flag ==1 && wla_wps_status == '5'))
@@ -646,11 +655,11 @@ function loadvalue()
 		form.pin_attack_count.disabled = true;
 		form.prevent_pin_compromise.disabled = true;
 	}
-	if(grey_ht160 == "1" || country == 4 || !((country == 10 || country == 4) && (wla_mode != 1 && wla_mode != 2 && wla_mode != 7 && wla_mode != 8) || country == 2))
+	/*if(grey_ht160 == "1" || country == 4 || !((country == 10 || country == 4) && (wla_mode != 1 && wla_mode != 2 && wla_mode != 7 && wla_mode != 8) || country == 2))
         {
                 getObj('wladv_ht160').color = 'gray';
                 form.enable_ht160.disabled = true;
-        }
+        }*/
 
 	showWps_alert();
 	if(valid_region != 1)
@@ -666,7 +675,7 @@ function loadvalue()
 			document.getElementById("wladv_appin_cfg").style.display = "none";
 			document.getElementById("wladv_keep_exist").style.display = "none";
 			document.getElementById("wps_blank_line").style.display = "none";
-			document.getElementById("wps_settings_title").innerHTML = "WPS Settings (disabled when Smart Connect is enabled)";
+			document.getElementById("wps_settings_title").innerHTML = "$wps_smart";
 		}
 	}
 }
@@ -750,6 +759,7 @@ function transmit_select_ad(form)
 <input type="hidden" name="hid_wla_mu_mimo" value="0">
 <input type="hidden" name="hid_enable_atf" value="0">
 <input type="hidden" name="hid_wla_ht160">
+<input type="hidden" name="hid_11k">
 
 <TR>
 	<TD nowrap colspan=2>
@@ -1236,8 +1246,14 @@ $bluebar
 <TR id='wladv_ht160'>
         <TD nowrap colspan=2 >
 		<input type="checkbox" name="enable_ht160" value="">
-		<A tabindex=-1 href="javascript:loadhelp('_wladv','ht160')">$enable_ht160</A>
+		<A tabindex=-1 href="javascript:loadhelp('_wladv','ht160')">$enable_160MHZ_bandwidth_in_5g</A>
         </TD>
+</TR>
+<TR id='wladv_11k'>
+        <TD nowrap colspan=2 >
+		<input type="checkbox" name="enable_11k" value="" id="enable_11k"><label for="enable_11k">
+		<A tabindex=-1 href="javascript:loadhelp('_wladv','11k')">$enable_roaming</A></label>
+	</TD>
 </TR>
 <TR id=ap_bluebar><TD colspan=2><img src=/liteblue.gif width=100% height=12></TD></TR>
 <TR id="wlan_access">

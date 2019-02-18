@@ -312,26 +312,26 @@ else
 
 <div id="bas_top">
 <TABLE cellspacing=5 cellPadding=0 width=100% border=0>
-<TR id="wan_preference_tr1" style="display:none"><TD nowrap><B>WAN Port Preference</B></TD></TR>
+<TR id="wan_preference_tr1" style="display:none"><TD nowrap><B>$wan_preference</B></TD></TR>
 <TR id="wan_preference_tr2" style="display:none">
 	<TD nowrap>
-		<input onclick='document.forms[0].hid_wan_preference.value="0"'  type="radio" name="wan_preference" id="internet_port" value="0">Internet Port (1 Gbps)
+		<input onclick='document.forms[0].hid_wan_preference.value="0"'  type="radio" name="wan_preference" id="internet_port" value="0">$wan_port
 	</TD>
 </TR>
 <TR id="wan_preference_tr3" style="display:none">
 	<TD nowrap>
-		<input onclick='document.forms[0].hid_wan_preference.value="1"' type="radio" name="wan_preference" id="sfp_port" value="1" checked="true">10G LAN SFP+ Port (10 Gbps)
+		<input onclick='document.forms[0].hid_wan_preference.value="1"' type="radio" name="wan_preference" id="sfp_port" value="1" checked="true">$wan_lan_spf
 		<span id='wan-port-status' style="margin-left: 70px; color: red"></span>
 	</TD>
 </TR>
 <TR id="sfp_module_tr1" style="display:none">
-	<TD nowrap colspan=2><B>SFP+ Module Detection</B></A></TD>
+	<TD nowrap colspan=2><B>$wan_spf_module</B></A></TD>
 </TR>
 <TR id="sfp_module_tr2" style="display:none">
 	<TD nowrap colspan=2>
 	<select name="sfp_module" id="sfp_module">
 		<option value="0">$auto_mark</option>
-		<option value="1">DAC mode only</option>
+		<option value="1">$wan_detect</option>
 	</select>
 	</TD>
 </TR>

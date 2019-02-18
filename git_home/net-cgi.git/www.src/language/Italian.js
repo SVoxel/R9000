@@ -644,3 +644,38 @@ tnc_full_terms="<p align='center'><p align='right'> <em>Ultimo aggiornamento:</e
 apply_mark="Applica"
 close_win_mark="Chiudi finestra"
 
+//BRS_wan_preference.html
+bh_wan_preference="Preferenza porta WAN"
+bh_wan_port="Porta Internet (1 Gbps)"
+bh_wan_lan_spf="Porta 10G LAN SFP+ (10 Gbps)"
+bh_sfp_error1="Errore: Assicurarsi che il modulo o cavo SFP+ sia collegato alla porta SFP+."
+bh_sfp_error2="Errore: Il cavo non è collegato alla porta."
+bh_sfp_error3="Errore: Impossibile stabilire una connessione a Internet."
+bh_sfp_connected="Stato: Connesso a Internet"
+
+//BRS_03C_haveOrange.html
+bh_my_isp="Il mio profilo ISP"
+bh_login_name="Nome di accesso"
+bh_orange_login="Accedi"
+bh_enable_orange_tv="Attiva Orange TV"
+bh_orange_pppoe="Orange France PPPoE"
+bh_orange_dhcp="Orange France DHCP"
+bh_orange_france="Orange France"
+
+bh_select_my_isp="Desidero selezionare il mio ISP (Internet Service Provider) dall'elenco dei profili."
+bh_must_enter_passwd="È necessario immettere una password."
+bh_must_change_passwd="Impossibile utilizzare la password admin predefinita. È necessario modificare la password admin."
+bh_passwd_condition="È consigliabile utilizzare una password che soddisfi le seguenti condizioni:"
+bh_password_reset_conditions5_1="Includa da 6 a 32 caratteri"
+bh_password_reset_conditions6="Non includa più di due caratteri identici consecutivi"
+bh_password_reset_tip3="Inoltre, è consigliabile impostare una password che soddisfi tre delle seguenti quattro condizioni:"
+bh_password_reset_conditions1="Includa almeno un carattere maiuscolo"
+bh_password_reset_conditions2="Includa almeno un carattere minuscolo"
+bh_password_reset_conditions3="Includa almeno un numero"
+bh_password_reset_conditions4="Includa almeno un carattere speciale, ad esempio @#&..."
+bh_secure_passwd="Proteggi la password"
+bh_recommend_passwd_protect="La password admin non è protetta. È consigliabile utilizzare una password più complessa conforme ai requisiti. Una password più complessa protegge la rete dalle minacce esterne."
+bh_orbi_skip_mark="Ignora"
+bh_password_reset="Reimpostazione password router"
+bh_verify_passwd_reset="La richiesta di reimpostazione della password è stata verificata. Immettere una nuova password di seguito, compilare gli altri campi, quindi fare clic sul pulsante <b>Avanti</b>."
+

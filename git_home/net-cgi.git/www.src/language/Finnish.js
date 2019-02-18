@@ -644,3 +644,38 @@ tnc_full_terms="<p align='center'><p align='right'> <em>Päivitetty viimeksi:</e
 apply_mark="Käytä"
 close_win_mark="Sulje ikkuna"
 
+//BRS_wan_preference.html
+bh_wan_preference="Ensisijainen WAN-portti"
+bh_wan_port="Internet-portti (1 Gbps)"
+bh_wan_lan_spf="10G LAN SFP+ -portti (10 Gbps)"
+bh_sfp_error1="Virhe: Varmista, että SFP+ -moduuli tai -kaapeli on liitetty SFP+ -porttiin."
+bh_sfp_error2="Virhe: kaapelia ei ole liitetty porttiin."
+bh_sfp_error3="Virhe: Internet-yhteyttä ei voi muodostaa."
+bh_sfp_connected="Tila: Yhteys Internetiin"
+
+//BRS_03C_haveOrange.html
+bh_my_isp="Oma ISP-profiili"
+bh_login_name="Kirjautumistunnus"
+bh_orange_login="Käyttäjätunnus"
+bh_enable_orange_tv="Ota käyttöön Orange TV"
+bh_orange_pppoe="Orange France PPPoE"
+bh_orange_dhcp="Orange France DHCP"
+bh_orange_france="Orange France"
+
+bh_select_my_isp="Haluan valita Internet-palveluntarjoajani (ISP) profiililuettelosta."
+bh_must_enter_passwd="Kirjoita salasana."
+bh_must_change_passwd="Et voi käyttää järjestelmänvalvojan oletussalasanaa. Järjestelmänvalvojan salasana on vaihdettava."
+bh_passwd_condition="Suosittelemme, että salasana täyttää seuraavat ehdot:"
+bh_password_reset_conditions5_1="sisältää 6–32 merkkiä"
+bh_password_reset_conditions6="sisältää enintään kaksi samanlaista merkkiä peräkkäin."
+bh_password_reset_tip3="Suosittelemme lisäksi, että salasana täyttää ainakin kolme seuraavista ehdoista:"
+bh_password_reset_conditions1="vähintään yksi iso kirjain"
+bh_password_reset_conditions2="vähintään yksi pieni kirjain"
+bh_password_reset_conditions3="vähintään yksi numero"
+bh_password_reset_conditions4="vähintään yksi erikoismerkki, esimerkiksi @ # &..."
+bh_secure_passwd="Salasanan suojaaminen"
+bh_recommend_passwd_protect="Salasanasi ei ole turvallinen. Suosittelemme, että vaihdat salasanasi vahvempaan, salasanavaatimuksiamme vastaavaan salasanaan. Vahvempi salasana suojaa verkkoasi ulkoisilta uhilta."
+bh_orbi_skip_mark="Ohita"
+bh_password_reset="Reitittimen salasanan vaihtaminen"
+bh_verify_passwd_reset="Olemme vahvistaneet salasananvaihtopyyntösi. Kirjoita uusi salasana alle, täytä muut kentät ja napsauta <b>Seuraava</b>-painiketta."
+

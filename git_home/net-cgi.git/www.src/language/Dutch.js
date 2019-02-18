@@ -644,3 +644,38 @@ tnc_full_terms="<p align='center'><p align='right'> <em>Voor het laatst bijgewer
 apply_mark="Toepassen"
 close_win_mark="Venster sluiten"
 
+//BRS_wan_preference.html
+bh_wan_preference="Voorkeur WAN-poort"
+bh_wan_port="Internetpoort (1 Gbps)"
+bh_wan_lan_spf="10G LAN SFP+-poort (10 Gbps)"
+bh_sfp_error1="Fout: Zorg ervoor dat uw SFP+-module of kabel is aangesloten op de SFP+-poort."
+bh_sfp_error2="Fout: De kabel is niet verbonden met internet."
+bh_sfp_error3="Fout: Onmogelijk om een internetverbinding tot stand te brengen."
+bh_sfp_connected="Status: Verbonden met het internet"
+
+//BRS_03C_haveOrange.html
+bh_my_isp="Mijn ISP-profiel"
+bh_login_name="Aanmeldingsnaam"
+bh_orange_login="Aanmelden"
+bh_enable_orange_tv="Orange TV inschakelen"
+bh_orange_pppoe="Orange France PPPoE"
+bh_orange_dhcp="Orange France DHCP"
+bh_orange_france="Orange France"
+
+bh_select_my_isp="Ik wil mijn Internet Service Provider (ISP) uit de profiellijst selecteren."
+bh_must_enter_passwd="U moet een wachtwoord invoeren."
+bh_must_change_passwd="U kunt geen standaardbeheerderswachtwoord gebruiken. U moet het beheerderswachtwoord wijzigen."
+bh_passwd_condition="Wij raden u aan dat uw wachtwoord aan de volgende voorwaarden voldoet:"
+bh_password_reset_conditions5_1="Bevat 6 tot 32 tekens"
+bh_password_reset_conditions6="Bevat niet meer dan twee identieke tekens achter elkaar"
+bh_password_reset_tip3="We raden u daarnaast aan dat uw wachtwoord voldoet aan drie van de vier volgende voorwaarden:"
+bh_password_reset_conditions1="Ten minste één hoofdletter"
+bh_password_reset_conditions2="Ten minste één kleine letter"
+bh_password_reset_conditions3="Ten minste één cijfer"
+bh_password_reset_conditions4="Ten minste één speciaal teken zoals @#&..."
+bh_secure_passwd="Houd uw wachtwoord veilig"
+bh_recommend_passwd_protect="Uw beheerderswachtwoord is niet veilig. We raden u aan uw wachtwoord naar een sterker wachtwoord te wijzigen dat aan onze veiligheidsvereisten voldoet. Door een sterker wachtwoord is uw netwerk tegen externe dreigingen beveiligd."
+bh_orbi_skip_mark="Overslaan"
+bh_password_reset="Wachtwoord router herstellen"
+bh_verify_passwd_reset="We hebben uw verzoek tot herstellen van het wachtwoord geverifieerd. Voer een nieuw wachtwoord in, vul de overige velden in en klik vervolgens op de knop <b>Volgende</b>."
+

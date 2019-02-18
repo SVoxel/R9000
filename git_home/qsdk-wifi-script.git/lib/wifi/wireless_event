@@ -4,8 +4,10 @@ case "$ACTION" in
     RADARDETECT)
         [ -f /tmp/radardetect.pid ] || /usr/sbin/radardetect
 
+        CHANNEL=`echo $CHANNEL | cut -d':' -f2`
         for chan in `echo $CHANNEL | sed 's/,/ /g'`; do 
             /usr/sbin/radardetect_cli -a $chan
         done
+        [ -f /tmp/.radardetect_lock ] && echo "Radar Detected at ["`date` "] on channels [$CHANNEL]" >> /tmp/radardetect.log
 esac
 

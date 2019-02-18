@@ -30,19 +30,19 @@ function change_type()
 	<div class="wizard_words_div">
 		<table>
 			<tbody>
-				<tr><td>My ISP Profile</td>
+				<tr><td><script>document.write(bh_my_isp)</script></td>
 				<td><select class="Orange_sel" name="Orange_type" size="1" onchange="change_type()">
-				<option value="orange_dhcp" selected>Orange France DHCP</option>
-				<option value="orange_pppoe">Orange France PPPoE</option>
+				<option value="orange_dhcp" selected><script>document.write(bh_orange_dhcp)</script></option>
+				<option value="orange_pppoe"><script>document.write(bh_orange_pppoe)</script></option>
 				</tr>
-				<tr><td>Login Name</td>
+				<tr><td><script>document.write(bh_login_name)</script></td>
 				<td><input type="text" id="orange_login" name="orange_login" maxlength="64" align="right" autocomplete="off" onKeyPress="return getkey('ssid', event)"></td>
 				</tr>
 				<tr name="orange_passwd" id="orange_passwd" style="display:none"><td>Password</td>
 				<td><input type="text" id="orange_passwd" name="orange_passwd" maxlength="64" align="right" size="16" autocomplete="off" onKeyPress="return getkey('ssid', event)"></td>
 				</tr>
 				<tr>
-				<td><input type="checkbox" name="enable_orange" id="enable_orange">Enable Orange TV</td></tr>
+				<td><input type="checkbox" name="enable_orange" id="enable_orange"><script>document.write(bh_enable_orange_tv)</script></td></tr>
 			</tbody>
 		</table>
 	</div>

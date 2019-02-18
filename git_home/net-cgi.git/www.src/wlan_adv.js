@@ -208,6 +208,10 @@ function checkadv(form)
 		form.hid_wla_ht160.value = "1";
 	else
 		form.hid_wla_ht160.value = "0";
+	if(form.enable_11k.checked == true)
+		form.hid_11k.value = "1";
+	else
+		form.hid_11k.value = "0";
 
 	if ( old_endis_wl_radio =="0" && form.wl_enable_router.value == "0")
 		form.wds_change_ip.value="still_lanip"

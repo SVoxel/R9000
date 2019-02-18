@@ -576,6 +576,21 @@ function Convert(originStr)
 	return unescape(decodeURIComponent(originStr));
 }
 
+function check_url_for_lan(url, lanip, lanmask)
+{
+	var ip_start = url.indexOf("://") > -1? url.indexOf("://") :0;
+	var tmp_url = url.slice(ip_start+3);
+	var ip_end = tmp_url.indexOf(":") > -1? tmp_url.indexOf(":"): tmp_url.indexOf("/") > -1? tmp_url.indexOf("/"): tmp_url.length;
+	var ip = tmp_url.slice(0, ip_end);
+	if(checkipaddr(ip)) {
+		if(isSameSubNet(ip, lanmask, lanip, lanmask)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 function get_dlclient_result(flag) {
 	if( window.XMLHttpRequest ) {
 		var reqHttp = new XMLHttpRequest();

@@ -644,3 +644,38 @@ tnc_full_terms="<p align='center'><p align='right'> <em>最終更新日：</em> 
 apply_mark="適用"
 close_win_mark="ウィンドウを閉じる"
 
+//BRS_wan_preference.html
+bh_wan_preference="WANポートの設定"
+bh_wan_port="インターネットポート (1Gbps)"
+bh_wan_lan_spf="10G LAN SFP+ポート (10Gbps)"
+bh_sfp_error1="エラー: SFP+モジュールまたはケーブルがSFP+ポートに接続されていることを確認してください。"
+bh_sfp_error2="エラー: ケーブルがポートに接続されていません。"
+bh_sfp_error3="エラー: インターネットに接続できません。"
+bh_sfp_connected="状態: インターネットに接続済み"
+
+//BRS_03C_haveOrange.html
+bh_my_isp="プロバイダー情報"
+bh_login_name="ユーザー名"
+bh_orange_login="ログイン"
+bh_enable_orange_tv="Orange TVを有効にする"
+bh_orange_pppoe="Orange France PPPoE"
+bh_orange_dhcp="Orange France DHCP"
+bh_orange_france="Orange France"
+
+bh_select_my_isp="プロファイルリストからプロバイダー (ISP) を選択します。"
+bh_must_enter_passwd="パスワードを入力してください。"
+bh_must_change_passwd="デフォルトの管理パスワードを使用することはできません。管理者パスワードを変更する必要があります。"
+bh_passwd_condition="次の条件に適合するパスワードを使用することを推奨します。"
+bh_password_reset_conditions5_1="6文字以上32文字以内"
+bh_password_reset_conditions6="同一文字が3文字以上連続していない"
+bh_password_reset_tip3="さらに、次の4つの条件のうちの3つに適合するパスワードを使用することを推奨します。"
+bh_password_reset_conditions1="1つ以上の大文字を含む"
+bh_password_reset_conditions2="1つ以上の小文字を含む"
+bh_password_reset_conditions3="1つ以上の数字を含む"
+bh_password_reset_conditions4="1つ以上の特殊文字 (@#&など) を含む"
+bh_secure_passwd="パスワードのセキュリティを高める"
+bh_recommend_passwd_protect="お使いの管理パスワードは安全ではありません。パスワードの要件に適合するより安全なパスワードに変更することを推奨します。より安全なパスワードを使用することで、外部の脅威からネットワークが保護されます。"
+bh_orbi_skip_mark="スキップ"
+bh_password_reset="ルーターのパスワードリセット"
+bh_verify_passwd_reset="パスワードリセットの要求を確認しました。新しいパスワードを入力し、その他のフィールドを入力して、<b>[次へ]</b> ボタンをクリックしてください。"
+

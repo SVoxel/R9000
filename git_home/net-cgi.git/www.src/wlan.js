@@ -450,6 +450,88 @@ function check_dfs()
 	return true;
 }
 
+function check_dfs_sec()
+{
+	var cf = document.forms[0]; 
+	var each_info = dfs_info.split(':');
+	var currentMode = cf.opmode_an.value;
+	var index = cf.WRegion.value;
+	var channel_info;
+	var channel = cf.w_channel_an_sec;
+        var ch_index = channel.selectedIndex;
+        var ch_name = channel.options[ch_index].text;
+	var ch_value = channel.options[ch_index].value;
+	var ht160_enabled= (top.support_ht160_flag == 1 && enable_ht160 == "1" && ((index == 10 || index == 4) && (currentMode != 1 && currentMode != 2 && currentMode != 7 && currentMode != 8)))
+
+	if( ch_name.indexOf('(DFS)') == -1 && !ht160_enabled)
+	{ // not a DFS channel and  ht160 disabled, return true, continue other check.
+		return true;
+	}
+	if(index == 10 && cf.w_channel_an.options[cf.w_channel_an.selectedIndex].text.indexOf('(DFS)') != -1 && ch_name.indexOf('(DFS)') != -1)
+	{
+		alert("It is not allow to select both primary and secondary channel to DFS channel !!!");
+		return false;
+	}
+
+	if(top.dfs_radar_detect_flag == 1){	
+		var tmp_array;
+		if(ht160_enabled)
+		{
+			if(dfs_radar_160 == undefined)
+				return true;
+			tmp_array = dfs_radar_160;
+		}
+		else if ( 1 == currentMode || 2 == currentMode || 7 == currentMode )
+		{
+			if(dfs_radar_20 == undefined)
+				return true;
+
+			tmp_array = dfs_radar_20;
+		}
+	        else if( 9 == currentMode)
+        	{
+			if(dfs_radar_80 == undefined)
+				return true;
+
+	                tmp_array = dfs_radar_80;
+        	}
+		else
+		{
+			if(dfs_radar_40 == undefined)
+				return true;
+			tmp_array = dfs_radar_40;
+		}
+		for( var i=0; i<tmp_array.length-1; i++)
+		{
+			var channel = tmp_array[i].channel;
+			var min = tmp_array[i].expire/60;
+			var sec = tmp_array[i].expire%60;
+
+			if( channel == ch_value)
+			{
+				alert("$using_dfs_1" + min.toFixed(0) + "$using_dfs_2" + sec + "$using_dfs_3");
+				return false;
+			}
+		}
+	}else{
+	  for ( i=0; i<each_info.length; i++ )
+	  {
+		channel_info = each_info[i].split(' '); //channel; channel_flag; channe_priflag; left_time
+		var sec = channel_info[3]%60;		//change left time format
+		var min = parseInt(channel_info[3]/60);
+		if( (5000 + 5*(parseInt(ch_value, 10))) == parseInt(channel_info[0], 10) )
+		{
+			alert("$using_dfs_1" + min + "$using_dfs_2" + sec + "$using_dfs_3");
+			return false;
+		}
+	  }
+	}
+	if( ch_name.indexOf('(DFS)') != -1  && confirm("$select_dfs") == false)
+		return false;
+
+	return true;
+}
+
 function setChannel()
 {
 	var cf = document.forms[0];
@@ -658,6 +740,11 @@ function setAChannel(channel)
 	var find_value = 0;
 	var i, j=0, val;
 	var tmp_array = ht40_array[index];
+	var secChannel = document.getElementById("w_channel_an_sec");
+	var secChannelTr = document.getElementById("sec_channel_tr");
+	var secValue = secChannel.value;
+
+	secChannelTr.style.display = "none";
 
 	if ( 1 == currentMode || 2 == currentMode || 7 == currentMode )
 	{
@@ -666,6 +753,8 @@ function setAChannel(channel)
 	else if( 9 == currentMode)
 	{
 		tmp_array = ht80_array[index];
+		if( (index == 4 || index == 10)&& enable_ht160 === "1")
+			secChannelTr.style.display = "";
 	}
 
 	channel.options.length = tmp_array.length+1;
@@ -742,6 +831,76 @@ function setAChannel(channel)
 	}
 	if(find_value == 0)
 		channel.selectedIndex = 0;
+
+	if(secChannelTr.style.display !== "none") {
+		secChannel.innerHTML = channel.innerHTML;
+		not_conflict_ht80(channel);
+		if(index == 4)
+			not_conflict_eu_sec(channel);
+	
+		var secOpts = secChannel.options;
+		var secFind = false;
+
+		for(var i=0; i<secOpts.length; i++) {
+			if(secOpts[i].value == secValue) {
+				secFind = true;
+				secChannel.selectedIndex = i;
+				break;
+			}
+		}
+
+		if(secFind === false) {
+			for(var i=0; i<secOpts.length; i++) {
+				if(secOpts[i].value === get_sec_channel) {
+					secFind = true;
+					secChannel.selectedIndex = i;
+					break;
+				}
+			}
+		}
+
+		if(secFind === false)
+			secChannel.selectedIndex = 0;
+	}
+}
+
+function not_conflict_ht80(source) {
+	var id = (source.id === "wireless_channel_an"? "w_channel_an_sec": "wireless_channel_an");
+	var target = document.getElementById(id);
+
+	var firstIndex = source.selectedIndex;
+	var part = Math.floor(firstIndex/4);
+	var end = (part + 1)*4;
+	var start = end - 4;
+	var opts = target.options;
+	opts = Array.prototype.slice.apply(opts).slice(start, end);
+	for(var i=0; i<opts.length; i++) {
+		target.removeChild(opts[i]);
+	}
+}
+
+function not_conflict_eu_sec(source) {
+	var id = (source.id === "wireless_channel_an"? "w_channel_an_sec": "wireless_channel_an");
+	var target = document.getElementById(id);
+
+	var firstIndex = source.selectedIndex;
+	var part = Math.floor(firstIndex/4);
+	if(part == 1)
+	{
+		var opts = target.options;
+		opts = Array.prototype.slice.apply(opts).slice(4, 12);
+		for(var i=0; i<opts.length; i++) {
+			target.removeChild(opts[i]);
+		}
+	}
+	if(part == 2 || part == 3)
+	{
+		var opts = target.options;
+		opts = Array.prototype.slice.apply(opts).slice(4, 8);
+		for(var i=0; i<opts.length; i++) {
+			target.removeChild(opts[i]);
+		}
+	}
 }
 
 function check_wlan()
@@ -755,6 +914,11 @@ function check_wlan()
 	var tag2=0;//when the value is 1, not pop up "guest_tkip_aes_300_150" for 5G
 	var tag3=0;//when the value is 1, not pop up "wlan_tkip_aes_300_150" for 5G
 	var cf=document.forms[0];
+
+	if( (cf.WRegion.value == 4 || cf.WRegion.value == 10)&& enable_ht160 === "1" && check_dfs_sec() == false)
+	{
+		return false;
+	}
 	
 	/*bug 41791 
 	var ssid_bgn = document.forms[0].ssid.value.replace(/\\/g,"\\\\\\\\").replace(/`/g,"\\\\\\`").replace(/"/g,"\\\"");*/
@@ -1234,6 +1398,8 @@ function check_wlan()
 		}	
 */
 		cf.wla_hidden_wlan_channel.value = cf.w_channel_an.value;
+		if(document.getElementById("sec_channel_tr").style.display !== "none")
+			cf.wla_hidden_sec_channel.value = cf.w_channel_an_sec.value;
 		var channel_select_index = cf.w_channel_an.selectedIndex;
 		if(cf.w_channel_an.options[channel_select_index].text.indexOf("DFS") != -1)
 			cf.wla_hidden_sel_dfs.value = "1";

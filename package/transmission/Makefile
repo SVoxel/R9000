@@ -123,7 +123,7 @@ endef
 Package/transmission-daemon-mbedtls/conffiles = $(Package/transmission-daemon-openssl/conffiles)
 
 CONFIGURE_VARS += \
-	LIBEVENT_LIBS="$(STAGING_DIR)/usr/lib/libevent-2.0.so.5"
+	LIBEVENT_LIBS="$(STAGING_DIR)/usr/lib/libevent-2.1.so.6.0.2"
 
 CONFIGURE_ARGS += \
 	--enable-daemon \

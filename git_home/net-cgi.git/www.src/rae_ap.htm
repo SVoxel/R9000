@@ -326,7 +326,7 @@ document.write(dev_name);
 </TR>
 <script>
 if (wl_sectype == 1)
-	document.write('<TR><TD nowrap colspan=3>NULL</TD></TR>');
+	document.write('<TR><TD nowrap colspan=3>$sec_off</TD></TR>');
 else if (wl_sectype == 2) {  //wep
 	if(key_no == 1)
 		document.write('<TR><TD nowrap colspan=3>key1:'+key1+'</TD></TR>');
@@ -353,7 +353,7 @@ if(parent.an_router_flag == 1)
 	document.write('<TR><TD nowrap colspan=3><% cfg_get_ssid_html("wla_ssid") %></TD></TR>');
 
 	if (wla_sectype == 1)
-		document.write('<TR><TD nowrap colspan=3>NULL</TD></TR>');
+		document.write('<TR><TD nowrap colspan=3>$sec_off</TD></TR>');
 	else if (wla_sectype == 4)
 		document.write('<TR><TD nowrap colspan=3>'+wla_password1+'</TD></TR>');
 	else if (wla_sectype == 5)
@@ -369,7 +369,7 @@ if(parent.ad_router_flag == 1)
 	document.write('<TR><TD nowrap colspan=3><% cfg_get_ssid_html("wig_ssid") %></TD></TR>');
 
 	if (wig_sectype == 1)
-		document.write('<TR><TD nowrap colspan=3>NULL</TD></TR>');
+		document.write('<TR><TD nowrap colspan=3>$sec_off</TD></TR>');
 	else if (wig_sectype == 4)
 		document.write('<TR><TD nowrap colspan=3>'+wig_password+'</TD></TR>');
 }

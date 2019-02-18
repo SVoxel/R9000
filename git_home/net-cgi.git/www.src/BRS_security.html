@@ -8,19 +8,129 @@
 <script language="javascript" type="text/javascript" src="script/brs_hijack.js"></script>
 <% hijack_language() %>
 </head>
+<style>
+.wizard_content_div .wizard_words_div div ul{margin: 10px 0 10px 22px !important; padding-left:0 !important;}
+.wizard_content_div .passwd_hint li img{width:5%;margin-left: -22px;}
+.wizard_content_div span img{width:30px;heigth:30px;}
+.wizard_content_div {width:100%;overflow:auto;position:absolute;top:50px;left:0px;bottom:30px;}
+li {list-style-type:none;}
+</style>
+<body onload="loadvalue();">
 
-<body>
 <% form_submit("apply", "BRS_success.html", "hijack_passwd") %>
 
 <script>
 var ts = "<% cfg_get("hijack_passwd") %>";
 var internet_type = "<% cfg_get("internet_type") %>";
 var internet_ppp_type = "<% cfg_get("internet_ppp_type") %>";
+var wait = 1000;
+var timeoutID = null;
+
+function loadvalue()
+{
+	if(top.security_enhance_flag)
+	{
+		document.getElementById("next").disabled = true;	
+		document.getElementById("next").className = "grey_short_btn";
+		document.getElementById("pwd_warn").src="image/warning_flag.jpg";
+		document.getElementById("passwd_hint_content").style.backgroundImage="url(../image/passwd_bg.jpg)";
+	}
+}
+function debounce() {
+	if(top.security_enhance_flag){
+		clearTimeout(timeoutID);
+		timeoutID = setTimeout(function() {
+	   	validatepassword();
+	  	}, wait);
+	 }
+};
 
 function isValidChar_space(each_char)
 {
 	if( each_char < 32 || each_char > 127)
 		return false;
+}
+function validatepassword()
+{
+	var disabled="image/checkbox-selected-gry.jpg";
+	var enabled="image/checkbox-selected.jpg";
+	var meet_complex=0, meet_len=0,no_same=0;
+	var cf = document.forms[0];
+	var passwd=cf.sysNewPasswd.value;
+	if(passwd == "")
+	{
+		document.getElementById("next").className = "grey_short_btn";
+		cf.next.disabled = true;
+	}
+
+	var re = new RegExp("[a-z]");
+	var len=re.test(passwd);
+	if(len){
+		cf.pwd_complex2.src=enabled;
+		meet_complex++;
+	}else
+		cf.pwd_complex2.src=disabled;
+	re = new RegExp("[A-Z]");
+	len=re.test(passwd);
+	if(len)
+	{
+		cf.pwd_complex1.src=enabled;
+		meet_complex++;
+	}else
+		cf.pwd_complex1.src=disabled;
+	re = new RegExp("[0-9]");
+	len=re.test(passwd);
+	if(len)
+	{
+		cf.pwd_complex3.src=enabled;
+		meet_complex++;
+	}else
+		cf.pwd_complex3.src=disabled;
+	re = new RegExp("((?=[\x21-\x7e]+)[^A-Za-z0-9])");
+	len=re.test(passwd);
+	if(len)
+	{
+		cf.pwd_complex4.src=enabled;
+		meet_complex++;
+	}else
+		cf.pwd_complex4.src=disabled;
+	if(meet_complex>2)
+		cf.pwd_complex.src=enabled;
+	else
+		cf.pwd_complex.src=disabled;
+	
+	if(passwd.length>=6 && passwd.length<=32)
+	{
+		cf.pwd_len.src=enabled;
+		meet_len=1;
+	}else
+		cf.pwd_len.src=disabled;
+
+	re = new RegExp("^.*(.)\\1{2}.*$");
+	len=re.test(passwd);
+	if(!len)
+	{
+		cf.pwd_identical.src=enabled;
+		no_same=1;
+	}else
+		cf.pwd_identical.src=disabled;
+	if(meet_complex>2 && meet_len && no_same){
+		document.getElementById("passwd_hint").style.display="none";
+		cf.pwd_warn.src="image/check.png";
+	}else{
+		document.getElementById("passwd_hint").style.display="";
+		cf.pwd_warn.src="image/warning_flag.jpg";
+	}
+}
+function change_display()
+{
+	if(top.security_enhance_flag)
+	{
+		document.forms[0].next.disabled = "";
+		document.getElementById("next").className = "purple_short_btn";
+		document.forms[0].pwd_warn.style.display="";
+		document.getElementById("passwd_hint").style.display="none";
+	}
 }
 
 function check_pwd_format(str)
@@ -54,10 +164,23 @@ function checkpasswd(cf)
 	}*/
 	if(cf.sysNewPasswd.value == "")
 	{
+		document.getElementById("next").className = "grey_short_btn";
+		cf.next.disabled = true;
 		alert(bh_passwd_not_blank);
 		return false;
 	}
-	
+	if(top.security_enhance_flag && cf.sysNewPasswd.value == "password")
+	{
+		document.getElementById("next").className = "grey_short_btn";
+		cf.next.disabled = true;
+		alert(bh_must_change_passwd);
+		return false;
+	}
+	if(top.security_enhance_flag && cf.sysNewPasswd.value.length < 6)
+	{
+		alert("Your password must contain six or more characters.");
+		return false;
+	}
 	if (cf.sysNewPasswd.value.length >= 33 || cf.sysConfirmPasswd.value.length >= 33)
 	{
 		alert(bh_max_pwd_len);
@@ -135,7 +258,58 @@ function checkpasswd(cf)
 			</TR>
 			<TR>
 				<TD nowrap><script>document.write(bh_new_password);</script></TD>
-				<TD nowrap><input type="password" autocomplete="off" size="20" name="sysNewPasswd" id="sys_new_passwd" onFocus="this.select();" ></TD>
+				<TD nowrap><input type="password" autocomplete="off" size="20" name="sysNewPasswd" id="sys_new_passwd" onFocus="this.select();" class="validate" onkeyup="debounce()" onkeydown="change_display()" >
+					<span><img align="center" id="pwd_warn" src="" style="display:none;"></span>	
+				</TD>
+			</TR>
+
+			<TR id="passwd_hint" class="passwd_hint" style="display:none;">
+				<TD nowrap class="top0"></TD>
+				<TD nowrap class="top0">
+				<div id="passwd_hint_content" style="border-radius:20px;">
+					<ul>
+						<li>
+							<span><script>document.write(bh_passwd_condition);</script></span>
+						</li>
+						<li>
+							<ul>
+								<li>
+									<img id="pwd_len" src="">
+									<span><script>document.write(bh_password_reset_conditions5_1);</script></span>
+								</li>
+								<li>
+									<img id="pwd_identical" src="">
+									<span><script>document.write(bh_password_reset_conditions6);</script></span>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<img id="pwd_complex" src="">
+							<span><script>document.write(bh_password_reset_tip3);</script></span>
+						</li>
+						<li>
+							<ul>
+								<li>
+									<img id="pwd_complex1" src="">
+									<span><script>document.write(bh_password_reset_conditions1);</script></span>
+								</li>
+								<li>
+									<img id="pwd_complex2" src="">
+									<span><script>document.write(bh_password_reset_conditions2);</script></span>
+								</li>
+								<li>
+									<img id="pwd_complex3" src="">
+									<span><script>document.write(bh_password_reset_conditions3);</script></span>
+								</li>
+								<li>
+									<img id="pwd_complex4" src="">
+									<span><script>document.write(bh_password_reset_conditions4);</script></span>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+				</TD>
 			</TR>
 			<TR>
 				<TD nowrap><script>document.write(bh_passwd_repas);</script></TD>

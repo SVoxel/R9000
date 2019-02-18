@@ -12,12 +12,30 @@ boot() {
            wigig down
            wigig up
        fi
+       11k_scan -f &
 }
 
 start()    # don't use this command unless you know what it means
 {
         wlan updateconf
-        wlan up
+        if [ "x$(/bin/config get factory_mode)" = "x1" -a "x$(/bin/config get cal)" = "x0" ]; then
+            wlan down
+            /bin/mv /lib/firmware/QCA9984/hw.1/otp.bin lib/firmware/QCA9984/hw.1/otp123.bin
+            /bin/sync
+            /etc/init.d/qcmbr start
+            /bin/sleep 2 # ensure pcie process is running
+            /sbin/led_all amberon
+        else
+            if [ "x$(/bin/config get factory_mode)" = "x1" ]; then
+                uci set wireless.wlg.ssid=R9000-TP
+                uci set wireless.wla.ssid=R9000-TP
+                uci set wireless.wlg.disablecoext=1
+                uci set wireless.wifi1.channel=6
+                uci commit
+            fi
+            wlan up
+            11k_scan -f &
+        fi
         if [ "x$wig_exist" = "xon" ]; then
             wigig updateconf
             wigig up

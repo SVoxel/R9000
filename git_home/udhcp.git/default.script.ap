@@ -33,6 +33,8 @@ case "$1" in
 			$IFCONFIG $interface down
 			$IFCONFIG $interface $ip $BROADCAST $NETMASK 
 			$IFCONFIG $interface up
+			/etc/init.d/dnsmasq stop
+			/etc/init.d/dnsmasq start
 		fi
 		$CONFIG set ap_dhcp_ipaddr=$ip
 		$CONFIG set ap_dhcp_netmask=$subnet

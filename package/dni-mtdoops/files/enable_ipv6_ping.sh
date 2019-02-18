@@ -4,8 +4,10 @@
 ping6_enable()
 {
 	ipv6_type=`/bin/config get ipv6_type`
-	if [ "$1" == "pppoe" ]; then
+	if [ "ipv6_type" == "pppoe" ]; then
 		wan_if="ppp0"
+	elif [ "ipv6_type" == "6to4" ]; then
+		wan_if="sit1"
 	else
 		wan_if=`/bin/config get wan_ifname`
 	fi

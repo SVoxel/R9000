@@ -33,7 +33,7 @@ define Package/net-wall/install
 	install -m0755 $(PKG_BUILD_DIR)/net-wall-bin $(1)/usr/sbin/
 	install -d -m0755 $(1)/etc
 	install -d -m0755 $(1)/etc/scripts/firewall
-	$(CP) ./files/orange_isp_iptv_firewall.rule $(1)/etc/scripts/firewall
+	#$(CP) ./files/orange_isp_iptv_firewall.rule $(1)/etc/scripts/firewall
 	$(CP) ./files/l7_patten.dat $(1)/etc
 	$(CP) ./files/etc/* $(1)/etc
 endef

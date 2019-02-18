@@ -43,12 +43,13 @@ function loadvalue()
 	if("<% cfg_get("enable_hostapd_debug") %>" === "1")
 		document.forms[8].enable_hostapd_debug.checked = true;
 
-	if("<% cfg_get("enable_11k") %>" == "1")
-		document.forms[9].enable_11k.checked = true;
-	else
-		document.forms[9].enable_11k.checked = false;
+	if("<% cfg_get("enable_11ad_FW_log_collect") %>" === "1")
+		document.forms[9].enable_11ad_FW_log_collect.checked = true;
+  else
+		document.forms[9].enable_11ad_FW_log_collect.checked = false;
 
-	document.forms[10].fan_speed.value = "<% cfg_get("fan_speed") %>";
+  document.forms[10].fan_speed.value = "<% cfg_get("fan_speed") %>";
+
 	refresh_start();
 }
 
@@ -134,13 +135,13 @@ function click_hostapd()
 	cf.action="/apply.cgi?/debug_detail.htm timestamp="+ts;
 	cf.submit();
 }
-function click_11k()
+function click_11ad_FW_log_collect()
 {
 	var cf = document.forms[9];
-	if(cf.enable_11k.checked == true)
-		cf.hid_11k.value = "1";
+	if(cf.enable_11ad_FW_log_collect.checked == true)
+		cf.hid_11ad_FW_log_collect.value = "1";
 	else
-		cf.hid_11k.value = "0";
+		cf.hid_11ad_FW_log_collect.value = "0";
 	cf.action="/apply.cgi?/debug_detail.htm timestamp="+ts;
 	cf.submit();
 }
@@ -269,9 +270,10 @@ function refresh_start()
 <br/>
 <form method="post" action="/apply.cgi?/debug_detail.htm" target="formframe">
 <input type="hidden" name="submit_flag" value="debug_info" />
-<input type="hidden" name="hid_11k" />
-<input type="checkbox" name="enable_11k" onclick="click_11k();"><b>Enable 11k</b>
+<input type="hidden" name="hid_11ad_FW_log_collect" />
+<input type="checkbox" name="enable_11ad_FW_log_collect" onclick="click_11ad_FW_log_collect();"><b>Enable 11AD FW log collect</b>
 </form>
+<br/>
 </div>
 
 <style>

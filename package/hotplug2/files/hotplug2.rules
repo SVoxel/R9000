@@ -51,13 +51,13 @@ ACTION == remove, DEVTYPE ~~ "^disk$", MAJOR is set, MINOR is set {
 }
 
 # Mount a USB flashdisk
-ACTION == add, SUBSYSTEM == block, DEVICENAME ~~ "^sd[a-z][0-9]+$", DEVPATH is set, MAJOR is set, MINOR is set {
+ACTION == add, SUBSYSTEM == block, DEVICENAME ~~ "^sd[a-z][0-9]*$", DEVPATH is set, MAJOR is set, MINOR is set {
 	makedev /dev/%DEVICENAME% 0644
 	run "/sbin/hotplug2.mount %DEVICENAME%"
 }
 
 # Unmount a USB flashdisk
-ACTION == remove, SUBSYSTEM == block, DEVICENAME ~~ "^sd[a-z][0-9]+$", MAJOR is set, MINOR is set {
+ACTION == remove, SUBSYSTEM == block, DEVICENAME ~~ "^sd[a-z][0-9]*$", MAJOR is set, MINOR is set {
 	run "/usr/sbin/detach_afp_shares %DEVICENAME% hotplug2"
 	exec /sbin/hotplug2.umount %DEVICENAME% ;
 }

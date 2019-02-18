@@ -1,6 +1,6 @@
 <% http_header("style/form2.css") %>
 <body>
-<div class="qospage_title">Details</div>
+<div class="qospage_title">$detail</div>
 <div class="main_no_button">
 <table width="100%" border="0" cellpadding="0" cellspacing="0" id="disk_error" style="display:none">
 <tr><td colspan="4">&nbsp;</td></tr>
@@ -42,7 +42,7 @@ else if(errStr == "amz_no_internet")
 <% table_header() %>
 <TR><TD colspan=2 class="spliteline"></TD></TR>
 <tr><td colspan="2">&nbsp;</td></tr>
-<TR><TD colspan=2 align=center><input class="new_sel_dir ui-corner-all" type="button" name="close" value="  Close Window" onClick='window.close();'></TD></TR>  
+<TR><TD colspan=2 align=center><input class="new_sel_dir ui-corner-all" type="button" name="close" value="  $close_win" onClick='window.close();'></TD></TR>  
 </table>
 <script>
 	var amazon_sync = "<% cfg_get("amazon_sync") %>";

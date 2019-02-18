@@ -43,6 +43,9 @@ killall tcpdump
 killall basic_log.sh 
 killall console_log.sh 
 killall wireless_log_detail.sh  
+killall 11ad_fw_log_capture.sh; killall wigig_logcollector
+killall debug_here_log.sh
+killall thermal_log.sh
 
 echo close > /sys/devices/platform/serial8250/console
 
@@ -54,13 +57,19 @@ dd if=/dev/mtd_crashdump of=/tmp/panic_log.txt bs=131072 count=2
 [ -f /tmp/basic_debug_log.txt ] && unix2dos /tmp/basic_debug_log.txt
 [ -f /tmp/wirless_log1.txt ] && unix2dos /tmp/wireless_log1.txt
 [ -f /tmp/wirless_log2.txt ] && unix2dos /tmp/wireless_log2.txt
+[ -f /tmp/thermal-log1.txt ] && unix2dos /tmp/thermal-log1.txt
+[ -f /tmp/thermal-log2.txt ] && unix2dos /tmp/thermal-log2.txt
+[ -e /tmp/radardetect.log ] && RADARLOG=radardetect.log
+
+[ -f /tmp/debug_here_log_1.txt ] && unix2dos /tmp/debug_here_log_1.txt
+[ -f /tmp/debug_here_log_2.txt ] && unix2dos /tmp/debug_here_log_2.txt
 
 collect_log=`cat /tmp/collect_debug`
 
 if [ "x$collect_log" = "x1" ];then
-	zip debug-log.zip  panic_log.txt Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap wireless_log1.txt wireless_log2.txt
+	zip debug-log.zip  panic_log.txt Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap wireless_log1.txt wireless_log2.txt debug_here_log_1.txt debug_here_log_2.txt thermal-log1.txt thermal-log2.txt $RADARLOG
 else
-	zip debug-log.zip NETGEAR_$module_name.cfg  panic_log.txt  Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap wireless_log1.txt wireless_log2.txt
+	zip debug-log.zip NETGEAR_$module_name.cfg  panic_log.txt  Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap wireless_log1.txt wireless_log2.txt debug_here_log_1.txt debug_here_log_2.txt thermal-log1.txt thermal-log2.txt $RADARLOG
 fi
 
 [ -f /tmp/hostapd.log ] && {
@@ -75,9 +84,29 @@ fi
 	wlan down
 	wlan up
 }
+
+logfile_11ad_num=$(ls /tmp/logFile_* | wc -l)
+if [ "x$11ad_logfile_num" != "x0" ]; then
+    logfiles_11ad=$(ls /tmp/logFile_* | xargs)
+    zip debug-log.zip $logfiles_11ad /tmp/hostapd-phy0.log
+    rm -rf /tmp/logFile_*
+fi
+#restore 11ad setting
+/bin/config unset enable_11ad_hostapd_debug
+#start up 11ad watchdog
+/sbin/11ad_linkloss_wd.sh &
+#disable 11ad dynamic debug
+#echo "module wil6210" -p > /sys/kernel/debug/dynamic_debug/control # too many logs leads console to abnormal
+#echo 7 > /proc/sys/kernel/printk
+#restart 11ad
+wigig updateconf
+wigig down
+wigig up
+
 rm -f /tmp/hostapd.log
+rm -f /tmp/.radardetect_lock
 
 cd /tmp
-rm -rf debug-usb debug_cpu debug_wlan debug_flash debug_mem debug_mirror_on debug_session NETGEAR_$module_name.cfg panic_log.txt Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap wireless_log1.txt wireless_log2.txt
+rm -rf debug-usb debug_cpu debug_wlan debug_flash debug_mem debug_mirror_on debug_session NETGEAR_$module_name.cfg panic_log.txt Console-log1.txt Console-log2.txt basic_debug_log.txt lan.pcap wan.pcap wireless_log1.txt wireless_log2.txt debug_here_log_1.txt debug_here_log_2.txt thermal-log1.txt thermal-log2.txt $RADARLOG
 
 echo 0 > /tmp/collect_debug

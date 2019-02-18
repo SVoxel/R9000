@@ -292,6 +292,65 @@ static inline int br_mode_enable(void)
 	return enable;
 }
 
+int read_config_file(char *file)
+{
+	FILE *in;
+	char buffer[64];
+	int i = 0;
+
+	if (!(in = fopen(file, "r"))) {
+		LOG(LOG_ERR, "unable to open config file: %s", file);
+		return 1;
+	}
+
+	fgets(buffer, sizeof(buffer), in);
+	for(i = 0;i<64;i++){
+		if(buffer[i] == '\n'){
+			buffer[i] = '\0';
+			break;
+		}
+	}
+	if (strcmp(buffer, "") == 0) {
+		LOG(LOG_ERR, "hostname config file is empty");
+		return 1;
+	}
+	strcpy(hostname_buff,buffer);
+	fclose(in);
+	return 0;
+}
+
+int hostname_error_handle(char *file)
+{
+	FILE *fq, *fp;
+	char default_name[32] = {0};
+	int i = 0;
+
+	/* get default hostname from /tmp/board_model_id */
+	if (!(fq = fopen("/tmp/board_model_id", "r"))) {
+		LOG(LOG_ERR, "unable to open /tmp/board_model_id file");
+		return 1;
+	}
+	fgets(default_name, sizeof(default_name), fq);
+	for(i = 0; i < sizeof(default_name); i++){
+		if(default_name[i] == '\n'){
+			default_name[i] = '\0';
+			break;
+		}
+	}
+	strcpy(hostname_buff, default_name);
+	fclose(fq);
+
+	/* rewrite hostname config file */
+	fp = fopen(file, "w");
+	if (fp == NULL) {
+		LOG(LOG_ERR, "unable to creat hostname config file: %s", file);
+		return 1;
+	}
+	fprintf(fp, "%s", default_name);
+	fclose(fp);
+	return 0;
+}
+
 /*
  * return:
  *     1  addr free
@@ -369,6 +428,12 @@ int main(int argc, char *argv[])
 		{0, 0, 0, 0}
 	};
 
+	/* get fixed predata for Orange ISP DHCP option 90 */
+	char *prestr = "1a0900000558010341010d";
+	char predata[12] = {0};
+	sscanf(prestr, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x", predata, predata + 1, predata + 2, predata + 3,
+		predata + 4, predata + 5, predata + 6, predata + 7, predata + 8, predata + 9, predata + 10);
+
 	/* get options */
 	char optstr[64] = { [0 ... 63] = 0x00 };
 	strcpy(optstr, "Oac:fbH:h:d:i:np:qr:s:v");
@@ -408,12 +473,16 @@ int main(int argc, char *argv[])
 			break;
 		case 'h':
 		case 'H':
-			len = strlen(optarg) > 255 ? 255 : strlen(optarg);
+			if (read_config_file(optarg)) {
+				LOG(LOG_ERR, "get host name from file: %s error!, run into error handle", optarg);	
+				hostname_error_handle(optarg);
+			}
+			len = strlen(hostname_buff) > 255 ? 255 : strlen(hostname_buff);
 			if (client_config.hostname) free(client_config.hostname);
 			client_config.hostname = xmalloc(len + 2);
 			client_config.hostname[OPT_CODE] = DHCP_HOST_NAME;
 			client_config.hostname[OPT_LEN] = len;
-			strncpy(client_config.hostname + 2, optarg, len);
+			strncpy(client_config.hostname + 2, hostname_buff, len);
 			break;
 		case 'd':
 			len = strlen(optarg) > 255 ? 255 : strlen(optarg);
@@ -475,20 +544,31 @@ int main(int argc, char *argv[])
 #endif
 #ifdef SUPPORT_OPTION_90
 		case 'A':
-			len = strlen(optarg) + strlen("fti/");
+			/*
+			 * Updates with the new system for generating Orange France ISP DHCP option 90.
+			 */
+			if ((orange_flag == 1) && (strstr(optarg, "fti/") == NULL))
+			{
+				len = strlen(optarg) + strlen("fti/") + 11;
+			}
+			else
+			{
+				len = strlen(optarg) + 11;
+			}
 			if (len > 255) len = 255;
 			if (client_config.authentication) free(client_config.authentication);
 			client_config.authentication = xmalloc(len + 12);
 			client_config.authentication[OPT_CODE] = DHCP_AUTHEN;
-			client_config.authentication[OPT_LEN] = len+11;
-			memset(&client_config.authentication[OPT_DATA],0x00,11);
+			client_config.authentication[OPT_LEN] = len + 11;
+			memset(&client_config.authentication[OPT_DATA], 0x00, 22);
+			memcpy(client_config.authentication + OPT_DATA + 11, predata, 11);
 			if ((orange_flag == 1) && (strstr(optarg, "fti/") == NULL)) //search fti
 			{
-			        snprintf(client_config.authentication + OPT_DATA + 11, len + 1, "fti/%s", optarg);
+				snprintf(client_config.authentication + OPT_DATA + 22, len + 1, "fti/%s", optarg);
 			}
 			else
 			{
-				strncpy(client_config.authentication + OPT_DATA + 11, optarg, len);
+				snprintf(client_config.authentication + OPT_DATA + 22, len + 1, "%s", optarg);
 			}
 			break;
 #endif
@@ -633,8 +713,8 @@ int main(int argc, char *argv[])
 					/* send discover packet */
 					/*if ( client_config.apmode != 1 )
 						sleep(5);       */
-
-					set_orange_vlan_egress_priority(0);
+					if (orange_flag == 1)
+						set_orange_vlan_egress_priority(0);
 					send_discover(xid, requested_ip); /* broadcast */
 					
 					timeout = uptime() + (client_config.apmode ? 5 : ((packet_num == 2) ? 4 : 2));
@@ -674,7 +754,8 @@ int main(int argc, char *argv[])
 					/* send request packet */
 					if (state == RENEW_REQUESTED)
 					{
-						set_orange_vlan_egress_priority(0);
+						if (orange_flag == 1)
+							set_orange_vlan_egress_priority(0);
 						send_renew(xid, server_addr, requested_ip); /* unicast */
 					}
 					else send_selecting(xid, server_addr, requested_ip); /* broadcast */
@@ -709,7 +790,8 @@ int main(int argc, char *argv[])
 					timeout = now + (t2 - t1);
 					DEBUG(LOG_INFO, "Entering rebinding state");
 				} else {
-					set_orange_vlan_egress_priority(0);
+					if (orange_flag == 1)
+						set_orange_vlan_egress_priority(0);
 					/* send a request packet */
 					send_renew(xid, server_addr, requested_ip); /* unicast */
 					
@@ -728,7 +810,8 @@ int main(int argc, char *argv[])
 					packet_num = 0;
 					change_mode(LISTEN_RAW);
 				} else {
-					set_orange_vlan_egress_priority(0);
+					if (orange_flag == 1)
+						set_orange_vlan_egress_priority(0);
 					/* send a request packet */
 					send_renew(xid, 0, requested_ip); /* broadcast */
 
@@ -926,7 +1009,8 @@ int main(int argc, char *argv[])
                                                }
                                         }
 #endif
-					set_orange_vlan_egress_priority(1);
+					if (orange_flag == 1)
+					       	set_orange_vlan_egress_priority(1);
 					/* enter bound state */
 					t1 = lease / 2;
 					
@@ -989,12 +1073,14 @@ int main(int argc, char *argv[])
 			}
 			switch (sig) {
 			case SIGUSR1:
-				set_orange_vlan_egress_priority(0);
+				if (orange_flag == 1)
+					set_orange_vlan_egress_priority(0);
 				perform_renew();
 				break;
 			case SIGUSR2:
 				syslog(6, "[Internet disconnected]");
-			   	set_orange_vlan_egress_priority(0);	
+			   	if (orange_flag == 1)
+					set_orange_vlan_egress_priority(0);	
 				perform_release();
 				if (client_config.apmode)
 					run_script(NULL, "runzcip");
@@ -1002,7 +1088,8 @@ int main(int argc, char *argv[])
 			case SIGTERM:
 				LOG(LOG_INFO, "Received SIGTERM");
 				syslog(6, "[Internet disconnected]");
-				set_orange_vlan_egress_priority(0);
+				if (orange_flag == 1)
+					set_orange_vlan_egress_priority(0);
 				/* 
 				 * [NETGEAR Spec 1.6]: It is recommended to send a DHCP RELEASE message to
 				 * the server under the case software shutdown or reboot.

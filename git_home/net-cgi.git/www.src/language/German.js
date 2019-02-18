@@ -644,3 +644,38 @@ tnc_full_terms="<p align='center'><p align='right'> <em>Letzte Änderung:</em> [
 apply_mark="Übernehmen"
 close_win_mark="Fenster schließen"
 
+//BRS_wan_preference.html
+bh_wan_preference="WAN-Port-Voreinstellung"
+bh_wan_port="Internet-Port (1 GBit/s)"
+bh_wan_lan_spf="10G-LAN-SFP+-Port (10 GBit/s)"
+bh_sfp_error1="Fehler: Stellen Sie sicher, dass Ihr SFP+-Modul oder -Kabel an den SFP+Port angeschlossen ist."
+bh_sfp_error2="Fehler: Das Kabel ist nicht mit dem Port verbunden."
+bh_sfp_error3="Fehler: Es kann keine Internetverbindung hergestellt werden."
+bh_sfp_connected="Status: Mit dem Internet verbunden"
+
+//BRS_03C_haveOrange.html
+bh_my_isp="Mein Internet-Provider-Profil"
+bh_login_name="Benutzername"
+bh_orange_login="Anmeldung"
+bh_enable_orange_tv="Orange TV aktivieren"
+bh_orange_pppoe="Orange France PPPoE"
+bh_orange_dhcp="Orange France DHCP"
+bh_orange_france="Orange France"
+
+bh_select_my_isp="Ich möchte meinen Internet-Provider (ISP) aus der Profilliste auswählen."
+bh_must_enter_passwd="Sie müssen ein Passwort eingeben."
+bh_must_change_passwd="Sie können nicht das standardmäßige Administratorpasswort verwenden. Sie müssen das Administratorpasswort ändern."
+bh_passwd_condition="Wir empfehlen, ein Passwort zu wählen, das die folgenden Anforderungen erfüllt:"
+bh_password_reset_conditions5_1="Enthält 6 bis 32 Zeichen"
+bh_password_reset_conditions6="Enthält nicht mehr als zwei identische Zeichen in Folge"
+bh_password_reset_tip3="Zusätzlich empfehlen wir, dass Ihr Passwort drei der folgenden vier Bedingungen erfüllt:"
+bh_password_reset_conditions1="Mindestens ein Großbuchstabe"
+bh_password_reset_conditions2="Mindestens ein Kleinbuchstabe"
+bh_password_reset_conditions3="Mindestens eine Zahl"
+bh_password_reset_conditions4="Mindestens ein Sonderzeichen wie @#&..."
+bh_secure_passwd="Wählen Sie ein sicheres Passwort"
+bh_recommend_passwd_protect="Ihr Administratorpasswort ist nicht sicher Wir empfehlen Ihnen, ein sichereres Passwort zu wählen, das unseren Passwortanforderungen entspricht. Ein sichereres Passwort schützt Ihr Netzwerk vor externen Angriffen."
+bh_orbi_skip_mark="Überspringen"
+bh_password_reset="Router-Passwort wiederhergestellt."
+bh_verify_passwd_reset="Wir haben Ihre Anfrage zum Zurücksetzen des Passworts verifiziert. Geben Sie unten das neue Passwort ein, füllen Sie die anderen Felder aus, und klicken Sie dann auf <b>Weiter</b>."
+

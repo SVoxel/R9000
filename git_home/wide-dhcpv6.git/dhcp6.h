@@ -453,8 +453,8 @@ struct dhcp6opt_auth {
 
 #ifdef NETGEAR_DHCPV6_OPTION16
 	char *dhcp6_duid_mac_addr;
+	char *dhcp6_opt11_key;
 #endif
-
 
 enum { DHCP6_AUTHPROTO_UNDEF = -1, DHCP6_AUTHPROTO_DELAYED = 2,
        DHCP6_AUTHPROTO_RECONFIG = 3 };

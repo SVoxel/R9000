@@ -253,7 +253,7 @@ function loadvalue()
 </TR>
 <TR>
 	<TD nowrap colspan=2 align=center>
-	<pre><textarea style="font-size:14px;overflow-y:auto;" NAME="log_detail" ROWS="20" id="log_detail" cols="120" WRAP="vitural" readonly><% log_message() %></textarea>
+	<pre><textarea style="font-size:14px;overflow-y:auto;white-space:normal;" NAME="log_detail" ROWS="20" id="log_detail" cols="120" WRAP="vitural" readonly></textarea>
 	</pre>
 	</TD>
 </TR>
@@ -338,12 +338,12 @@ $bluebar
 </TR>
 <TR id=logs_16>
 	<TD nowrap colspan=2>
-	<input type="checkbox" name="log_sfp" id="log_sfp" value="1">SFP+ log
+	<input type="checkbox" name="log_sfp" id="log_sfp" value="1">$sfp_log
 	</TD>
 </TR>
 <TR id=logs_17>
 	<TD nowrap colspan=2>
-	<input type="checkbox" name="log_lacp" id="log_lacp" value="1">Link aggregation log
+	<input type="checkbox" name="log_lacp" id="log_lacp" value="1">$link_aggregation_log
 	</TD>
 </TR>
 <TR id=logs_10>
@@ -355,6 +355,29 @@ $bluebar
 </form>
 <script>
 	checkbox_show();
+	function parseHtml(str) {
+		var tmp = '\<script\>location.href=\"index.htm\";\<\/script\>';
+		var new_str = str;
+		new_str = new_str.replace(tmp, '').replace(/\n/, '');
+		new_str = new_str.replace(/<\//g, '&#60;&#47;').replace(/>/g, '&#62;').replace(/</g, '&#60;');
+		return new_str;
+	};
+	function show_log_messages() {
+		var xmlhttp;
+		if (window.XMLHttpRequest)
+			xmlhttp=new XMLHttpRequest();
+		else
+			xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+		xmlhttp.onreadystatechange = function() {
+			if (xmlhttp.readyState == 4 && xmlhttp.status == 200 ) {
+				document.getElementById('log_detail').innerHTML = parseHtml(xmlhttp.responseText);
+				document.getElementById('log_detail').style['white-space'] = 'pre-wrap';
+			}
+		};
+		xmlhttp.open("GET","/log_messages.aspx",true);
+		xmlhttp.send();
+	};
+	show_log_messages();
 </script>
 </body>
 </html>

@@ -22,6 +22,10 @@ define Package/net-cgi
   TITLE:=The mini_httpd CGI interface
 endef
 
+define Package/net-cgi/config
+  source "$(SOURCE)/Config.in"
+endef
+
 define Build/Prepare
 	$(CP) $(GIT_HOME)/net-cgi.git/* $(PKG_BUILD_DIR)/
 endef

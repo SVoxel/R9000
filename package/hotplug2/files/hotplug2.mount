@@ -4,6 +4,7 @@ DISK_FIND_TABLE=/tmp/find_disk_abcxzy
 USB_MAP_TABLE=/tmp/plexmediaserver/.usb_map_table
 USB_MAP_NEW=/tmp/plexmediaserver/.usb_map_latest_mount_point
 USB_MOUNT_POINT="sda,sdb,sdc,sdd,sde,sdf,sdg,sdh,sdi,sdj,sdk,sdl,sdm,sdn,sdo"
+TMP_LOCK_MAP_TABLE=/tmp/tmp_lock_map_table
 download_state="$(/bin/config get green_download_enable)"
 download_start() {
 	sleep 2
@@ -88,6 +89,10 @@ fi
 
 #serial : mount point : device name 
 sd=`echo $1 |cut -b 1-3`
+sd_num=`cat /proc/partitions |grep $sd |wc -l`
+if [ $sd_num -ne 1 -a "$sd" = "$1" ];then
+	exit 1
+fi
 usb_num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $1}'`
 last_num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $4}'`
 usb_serial0="`cat /proc/scsi/usb-storage/$usb_num |grep "Serial" |awk '{print $NF}'`"
@@ -96,6 +101,16 @@ if [ "x$last_num" != "x" -a "x$last_num" != "x0" ]; then
 else
 	usb_serial=$usb_serial0
 fi
+while true;do
+	if [ -f $TMP_LOCK_MAP_TABLE -o -s $USB_LOCK_MAP_TABLE ];then
+		sleep 1
+	else
+		touch $TMP_LOCK_MAP_TABLE
+		break
+	fi
+done
+sync
+
 if [ ! -f $USB_MAP_TABLE -o ! -s $USB_MAP_TABLE ]; then
     echo "$usb_serial,sda,$sd" > $USB_MAP_TABLE
 	mount_point=sda
@@ -128,7 +143,14 @@ else
 fi
 uniq $USB_MAP_TABLE >/tmp/usb_map_table
 cp -rf /tmp/usb_map_table $USB_MAP_TABLE
-mount_part=$mount_point$(echo $1 |cut -b 4-)
+sync
+rm -f $TMP_LOCK_MAP_TABLE
+sync
+mount_part_num=`echo $1 |cut -b 4-`
+if [ "x$sd_num" = "x1" ];then
+	mount_part_num=0
+fi
+mount_part=$mount_point$mount_part_num
 if [ -d /mnt/$mount_part ]; then
 	fuser -m /tmp/mnt/$mount_part |xargs kill -9 2>/dev/null
 	umount /tmp/mnt/$mount_part
@@ -200,6 +222,7 @@ if [ "x$(parted -s /dev/`echo $1 | sed 's/[0-9]//g'` print noshare | grep $1)" =
 		mount  /dev/$1 /mnt/$mount_part
 		if [ $? -ne 0 ]; then
 			rmdir /mnt/$mount_part
+			exit 1
 			if [ ! -z "$partition_label" ]; then
 				rm -f /mnt/$partition_label
 			fi

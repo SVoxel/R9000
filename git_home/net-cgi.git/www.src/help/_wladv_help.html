@@ -28,7 +28,14 @@ $h_wladv
 			document.write("$h_wladv_mimo");
 
 		if(top.support_ht160_flag == 1)
+		{
 			document.write("$h_wladv_ht160");
+			document.write("$enable_160MHz_bandwidth");
+		}
+		if(top.enable_11k_flag  == 1)
+		{
+			document.write("$enable_smart_roaming");
+		}
 </script>
 </body>
 </html>

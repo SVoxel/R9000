@@ -508,21 +508,23 @@ enable_mac80211() {
 		esac
 	done
 
-	[ -n "$start_hostapd" ] && {
-		hostapd -P /var/run/wifi-$phy.pid -B /var/run/hostapd-$phy.conf || {
-			echo "Failed to start hostapd for $phy"
-			return
-		}
-		sleep 2
+    if [ -n "$start_hostapd" ]; then
+        if [ "x$(/bin/config get enable_11ad_hostapd_debug)" = "x1" ]; then
+            hostapd -P /var/run/wifi-$phy.pid -dd /var/run/hostapd-$phy.conf -f /tmp/hostapd-phy0.log &
+        else
+            hostapd -P /var/run/wifi-$phy.pid -B /var/run/hostapd-$phy.conf
+            [ "x$(echo $?)" != "x0" ] && echo "Failed to set up hostapd for phy0" && return
+        fi
+        sleep 2
 
-		for vif in $vifs_mac80211; do
-			config_get mode "$vif" mode
-			config_get ifname "$vif" ifname
-			[ "$mode" = "ap" ] || continue
-			hostapd_ctrl="${hostapd_ctrl:-/var/run/hostapd-$phy/$ifname}"
-			mac80211_start_vif "$vif" "$ifname"
-		done
-	}
+        for vif in $vifs_mac80211; do
+            config_get mode "$vif" mode
+            config_get ifname "$vif" ifname
+            [ "$mode" = "ap" ] || continue
+            hostapd_ctrl="${hostapd_ctrl:-/var/run/hostapd-$phy/$ifname}"
+            mac80211_start_vif "$vif" "$ifname"
+        done
+    fi
 
 	for vif in $vifs_mac80211; do
 		config_get mode "$vif" mode
@@ -739,8 +741,10 @@ wigigtoggle_mac80211()
 	local gui_radio_state="$3"
 
 	if [ "$old_hw_btn_state" = "on" -a "$gui_radio_state" = "on" ]; then
+		uci set wigig.${device}.disabled=1; uci commit wigig
 		disable_mac80211 "$device"
 	elif [ "$old_hw_btn_state" = "off" -a "$gui_radio_state" = "on" ]; then
+		uci set wigig.${device}.disabled=0; uci commit wigig
 		enable_mac80211 "$device"
 	fi
 }

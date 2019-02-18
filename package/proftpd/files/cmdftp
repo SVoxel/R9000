@@ -728,10 +728,14 @@ scan_sharefoler_in_this_disk() #$1: dev $2: vendor $3: volume $4:label $5:disk_i
 				fi
 		                usb_map_info=$(sed -n "/^$usb_serial,sd[a-o],sd[a-o]$/p" $USB_MAP_TABLE)
 		                if [ "x$usb_map_info" = "x" ];then
+                		    let j=$j+1
 		                    continue
 		                fi
 		                mount_name=`echo $usb_map_info |awk -F"," '{print $2}'`
 		                part_num=`echo $1 |cut -b 4-`
+				if [ "x$part_num" = "x" ];then
+					part_num="0"
+				fi
 		                mount1 "$mount_name$part_num" "$relative_path" "$sharename" ftpadmin 0 
 	                fi
 		fi

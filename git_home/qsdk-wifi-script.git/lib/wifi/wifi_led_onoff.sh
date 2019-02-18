@@ -137,8 +137,7 @@ off_led_qcawifi () {
 	ANTENNA_LED_ON="echo 1 > /proc/simple_config/antenna_led"
 	ANTENNA_LED_OFF="echo 0 > /proc/simple_config/antenna_led"
     
-    CURRENT_GUEST_STATUS=`dniconfig get guest_status` 
-    [ "${CURRENT_GUEST_STATUS}" = "1" ] && eval ${GUEST_WIFI_LED_ON} || eval ${GUEST_WIFI_LED_OFF}
+    eval ${GUEST_WIFI_LED_OFF}
     [ "$is_guest" = "1" ] && return
 
 	if eval "type config_get_$CONFIGS" 2>/dev/null >/dev/null; then

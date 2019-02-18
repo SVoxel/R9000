@@ -51,7 +51,8 @@ upnp_start() {
 	local opmode=$($config get i_opmode)
 	local non_igd=0
 	if [ "$opmode" = "apmode" -o "$opmode" = "brmode" ] || \
-		[ "$opmode" = "normal" -a "$upnp_enable" != "1" ]; then
+		[ "$opmode" = "normal" -a "$upnp_enable" != "1" ] || \
+		    [ "$opmode" = "vlan" -a "$upnp_enable" != "1" ]; then
 		non_igd=1
 	fi
 

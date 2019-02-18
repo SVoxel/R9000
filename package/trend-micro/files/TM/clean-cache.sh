@@ -7,9 +7,9 @@ run_cleancache()
 }
 
 # program monitor # 
-while [ true ];
-do
+#while [ true ];
+#do
   run_cleancache
-  sleep 600;
-done
+#  sleep 600;
+#done
 

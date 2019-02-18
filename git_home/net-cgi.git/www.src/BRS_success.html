@@ -65,9 +65,11 @@ function to_success()
 
 function location_to_OS()
 {
+	/*
 	if(is_Mac_Win == "Mac" || is_Mac_Win.indexOf("Win") != -1)
 		location.href="BRS_hdd_download.htm";
 	else
+	*/
 		to_success();
 }
 </script>
@@ -199,14 +201,6 @@ function location_to_OS()
 			<div style="clear:both"></div>
 		</div>
 
-		<div id="admin_passwd">
-			<div class="left_div"><span style="font-weight:bold; text-decoration:underline;"><script>document.write(bh_router_admin)</script></span></div>
-			<div class="right_div"></div>
-			<div class="left_div"><script>document.write(bh_admin_user_name)</script></div>
-			<div class="right_div"><% cfg_get("http_username") %></div>
-			<div class="left_div"><script>document.write(bh_new_admin_passwd)</script></div>
-			<div class="right_div"><% cfg_sed_xss("http_passwd") %></div>
-		</div>
 	</div>
 	
 	<div id="buttons_div_02" class="wizard_buttons_div" align="center">

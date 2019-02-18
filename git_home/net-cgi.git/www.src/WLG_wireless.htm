@@ -86,6 +86,7 @@ var guest_network_user="<% judge_guest_user() %>";
 var enable_ht160 = "<% cfg_get("wla_ht160") %>";
 var smart_connect_flag = parent.smart_connect_flag;
 var get_smart_connect = "<% cfg_get("enable_smart_connect") %>";
+var get_sec_channel = "<% cfg_get("wla_sec_channel") %>";
 </script>
 <input type="hidden" name="hidden_wlan_mode">
 <input type="hidden" name="hidden_wlan_channel">
@@ -121,6 +122,7 @@ var get_smart_connect = "<% cfg_get("enable_smart_connect") %>";
 <input type="hidden" name="qca_wireless_region">
 <input type="hidden" name="wl_hidden_wlan_channel">
 <input type="hidden" name="wla_hidden_wlan_channel">
+<input type="hidden" name="wla_hidden_sec_channel" value="-1">
 <input type="hidden" name="wla_hidden_sel_dfs" value="0">
 <input type="hidden" name="wl_hidden_wlan_mode">
 <input type="hidden" name="wla_hidden_wlan_mode">
@@ -206,7 +208,7 @@ else if(an_router_flag == 1)
 </script>
 $bluebar
 <TR>
-	<TD colspan=2><input type="checkbox" name="enable_smart_connect" id="enable_smart_connect" onchange="handle_samrt_connect()">Enable Smart Connect - Let the router intelligently select the best WiFi band 2.4GHz or 5GHz for your WiFi connections. Smart Connect requires the 2.4GHz and 5GHz networks to use the same WiFi network name (SSID), security options and password.</TD>
+	<TD colspan=2><input type="checkbox" name="enable_smart_connect" id="enable_smart_connect" onchange="handle_samrt_connect()">$enable_smart_conn_tip</TD>
 <script>
 var endis_wl_radio="<% enable_ap_orNot("bgn") %>";
 if(endis_wl_radio == '0' )
@@ -577,7 +579,7 @@ $bluebar
 	}
 	else
 	{
-		document.write('<select name="w_channel_an" id="wireless_channel_an" size="1">');
+		document.write('<select name="w_channel_an" id="wireless_channel_an" size="1" onchange="get_sec_channel = this.value; chgChA(2);">');
 		if(dfs_channel_router_flag == 1 && parent.auto_5g_chennel_flag == 1)
 			document.write("<option selected value=0>Auto</option> ");
 		document.write('<option value=36>36</option>');
@@ -592,6 +594,12 @@ $bluebar
 		document.write('</select>');
 	}
 </script>
+	</TD>
+</TR>
+<TR id="sec_channel_tr" style="display:none;"> 
+	<TD nowrap width=35%>Secondary VHT80 channel:</TD>
+	<TD nowrap>
+		<select name="w_channel_an_sec" id="w_channel_an_sec" size="1" onchange="get_sec_channel = this.value; chgChA(2);"></select>
 	</TD>
 </TR>
 <TR> 
@@ -1166,6 +1174,10 @@ function loadvalue()
 			form.w_channel_an.value = channel_a;
 			if(form.w_channel_an.selectedIndex == -1)
 				form.w_channel_an.options[0].selected = true;
+			setAChannel(form.w_channel_an);	
+			form.w_channel_an_sec.value = get_sec_channel;
+			if(form.w_channel_an_sec.options.length !== 0 && form.w_channel_an_sec.selectedIndex == -1)
+				form.w_channel_an_sec.options[0].selected = true;
 		}
 
 		str_none_an=getObj("none_an").innerHTML;

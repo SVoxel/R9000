@@ -85,12 +85,19 @@ checkUSBandFolder() # $1:folder name $2:usb serial number $3:usb path
 
 		local dev_info=`sed -n "/,$sd,sd[a-o]/p" $USB_MAP_TABLE` 
 		local dev=`echo $dev_info |awk -F"," '{print $3}'`
-		local num=`ls /sys/block/$dev/device/scsi_device |awk -F ":" '{print $1}'`
-		local last_num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $4}'`
+
+                if [ -d /sys/block/$sd/device/scsi_device ]; then
+                        local num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $1}'`
+                        local last_num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $4}'`
+                elif [ -d /sys/block/$dev/device/scsi_device ]; then
+                        local num=`ls /sys/block/$dev/device/scsi_device |awk -F ":" '{print $1}'`
+                        local last_num=`ls /sys/block/$dev/device/scsi_device |awk -F ":" '{print $4}'`
+                fi
+
 		local serial0=`cat /proc/scsi/usb-storage/$num |grep "Serial" |awk '{print $NF}'`
 		local serial=$serial0
 		if [ "x$last_num" != "x" -a "x$last_num" != "x0" ]; then
-			serial = $serial0$last_num
+			serial=$serial0$last_num
 		fi
 		echo "TESTE $serial $2"
 		[ "x$serial" != "x$2" ] && continue
@@ -170,7 +177,7 @@ check()
 		fi
 	else
 		config set drive_folder_invalid=1
-		config set backup_error_other="[Cloud Backup]Your selected folder is invalid now"
+		config set backup_error_other="invalid_folder"
 		config set amazon_sync=-3
 	fi
 }
@@ -210,12 +217,19 @@ nusb_mount() #1:sd**
 	local sd=`echo $1 |cut -b '1-3'`
 	local dev_info=`sed -n "/,$sd,sd[a-o]/p" $USB_MAP_TABLE` 
 	local dev=`echo $dev_info |awk -F"," '{print $3}'`
-	local num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $1}'`
-	local last_num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $4}'`
+
+       	if [ -d /sys/block/$sd/device/scsi_device ]; then
+        	local num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $1}'`
+                local last_num=`ls /sys/block/$sd/device/scsi_device |awk -F ":" '{print $4}'`
+	elif [ -d /sys/block/$dev/device/scsi_device ]; then
+		local num=`ls /sys/block/$dev/device/scsi_device |awk -F ":" '{print $1}'`
+                local last_num=`ls /sys/block/$dev/device/scsi_device |awk -F ":" '{print $4}'`
+        fi
+
 	local serial0=`cat /proc/scsi/usb-storage/$num |grep "Serial" |awk '{print $NF}'`
 	local serial=$serial0
 	if [ "x$last_num" != "x" -a "x$last_num" != "x0" ]; then
-		serial = $serial0$last_num
+		serial=$serial0$last_num
 	fi
 	#if [ $serial = $usb_serial ] && [ "$sd_num" = "`echo $usbPath |cut -b 13`" ]; then
     if [ $serial = $usb_serial ]; then

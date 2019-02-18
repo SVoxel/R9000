@@ -644,3 +644,38 @@ tnc_full_terms="<p align='center'><p align='right'> <em>最后更新：</em> [20
 apply_mark="应用"
 close_win_mark="关闭窗口"
 
+//BRS_wan_preference.html
+bh_wan_preference="广域网端口偏好"
+bh_wan_port="互联网端口 (1 Gbps)"
+bh_wan_lan_spf="10G LAN SFP+ 端口 (10 Gbps)"
+bh_sfp_error1="错误：确保 SFP+ 模块或电缆已连接到 SFP+ 端口。"
+bh_sfp_error2="错误：电缆尚未连接到端口。"
+bh_sfp_error3="错误：无法建立互联网连接。"
+bh_sfp_connected="状态：已连接到互联网"
+
+//BRS_03C_haveOrange.html
+bh_my_isp="我的 ISP 资料"
+bh_login_name="注册名"
+bh_orange_login="登录"
+bh_enable_orange_tv="启用 Orange TV"
+bh_orange_pppoe="Orange France PPPoE"
+bh_orange_dhcp="Orange France DHCP"
+bh_orange_france="Orange France"
+
+bh_select_my_isp="我想从配置文件列表中选择互联网服务提供商 (ISP)。"
+bh_must_enter_passwd="必须输入密码。"
+bh_must_change_passwd="您不能使用默认管理员密码。您必须更改管理员密码。"
+bh_passwd_condition="建议您的密码符合以下条件："
+bh_password_reset_conditions5_1="包含 6 至 32 个字符"
+bh_password_reset_conditions6="一行包含的相同字符不多于两个"
+bh_password_reset_tip3="此外，建议您的密码符合以下四个条件中的三个条件："
+bh_password_reset_conditions1="至少一个大写字符"
+bh_password_reset_conditions2="至少一个小写字符"
+bh_password_reset_conditions3="至少一个数字"
+bh_password_reset_conditions4="至少一个特殊字符，例如 @#&..."
+bh_secure_passwd="保护您的密码"
+bh_recommend_passwd_protect="您的管理员密码不安全。建议更改密码以提高密码强度，从而符合我们的密码要求。高强度密码可以保护您的网络抵御外部威胁。"
+bh_orbi_skip_mark="跳过"
+bh_password_reset="路由器密码重置"
+bh_verify_passwd_reset="我们已验证您的密码重置请求。在下面输入新密码，完成其他字段，然后单击<b>下一步</b>按钮。"
+

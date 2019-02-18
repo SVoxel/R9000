@@ -102,7 +102,7 @@ char *ctlport = DEFAULT_CLIENT_CONTROL_PORT;
 #define DEFAULT_KEYFILE SYSCONFDIR "/dhcp6cctlkey"
 #define CTLSKEW 300
 
-static int orange_flag = 0;
+extern int orange_flag;
 static char *conffile = DHCP6C_CONF;
 
 static const struct sockaddr_in6 *sa6_allagent;
@@ -120,7 +120,6 @@ static char *user_class_data = NULL;
 static char *user_domain_data = NULL;
 #ifdef NETGEAR_DHCPV6_OPTION16
 static char *dhcp6_opt16 = NULL;
-static char *dhcp6_opt11_key = NULL;
 #endif
 static int duid_type = 1;
 char *hardware_if = NULL;
@@ -2181,9 +2180,10 @@ client6_send(ev)
 	dh6 = (struct dhcp6 *)buf;
 	memset(dh6, 0, sizeof(*dh6));
 
-	if((ev->state == DHCP6S_SOLICIT) ||
-	    (ev->state == DHCP6S_RENEW) || 
-	    (ev->state == DHCP6S_RELEASE))
+	if(((ev->state == DHCP6S_SOLICIT) ||
+		(ev->state == DHCP6S_RENEW) || 
+		(ev->state == DHCP6S_RELEASE)) &&
+		(orange_flag == 1))
 	{
 		set_orange_vlan_egress_priority(0);
 	}
@@ -2949,7 +2949,8 @@ client6_recvreply(ifp, dh6, len, optinfo)
 		return (-1);
 	}
 
-	set_orange_vlan_egress_priority(1);
+	if (orange_flag == 1)
+		set_orange_vlan_egress_priority(1);
 
 	/* A Reply message must contain a Server ID option */
 	if (optinfo->serverID.duid_len == 0) {
@@ -3435,9 +3436,19 @@ set_auth(ev, optinfo)
 	optinfo->authrdm = authparam->authrdm;
 
 #ifdef NETGEAR_DHCPV6_OPTION16
-	if (dhcp6_opt11_key && strlen(dhcp6_opt11_key))
+	if (orange_flag == 1)
 	{
-		strncpy(optinfo->auth_info, dhcp6_opt11_key, strlen(dhcp6_opt11_key));
+		/* get fixed predata for Orange ISP DHCPv6 option 11 */
+		char *prestr = "1a0900000558010341010d";
+		char predata[12] = {0};
+		sscanf(prestr, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x", predata, predata + 1, predata + 2, predata + 3,
+				predata + 4, predata + 5, predata + 6, predata + 7, predata + 8, predata + 9, predata + 10);
+
+		if (dhcp6_opt11_key && strlen(dhcp6_opt11_key))
+		{
+			memcpy(optinfo->auth_info, predata, 11);
+			memcpy(optinfo->auth_info + 11, dhcp6_opt11_key, strlen(dhcp6_opt11_key));
+		}
 	}
 #endif	
 	switch (authparam->authproto) {

@@ -5,14 +5,18 @@ var support_wan_preference = parent.parent.support_wan_preference;
 </HEAD>
 $h_BAS_ether
 <script>
+	var newNode0 = document.createElement("p");
+	newNode0.innerHTML = "<b>DHCP Option</b></p><p>An additional DHCP option can be used to exchange some useful information between the DHCP server and DHCP client. It can also be used to obtain configuration parameters from the DHCP server.</p><p><b>Client Identifier String (Option 61)</b></p><p>This option is used by DHCP clients to specify a unique client identifier while performing a 4-way handshake. Enter the client identifier string, as indicated by your Internet service provider (ISP). If your ISP did not provide you with a client identifier string, leave this field blank.";
+	var orgNode = document.getElementsByTagName("p")[30];
+	orgNode.insertAdjacentElement("afterEnd", newNode0);
 	if(support_wan_preference == 1) {
 	var newNode = document.createElement("p");
-	newNode.innerHTML = "<b>WAN Port Preference:</b>";
+	newNode.innerHTML = "<b>$wan_preference:</b>";
 	var ques = document.getElementsByName("question")[0];
 	ques.insertAdjacentElement("afterEnd", newNode);
 
 	var newNode2 = document.createElement("p");
-	newNode2.innerHTML = "This feature allows you to configure your router to use either the Internet port or the 10G LAN SFP+ port for its Internet connection. By default, your router is configured to use the Internet port for its Internet connection. To change the WAN port preference, select a WAN port preference radio button and click the <b>Apply</b> button. The WAN Port Preference status displays on ADVANCED dashboard.";
+	newNode2.innerHTML = "$wan_preference_help";
 	newNode.insertAdjacentElement("afterEnd", newNode2);}
 </script>
 </HTML>

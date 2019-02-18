@@ -104,6 +104,7 @@ struct in6_ifreq {
 
 int foreground;
 int debug_thresh;
+int orange_flag = 0;
 
 #ifdef NETGEAR_reconfig
 int reconfig_phase;
@@ -2490,14 +2491,14 @@ dhcp6_set_options(type, optbp, optep, optinfo)
 	}
 
 #ifdef NETGEAR_DHCPV6_OPTION16
-	if (strlen(optinfo->auth_info))
+	if ((orange_flag == 1) && dhcp6_opt11_key && strlen(dhcp6_opt11_key))
 	{
 		 struct dhcp6opt_auth *auth = NULL;   
 		 int authlen = 0;
 		 char *authinfo = NULL;
 
 		 authlen = sizeof(*auth); 
-		 authlen += strlen(optinfo->auth_info);  
+		 authlen += strlen(dhcp6_opt11_key) + 11;  
 		 if ((auth = malloc(authlen)) == NULL)  
 		 {
 		 	goto fail;
@@ -2507,7 +2508,7 @@ dhcp6_set_options(type, optbp, optep, optinfo)
 		 auth->dh6_auth_alg = 0; 
 		 auth->dh6_auth_rdm = 0;
 		 authinfo = (char *)(auth + 1);
-		 memcpy(authinfo, optinfo->auth_info, strlen(optinfo->auth_info));  
+		 memcpy(authinfo, optinfo->auth_info, strlen(dhcp6_opt11_key) + 11);  
 		 if (copy_option(DH6OPT_AUTH, authlen - 4, &auth->dh6_auth_proto, &p, optep, &len) != 0)
 		 {
 		 	free(auth);     

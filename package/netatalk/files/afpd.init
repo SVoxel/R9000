@@ -22,7 +22,13 @@ start()
 	update_afp 
 
 # FIXME: start sending WOL packet periodically
-   /usr/sbin/check_time_machine &
+	cnt=`ps | grep check_time_machine | grep -v grep | wc -l`
+	#echo "cnt=$cnt" > /dev/console
+	if [ $cnt -ne 0 ]; then
+		echo "check_time_machine process is already running.... " > /dev/console
+	else
+		/usr/sbin/check_time_machine &
+	fi
 }
 
 stop()

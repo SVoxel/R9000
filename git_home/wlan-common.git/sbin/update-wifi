@@ -103,6 +103,7 @@ generate_channel()
         uci set wireless.${g_device}.channel=${wl_value}
     elif [ "$1" = "wla" ]; then
         uci set wireless.${a_device}.channel=${wl_value}
+        #uci set wireless.${a_device}.set_ch_144=3
     elif [ "$1" = "wig" ]; then
         uci set wigig.${wig_device}.channel=${wl_value:-2}
     fi
@@ -303,7 +304,7 @@ generate_wps_device_name()
         return;
     fi
 
-    wl_device_name="`echo $wps_device_name`(Wireless AP)"
+    wl_device_name="$(echo $wps_device_name | cut -c 1-19)(Wireless AP)"
 
     uci set wireless.${1}.wps_device_name="${wl_device_name}"
 }
@@ -483,10 +484,10 @@ generate_protocol_setting()
     else
         uci set wireless.${1}.wmm=0
     fi
-    if [ "$wl_country_ie_value" = "on" ]; then
-        uci set wireless.${1}.countryie=1
-    else
+    if [ "$wl_country_ie_value" = "off" ]; then
         uci set wireless.${1}.countryie=0
+    else
+        uci set wireless.${1}.countryie=1
     fi
     case "$wl_preamble_value" in
         *long*)
@@ -771,16 +772,10 @@ generate_hostapd_debug_level()
 if [ "$update_conf" = "wifi" -o "$update_conf" = "all" ]; then
     # config driver parameters
     uci set wireless.qcawifi=qcawifi
-    if [ "$wlg_super_wifi" == "1" ]; then
-    	uci set wireless.qcawifi.wl_tpscale=-1
-    else
-    	uci set wireless.qcawifi.wl_tpscale=0
-    fi
-    if [ "$wla_super_wifi" == "1" ]; then
-    	uci set wireless.qcawifi.wla_tpscale=-1
-    else
-        uci set wireless.qcawifi.wla_tpscale=0
-    fi
+
+    [ -n "$wlg_power_limit" ] && uci set wireless.qcawifi.wl_power_limit=${wlg_power_limit}
+    [ -n "$wla_power_limit" ] && uci set wireless.qcawifi.wla_power_limit=${wla_power_limit}
+
     uci set wireless.qcawifi.wepreload=0
     if [ "$wlg_exist" = "on" ]; then
         uci set wireless.${g_device}=wifi-device
@@ -855,7 +850,7 @@ if [ "$update_conf" = "wifi" -o "$update_conf" = "all" ]; then
         generate_ssid "wla"
         generate_hide_ssid "wla"
         generate_puren "wla"
-        generate_doth "wla"
+        uci set wireless.wla.doth=1
         generate_disablecoext "wla"
         generate_security "wla"
 	generate_rrm "wla"
@@ -900,10 +895,12 @@ if [ "$update_conf" = "wifi" -o "$update_conf" = "all" ]; then
         uci set wireless.wla_guest.bridge=${wla_guest_bridge}
         uci set wireless.wla_guest.vlan_pri=${wla_guest_priority}
         assign_vap_option "wla_guest"
+        generate_cfreq2 "wla_guest"
         generate_mode "wla_guest"
         generate_ssid "wla_guest"
         generate_security "wla_guest"
 	generate_rrm "wla_guest"
+        uci set wireless.wla_guest.doth=1
         generate_hide_ssid "wla_guest"
         generate_protocol_setting "wla_guest"
         generate_acl "wla_guest"

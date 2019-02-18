@@ -1,36 +1,43 @@
 #! /bin/sh
 
+CONFIG="/bin/config"
+local orange_vlan_enable_bridge=$($CONFIG get enable_orange)
+
 case $1 in
 	"start")
-		iptables -D INPUT -p 2 -i brotv -j ACCEPT
-		iptables -I INPUT 7 -p 2 -i brotv -j ACCEPT
-		iptables -D INPUT -i brotv -j brwan_in
-		iptables -I INPUT 9 -i brotv -j brwan_in
-		iptables -D FORWARD -p udp -i brotv -o br0 -d 224.0.0.0/4 -j ACCEPT
-		iptables -I FORWARD 1 -p udp -i brotv -o br0 -d 224.0.0.0/4 -j ACCEPT
-		iptables -D FORWARD -p udp --dport 5000 -i br0 -o brotv -j ACCEPT
-		iptables -I FORWARD 1 -p udp --dport 5000 -i br0 -o brotv -j ACCEPT
-		iptables -D FORWARD -p tcp --dport 8554 -i br0 -o brotv -j ACCEPT
-		iptables -I FORWARD 1 -p tcp --dport 8554 -i br0 -o brotv -j ACCEPT
-		iptables -D FORWARD -p tcp --dport 443 -i br0 -o brotv -j ACCEPT
-		iptables -I FORWARD 1 -p tcp --dport 443 -i br0 -o brotv -j ACCEPT
-		iptables -D OUTPUT  -p 2 -o brotv -j ACCEPT
-		iptables -I OUTPUT 1 -p 2 -o brotv -j ACCEPT
-		iptables -t nat -D POSTROUTING -o brotv -j brwan_masq
-		iptables -t nat -A POSTROUTING -o brotv -j brwan_masq
-		iptables -t nat -D PREROUTING -p udp -i brotv -d 224.0.0.0/4 -j ACCEPT
-		iptables -t nat -A PREROUTING -p udp -i brotv -d 224.0.0.0/4 -j ACCEPT	
+		if [ "$orange_vlan_enable_bridge" = "1" ]; then
+			iptables -D INPUT -p 2 -i brotv -j ACCEPT
+			iptables -I INPUT 7 -p 2 -i brotv -j ACCEPT
+			iptables -D INPUT -i brotv -j brwan_in
+			iptables -I INPUT 9 -i brotv -j brwan_in
+			iptables -D FORWARD -p udp -i brotv -o br0 -d 224.0.0.0/4 -j ACCEPT
+			iptables -I FORWARD 1 -p udp -i brotv -o br0 -d 224.0.0.0/4 -j ACCEPT
+			iptables -D FORWARD -p udp --dport 5000 -i br0 -o brotv -j ACCEPT
+			iptables -I FORWARD 1 -p udp --dport 5000 -i br0 -o brotv -j ACCEPT
+			iptables -D FORWARD -p tcp --dport 8554 -i br0 -o brotv -j ACCEPT
+			iptables -I FORWARD 1 -p tcp --dport 8554 -i br0 -o brotv -j ACCEPT
+			iptables -D FORWARD -p tcp --dport 443 -i br0 -o brotv -j ACCEPT
+			iptables -I FORWARD 1 -p tcp --dport 443 -i br0 -o brotv -j ACCEPT
+			iptables -D OUTPUT  -p 2 -o brotv -j ACCEPT
+			iptables -I OUTPUT 1 -p 2 -o brotv -j ACCEPT
+			iptables -t nat -D POSTROUTING -o brotv -j brwan_masq
+			iptables -t nat -A POSTROUTING -o brotv -j brwan_masq
+			iptables -t nat -D PREROUTING -p udp -i brotv -d 224.0.0.0/4 -j ACCEPT
+			iptables -t nat -A PREROUTING -p udp -i brotv -d 224.0.0.0/4 -j ACCEPT	
+		 fi
 		;;
 	"stop")
-		iptables -D INPUT -p 2 -i brotv -j ACCEPT
-		iptables -D INPUT -i brotv -j brwan_in
-		iptables -D FORWARD -p udp -i brotv -o br0 -d 224.0.0.0/4 -j ACCEPT
-		iptables -D FORWARD -p udp --dport 5000 -i br0 -o brotv -j ACCEPT
-		iptables -D FORWARD -p tcp --dport 8554 -i br0 -o brotv -j ACCEPT
-		iptables -D FORWARD -p tcp --dport 443 -i br0 -o brotv -j ACCEPT
-		iptables -D OUTPUT -p 2 -o brotv -j ACCEPT
-		iptables -t nat -D POSTROUTING -o brotv -j brwan_masq
-		iptables -t nat -D PREROUTING -p udp -i brotv -d 224.0.0.0/4 -j ACCEPT
+		if [ "$orange_vlan_enable_bridge" = "1" ]; then
+			iptables -D INPUT -p 2 -i brotv -j ACCEPT
+			iptables -D INPUT -i brotv -j brwan_in
+			iptables -D FORWARD -p udp -i brotv -o br0 -d 224.0.0.0/4 -j ACCEPT
+			iptables -D FORWARD -p udp --dport 5000 -i br0 -o brotv -j ACCEPT
+			iptables -D FORWARD -p tcp --dport 8554 -i br0 -o brotv -j ACCEPT
+			iptables -D FORWARD -p tcp --dport 443 -i br0 -o brotv -j ACCEPT
+			iptables -D OUTPUT -p 2 -o brotv -j ACCEPT
+			iptables -t nat -D POSTROUTING -o brotv -j brwan_masq
+			iptables -t nat -D PREROUTING -p udp -i brotv -d 224.0.0.0/4 -j ACCEPT
+		fi
 		;;
 	*)
 		:;;

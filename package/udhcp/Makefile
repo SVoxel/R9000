@@ -76,6 +76,7 @@ define Package/udhcp/install
 	install -m0755 ./files/zcip.script $(1)/usr/share/zcip/
 	install -m0755 ./files/enable_option.script $(1)/usr/share/udhcpc/
 	install -m0755 ./files/org_dhcp_pri_config.script $(1)/usr/share/udhcpc/
+	install -m0755 ./files/org_check_egress_pri.script $(1)/usr/share/udhcpc/
 endef
 
 $(eval $(call BuildPackage,udhcp))

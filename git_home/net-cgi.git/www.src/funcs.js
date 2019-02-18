@@ -3437,13 +3437,13 @@ function wan_preference_status() {
 	var totalTry = 5;
 	var waiting = 4000;
 	if(wan_preference === "1" && wan_sfp_cable === "Link down") {
-		statusStr = "Error: Make sure that your SFP+ module or cable is connected to the SFP+ port";
+		statusStr = "$sfp_error1";
 	}
 	else if(wan_preference !== "1" && wan_internet_cable === "Link down") {
-		statusStr = "Error: The cable is not connected to the port";
+		statusStr = "$sfp_error2";
 	}
 	else if(wan_valid_ip_address !== "1") {
-		statusStr = "Error: Unable to establish an internet connection";
+		statusStr = "$sfp_error3";
 	}
 
 	if(statusStr !== "") {
@@ -3470,12 +3470,12 @@ function wan_preference_status() {
 				}, 500);
 			}
 			else if(resp === "Success;") {
-				statusStr = "Status: Connected to the internet";
+				statusStr = "$sfp_connected";
 				el.innerHTML = statusStr;
 				el.style.color = "blue";
 			}
 			else if(retried > (totalTry - 1)) {
-				statusStr = "Error: Unable to establish an internet connection";
+				statusStr = "$sfp_error3";
 				el.innerHTML = statusStr;
 				el.style.color = "red";
 			}

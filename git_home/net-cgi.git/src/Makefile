@@ -5,7 +5,7 @@
 include $(NETCGI_CONF)
 
 FILES = main.o httpd.o lang.o apply.o asp.o auth.o action.o print.o
-FILES += upgrade.o util.o detwan.o ftp.o resolv.o unicode.o curl.o
+FILES += upgrade.o  util.o detwan.o ftp.o resolv.o unicode.o curl.o
 FILES += wireless.o
 FILES += basic_home_asp.o menu_asp.o adv_index_asp.o
 FILES += sw_soap.o sw_devconfig.o sw_devinfo.o sw_wanip.o \
@@ -91,6 +91,11 @@ else
 CFLAGS += -DAUTO_UPGRADE=0
 endif
 CFLAGS += -DAUTO_UPGRADE=$(AUTO_UPGRADE)
+
+ifeq ($(SECURITY_ENHANCE),1)
+FILES += security_util.o
+CFLAGS += -DSECURITY_ENHANCE
+endif
 
 ifdef DEGRADE_VERSION
 CFLAGS += -DDEGRADE_VERSION=$(DEGRADE_VERSION)
@@ -548,6 +553,10 @@ ifeq ($(SUPPORT_WAN_PREFERENCE), 1)
 CFLAGS += -DSUPPORT_WAN_PREFERENCE
 endif
 
+ifeq ($(HAVE_11K), 1)
+CFLAGS += -DHAVE_11K
+endif
+
 CFLAGS += -DUSE_MTD_UTIL=$(USE_MTD_UTIL)
 CFLAGS += -DADV_COEXISTENCE=$(ADV_COEXISTENCE)
 CFLAGS += -DBASIC_COEXISTENCE=$(BASIC_COEXISTENCE)
@@ -557,28 +566,41 @@ CFLAGS += -DSMART_NETWORK_SUPPORT=$(SMART_NETWORK_SUPPORT)
 CFLAGS += -DNETGEAR_DDNS=$(NETGEAR_DDNS)
 
 CFLAGS += -I$(STAGING_DIR)/usr/lib/libiconv/include
+
+
 CFLAGS += -Wall -Wunused -g -O2
 
 LDFLAGS += -L$(STAGING_DIR)/usr/lib/libiconv/lib
 
 .PHONY: all install clean
-all : net-cgi usb_cfg inetd detplc remote_smb_conf remote_user_conf remote_share_conf readycloud_unregister
-
+ifeq ($(SECURITY_ENHANCE),1)
+all : net-cgi usb_cfg inetd detplc remote_smb_conf remote_user_conf remote_share_conf readycloud_unregister check_lang hash-data
+else
+all : net-cgi usb_cfg inetd detplc remote_smb_conf remote_user_conf remote_share_conf readycloud_unregister check_lang
+endif
 net-cgi : $(FILES)
-	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -lpthread -liconv -lm -lmtd -lcurl -ldni-common-api
+	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -lpthread -liconv -lm -lmtd -lcurl -ldni-common-api -lssl -lcrypto
 	@echo "make $@ finished on `date`"
 
 usb_cfg : usbdisk.o usb_cfg.o print.o
-	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -liconv -ldni-common-api	
+	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -liconv -ldni-common-api -lssl -lcrypto
 
 inetd : http_scan.o 
-	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -ldni-common-api
+	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -ldni-common-api -lssl -lcrypto
 
 remote_smb_conf remote_user_conf remote_share_conf readycloud_unregister: usbdisk.o remote_smb_conf.o print.o
-	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -liconv -ldni-common-api
+	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -liconv -ldni-common-api -lssl -lcrypto
+
+ifeq ($(SECURITY_ENHANCE),1)
+hash-data: hash_data.o print.o security_util.o 
+	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -lssl -lcrypto -ldni-common-api 
+endif
 
 detplc: plc_devs_detect.o
-	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -ldni-common-api
+	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -ldni-common-api -lssl -lcrypto
+
+check_lang:  print.o check_lang.o 
+	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS) -lconfig -ldni-common-api -lssl -lcrypto
 
 %.o : %.c
 	$(CC) $(CFLAGS) -c $<
@@ -587,6 +609,8 @@ install:
 	$(INSTALL_DIR)	$(INS_BIN_DIR)
 	$(INSTALL_BIN)	net-cgi		$(INS_BIN_DIR)
 	$(INSTALL_BIN)	inetd		$(INS_BIN_DIR)
+	$(INSTALL_BIN)  check_lang      $(INS_BIN_DIR)
+	$(INSTALL_BIN)  hash-data      $(INS_BIN_DIR)
 ifeq ($(HAVE_USB_STORAGE),1)
 	$(INSTALL_BIN)	usb_cfg		$(INS_BIN_DIR)
 endif
@@ -602,4 +626,4 @@ endif
 
 clean:
 	rm -f *.o 
-	rm -f net-cgi usb_cfg inetd detplc remote_smb_conf remote_user_conf remote_share_conf readycloud_unregister
+	rm -f net-cgi usb_cfg inetd detplc remote_smb_conf remote_user_conf remote_share_conf readycloud_unregister check_lang hash-data

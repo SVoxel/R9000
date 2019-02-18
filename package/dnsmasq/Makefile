@@ -61,6 +61,7 @@ define Build/Compile
 		CFLAGS="$(TARGET_CFLAGS)" \
 		LDFLAGS="-L$(STAGING_DIR)/usr/lib -L$(STAGING_DIR)/lib -lconfig" \
 		BINDIR="/usr/sbin" MANDIR="/usr/man" \
+		COPTS=-DNO_INOTIFY \
 		all
 endef
 

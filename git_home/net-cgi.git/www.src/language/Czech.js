@@ -644,3 +644,38 @@ tnc_full_terms="<p align='center'><p align='right'> <em>Poslední aktualizace:</
 apply_mark="Použít"
 close_win_mark="Zavřít okno"
 
+//BRS_wan_preference.html
+bh_wan_preference="Předvolby portu WAN"
+bh_wan_port="Internetový port (1 Gb/s)"
+bh_wan_lan_spf="10G LAN SFP+ Port (10 Gb/s)"
+bh_sfp_error1="Chyba: Ujistěte se, že modul SFP+ nebo kabel je připojený k portu SFP+."
+bh_sfp_error2="Chyba: Kabel není připojen k portu."
+bh_sfp_error3="Chyba: Nepodařilo se navázat připojení k internetu."
+bh_sfp_connected="Stav: Připojeno k internetu"
+
+//BRS_03C_haveOrange.html
+bh_my_isp="Můj profil ISP"
+bh_login_name="Přihlašovací jméno"
+bh_orange_login="Přihlášení"
+bh_enable_orange_tv="Povolit Orange TV"
+bh_orange_pppoe="Orange France PPPoE"
+bh_orange_dhcp="Orange France DHCP"
+bh_orange_france="Orange France"
+
+bh_select_my_isp="Chci si vybrat poskytovatele internetových služeb (ISP) ze seznamu profilů."
+bh_must_enter_passwd="Zadejte heslo."
+bh_must_change_passwd="Nemůžete použít výchozí heslo správce. Musíte změnit heslo správce."
+bh_passwd_condition="Doporučujeme, aby vaše heslo odpovídalo následujícím podmínkám:"
+bh_password_reset_conditions5_1="Obsahuje 6 až 32 znaků"
+bh_password_reset_conditions6="Obsahuje maximálně dva stejné znaky za sebou"
+bh_password_reset_tip3="Doporučujeme také, aby vaše heslo splňovalo alespoň tři z následujících podmínek:"
+bh_password_reset_conditions1="Alespoň jedno velké písmeno"
+bh_password_reset_conditions2="Alespoň jedno malé písmeno"
+bh_password_reset_conditions3="Alespoň jedno číslo"
+bh_password_reset_conditions4="Alespoň jeden speciální znak, například @#&..."
+bh_secure_passwd="Zabezpečte svoje heslo"
+bh_recommend_passwd_protect="Vaše heslo správce není bezpečné. Doporučujeme, abyste své heslo změnili na silnější variantu, která bude odpovídat našim požadavkům na heslo. Silnější heslo chrání vaši síť před externími hrozbami."
+bh_orbi_skip_mark="Přeskočit"
+bh_password_reset="Resetování hesla routeru"
+bh_verify_passwd_reset="Ověřili jsme vaši žádost o resetování hesla routeru. Do kolonky níže zadejte nové heslo, vyplňte ostatní pole a poté klikněte na tlačítko <b>Další</b>."
+

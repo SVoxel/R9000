@@ -231,11 +231,33 @@ load_qcawifi() {
 	config_get enable_smart_antenna qcawifi enable_smart_antenna
 	[ -n "$enable_smart_antenna" ] && append umac_args "enable_smart_antenna=$enable_smart_antenna"
 
-	config_get wl_tpscale qcawifi wl_tpscale
-	[ -n "$wl_tpscale" ] && append umac_args "wl_tpscale=$wl_tpscale"
+	#
+	# Meanings of values of "wl_power_limit":
+	#     1: Keep wireless driver power limits
+	#     0: Remove wireless driver power limits to always honor power
+	#        limits in Wi-Fi boarddata files (BDF)
+	#
+	config_get wl_super_wifi qcawifi wl_super_wifi
+	config_get wl_power_limit qcawifi wl_power_limit
+	if [ "$wl_super_wifi" == "1" ] || [ "$wl_power_limit" == "0" ]; then
+		append umac_args "wl_power_limit=0"
+	else
+		append umac_args "wl_power_limit=1"
+	fi
 
-	config_get wla_tpscale qcawifi wla_tpscale
-	[ -n "$wla_tpscale" ] && append umac_args "wla_tpscale=$wla_tpscale"
+	#
+	# Meanings of values of "wla_power_limit":
+	#     1: Keep wireless driver power limits
+	#     0: Remove wireless driver power limits to always honor power
+	#        limits in Wi-Fi boarddata files (BDF)
+	#
+	config_get wla_super_wifi qcawifi wla_super_wifi
+	config_get wla_power_limit qcawifi wla_power_limit
+	if [ "$wla_super_wifi" == "1" ] || [ "$wla_power_limit" == "0" ]; then
+		append umac_args "wla_power_limit=0"
+	else
+		append umac_args "wla_power_limit=1"
+	fi
 
 	config_get nss_wifi_olcfg qcawifi nss_wifi_olcfg
 	[ -n "$nss_wifi_olcfg" ] && append umac_args "nss_wifi_olcfg=$nss_wifi_olcfg"
@@ -309,6 +331,9 @@ disable_qcawifi() {
 	if [ "x$watchdog" = "x0" ]; then
 		[ -n "$PID_WD" ] && kill $PID_WD && echo "wlan down triggered by GUI, kill wifi watchdog" >> /dev/console
 	fi
+
+	local PID_11K=`ps | grep 11k_scan | grep -v grep | awk '{print $1}'`
+	[ -n "$PID_11K" ] && kill $PID_11K && rm -f /tmp/.11k_scan_lock && echo "wlan down, kill 11k_scan" >> /dev/console
 
 	echo "$DRIVERS disable radio $1" >/dev/console
 	find_qcawifi_phy "$device" ||  retval=1
@@ -827,7 +852,7 @@ enable_qcawifi() {
 		config_get bintval "$vif" bintval
 		[ -n "$bintval" ] && iwpriv "$ifname" bintval "$bintval"
 
-		config_get_bool countryie "$vif" countryie
+		config_get_bool countryie "$vif" countryie 1
 		[ -n "$countryie" ] && iwpriv "$ifname" countryie "$countryie"
 
 		case "$enc" in
@@ -1747,6 +1772,17 @@ wifischedule_qcawifi()
     fi
 }
 
+wifiapscan_qcawifi()
+{
+    local device="$1"
+
+    config_get vifs "$device" vifs
+    for vif in $vifs; do
+        config_get ifname "$vif" ifname
+        [ "$ifname" = "ath0" -o "$ifname" = "ath1" ] && iwlist "$ifname" scan
+    done
+}
+
 wifistainfo_qcawifi()
 {
     local device="$1"
@@ -1834,57 +1870,55 @@ wifiradio_qcawifi()
                         chan="${p_chan}(P) + ${s_chan}(S)"
                     elif [ -z "$is_80_80" -a -n "$is_80" ]; then
                         case "${p_chan}" in
-                            36) chan="36(P) + 40 + 44 + 48" ;;
-                            40) chan="36 + 40(P) + 44 + 48" ;;
-                            44) chan="36 + 40 + 44(P) + 48" ;;
-                            48) chan="36 + 40 + 44 + 48(P)" ;;
-                            52) chan="52(P) + 56 + 60 + 64" ;;
-                            56) chan="52 + 56(P) + 60 + 64" ;;
-                            60) chan="52 + 56 + 60(P) + 64" ;;
-                            64) chan="52 + 56 + 60 + 64(P)" ;;
-                            100) chan="100(P) + 104 + 108 + 112" ;;
-                            104) chan="100 + 104(P) + 108 + 112" ;;
-                            108) chan="100 + 104 + 108(P) + 112" ;;
-                            112) chan="100 + 104 + 108 + 112(P)" ;;
-                            116) chan="116(P) + 120 + 124 + 128" ;;
-                            120) chan="116 + 120(P) + 124 + 128" ;;
-                            124) chan="116 + 120 + 124(P) + 128" ;;
-                            128) chan="116 + 120 + 124 + 128(P)" ;;
-                            149) chan="149(P) + 153 + 157 + 161";;
-                            153) chan="149 + 153(P) + 157 + 161";;
-                            157) chan="149 + 153 + 157(P) + 161";;
-                            161) chan="149 + 153 + 157 + 161(P)";;
+                            36|40|44|48) chan="36 + 40 + 44 + 48" ;;
+                            52|56|60|64) chan="52 + 56 + 60 + 64" ;;
+                            100|104|108|112) chan="100 + 104 + 108 + 112" ;;
+                            116|120|124|128) chan="116 + 120 + 124 + 128" ;;
+                            132|136|140|144) chan="132 + 136 + 140 + 144" ;;
+                            149|153|157|161) chan="149 + 153 + 157 + 161";;
                         esac
+                            chan=$(echo $chan | sed "s/${p_chan}/&(P)/")
                     elif [ -n "$is_80_80" ]; then
+                        freq_5210="36 + 40 + 44 + 48"
+                        freq_5290="52 + 56 + 60 + 64"
+                        freq_5530="100 + 104 + 108 + 112"
+                        freq_5610="116 + 120 + 124 + 128"
+                        freq_5690="132 + 136 + 140 + 144"
+                        freq_5775="149 + 153 + 157 + 161"
                         case "${p_chan}" in
-                            36) chan="36(P) + 40 + 44 + 48 + 149 + 153 + 157 + 161" ;;
-                            40) chan="36 + 40(P) + 44 + 48 + 149 + 153 + 157 + 161" ;;
-                            44) chan="36 + 40 + 44(P) + 48 + 149 + 153 + 157 + 161" ;;
-                            48) chan="36 + 40 + 44 + 48(P) + 149 + 153 + 157 + 161" ;;
-                            149) chan="36 + 40 + 44 + 48 + 149(P) + 153 + 157 + 161";;
-                            153) chan="36 + 40 + 44 + 48 + 149 + 153(P) + 157 + 161";;
-                            157) chan="36 + 40 + 44 + 48 + 149 + 153 + 157(P) + 161";;
-                            161) chan="36 + 40 + 44 + 48 + 149 + 153 + 157 + 161(P)";;
-                         esac
+                            36|40|44|48)
+                                chan=$freq_5210
+                                freq1=5210 ;;
+                            52|56|60|64)
+                                chan=$freq_5290
+                                freq1=5290 ;;
+                            100|104|108|112)
+                                chan=$freq_5530
+                                freq1=5530 ;;
+                            116|120|124|128)
+                                chan=$freq_5610
+                                freq1=5610 ;;
+                            132|136|140|144)
+                                chan=$freq_5690
+                                freq1=5690 ;;
+                            149|153|157|161)
+                                chan=$freq_5775
+                                freq1=5775 ;;
+                        esac
+                        freq2=$(iwpriv $ifname get_cfreq2 | cut -d: -f2)
+                        if [ "$freq1" -lt "$freq2" ]; then
+                            eval "chan=\"$(echo $chan + \$freq_$freq2)\""
+                        else
+                            eval "chan=\"$(echo \$freq_$freq2 + $chan)\""
+                        fi
+                        chan=$(echo $chan | sed "s/${p_chan}/&(P)/")
                     elif [ -n "$is_160" ]; then
                         case "${p_chan}" in
-                            36) chan="36(P) + 40 + 44 + 48 + 52 + 56 + 60 + 64" ;;
-                            40) chan="36 + 40(P) + 44 + 48 + 52 + 56 + 60 + 64" ;;
-                            44) chan="36 + 40 + 44(P) + 48 + 52 + 56 + 60 + 64" ;;
-                            48) chan="36 + 40 + 44 + 48(P) + 52 + 56 + 60 + 64" ;;
-                            52) chan="36 + 40 + 44 + 48 + 52(P) + 56 + 60 + 64" ;;
-                            56) chan="36 + 40 + 44 + 48 + 52 + 56(P) + 60 + 64" ;;
-                            60) chan="36 + 40 + 44 + 48 + 52 + 56 + 60(P) + 64" ;;
-                            64) chan="36 + 40 + 44 + 48 + 52 + 56 + 60 + 64(P)" ;;
-                            100) chan="100(P) + 104 + 108 + 112 + 116 + 120 + 124 + 128" ;;
-                            104) chan="100 + 104(P) + 108 + 112 + 116 + 120 + 124 + 128" ;;
-                            108) chan="100 + 104 + 108(P) + 112 + 116 + 120 + 124 + 128" ;;
-                            112) chan="100 + 104 + 108 + 112(P) + 116 + 120 + 124 + 128" ;;
-                            116) chan="100 + 104 + 108 + 112 + 116(P) + 120 + 124 + 128" ;;
-                            120) chan="100 + 104 + 108 + 112 + 116 + 120(P) + 124 + 128" ;;
-                            124) chan="100 + 104 + 108 + 112 + 116 + 120 + 124(P) + 128" ;;
-                            128) chan="100 + 104 + 108 + 112 + 116 + 120 + 124 + 128(P)" ;;
+                            36|40|44|48|52|56|60|64) chan="36 + 40 + 44 + 48 + 52 + 56 + 60 + 64" ;;
+                            100|104|108|112|116|120|124|128) chan="100 + 104 + 108 + 112 + 116 + 120 + 124 + 128" ;;
+			    116|120|124|128|132|136|140|144) chan="116 + 120 + 124 + 128 + 132 + 136 + 140 + 144" ;;
                         esac
+                        chan=$(echo $chan | sed "s/${p_chan}/&(P)/")
                     else
                         chan=$p_chan
                     fi

@@ -67,6 +67,7 @@ function clickNo()
 	if(top.topframe)
 		top.topframe.location.href="/top.html";
 
+	<% cfg_set("installfwstatus", "0") %>
 	if(top.hidden_upgrade)  //if top.hidden_upgrade exits, top is CheckNewFirmware.htm
 		close_top_window();
 	else if ( is_in_cd_less || isWIZARD() )

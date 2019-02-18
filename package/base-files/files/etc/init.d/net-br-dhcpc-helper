@@ -78,7 +78,7 @@ setup_global_variables_or_exit()
 }
 
 setup_global_variables_or_exit
-g_udhcpc_h_arg="-h $(get_hostname)"
+g_udhcpc_h_arg="-h /tmp/dhcp_name.conf"
 g_udhcpc_r_arg="-r $($CONFIG get ap_dhcp_ipaddr)"
 oc echo "g_wl_linked=$g_wl_linked, g_wl_fixup=$g_wl_fixup"
 oc echo "g_udhcpc_h_arg=$g_udhcpc_h_arg, g_udhcpc_r_arg=$g_udhcpc_r_arg"

@@ -82,6 +82,10 @@ boot()
 #	if [ "$enable_ra" != "1" ]; then
 #		exit 1
 #	fi
+	if [ "x$(/bin/config get RA_stage)" = "x" ];then
+		/bin/config set RA_stage=prod
+		/bin/config commit
+	fi
 	if [ -s /etc/reboot_reason ]; then
 		local reboot_reason=`cat  /etc/reboot_reason`
 		/bin/config set lastRebootReason=$reboot_reason
@@ -135,7 +139,12 @@ boot()
 			UTC_time=$(($UTC_time-$value_s-180))
 		fi
 		/bin/config set time_crash=$UTC_time
-		local get_line=$(($crash_newline-$crash_oldline))
+		#local get_line=$(($crash_newline-$crash_oldline))
+		if [ $crash_newline -gt $crash_oldline ];then
+			local get_line=$(($crash_newline-$crash_oldline+1))
+		else
+			local get_line=$(($crash_newline+1))
+		fi
 		tail -n$get_line < /tmp/crash_log > /tmp/crash_aws_log
 		/bin/config set crash_line=$crash_newline
 		/bin/config set eventtype=0

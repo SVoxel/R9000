@@ -1,0 +1,1 @@
+wan_10g_status = <% get_sfp_and_ip_status() %>;

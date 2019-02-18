@@ -1,0 +1,58 @@
+#!/bin/sh
+
+config=/bin/config
+
+SMB_CONF_DIR=/tmp/config
+SMB_PASSWD_DIR=/etc/samba/smbpasswd
+
+# unset
+rm -f $SMB_CONF_DIR/passwd+
+rm -f $SMB_CONF_DIR/gshadow
+rm -f $SMB_CONF_DIR/shadow
+
+# user setting
+echo "root:!:0:0:root:/root:/bin/ash"			> $SMB_CONF_DIR/passwd
+echo "guest:*:65534:65534:guest:/tmp/ftpadmin:/bin/ash"	>>$SMB_CONF_DIR/passwd
+echo "nobody:*:65534:65534:nobody:/var:/bin/false" 	>>$SMB_CONF_DIR/passwd
+echo "daemon:*:65534:65534:daemon:/var:/bin/false"	>>$SMB_CONF_DIR/passwd
+
+echo "guest::10957:0:99999:7:::"                        >> $SMB_CONF_DIR/shadow
+
+http_passwd=$($config get http_passwd)
+#/bin/adduser -G admin admin -H -h /tmp/ftpadmin -s /bin/ash << EOF
+#$http_passwd
+#$http_passwd
+#EOF
+(sleep 1; echo "$http_passwd"; sleep 1; echo "$http_passwd") | /bin/adduser -G admin admin -H -h /tmp/ftpadmin -s /bin/ash
+sed -i "s#$(/bin/cat /tmp/config/shadow | grep admin | cut -d ":" -f2)#$(/bin/config get dhx2_passwd)#g" /tmp/config/shadow
+
+# clear smbpasswd file
+echo -n ""	> $SMB_PASSWD_DIR
+
+(echo ""; echo "") | smbpasswd -a root
+sed -i "s/\:$(/bin/cat /etc/samba/smbpasswd | grep root | cut -d ":" -f4)\:\[/\:$(/bin/config get samba_passwd)\:\[/g" /etc/samba/smbpasswd
+(echo ""; echo "") | smbpasswd -a admin
+sed -i "s/\:$(/bin/cat /etc/samba/smbpasswd | grep admin | cut -d ":" -f4)\:\[/\:$(/bin/config get samba_passwd)\:\[/g" /etc/samba/smbpasswd
+(echo ""; echo "") | smbpasswd -a guest
+
+readycloud_enable=`${config} get readycloud_enable`
+#readycloud_enable=1
+if [ "$readycloud_enable" = "1" ]; then
+i=0
+id=500
+while [ $i -le 9 ]; do
+	readycloud_user="`${config} get readycloud_user$i`"
+	if [ "x$readycloud_user" != "x" ]; then
+		username=`echo $readycloud_user | awk '{print $1}'`
+		userpasswd=`echo $readycloud_user | awk '{print $3}'`
+		echo "$username:x:$id:" >> $SMB_CONF_DIR/group
+		(sleep 1; echo "$userpasswd"; sleep 1; echo "$userpasswd")| /bin/adduser -G $username $username -H -h /tmp/ftpadmin -s /bin/ash << EOF
+		(echo "$userpasswd"; echo "$userpasswd") | smbpasswd -a $username 
+	else
+		break;
+	fi
+	let i=$i+1
+	let id=$id+1
+done
+fi
+

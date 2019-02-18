@@ -50,7 +50,7 @@ radvd_write_config() {
 	printf '\tAdvDefaultLifetime 1800;\n'
 	printf '\tAdvReachableTime 0;\n'
 	printf '\tAdvRetransTimer 0;\n'
-	printf '\tAdvDefaultPreference low;\n'
+	printf '\tAdvDefaultPreference medium;\n'
 	printf '\tAdvHomeAgentFlag off;\n'
 	if [ "$DHCPS_ENABLE" = "0" ]; then
 		printf '\tAdvOtherConfigFlag on;\n'

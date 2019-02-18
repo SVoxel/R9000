@@ -644,3 +644,38 @@ tnc_full_terms="<p align='center'><p align='right'> <em>Son Güncelleme:</em> [2
 apply_mark="Uygula"
 close_win_mark="Pencereyi Kapat"
 
+//BRS_wan_preference.html
+bh_wan_preference="WAN Bağlantı Noktası Tercihi"
+bh_wan_port="İnternet Bağlantı Noktası (1 Gb/sn)"
+bh_wan_lan_spf="10G LAN SFP+ Bağlantı Noktası (10 Gb/sn)"
+bh_sfp_error1="Hata: SFP+ modülünüzün veya kablonuzun SFP+ bağlantı noktasına bağlı olduğundan emin olun."
+bh_sfp_error2="Hata: Kablo, bağlantı noktasına bağlı değil."
+bh_sfp_error3="Hata: İnternet bağlantısı kurulamadı."
+bh_sfp_connected="Durum: İnternet'e bağlanıldı"
+
+//BRS_03C_haveOrange.html
+bh_my_isp="İSS Profilim"
+bh_login_name="Oturum Açma Adı"
+bh_orange_login="Oturum Aç"
+bh_enable_orange_tv="Orange TV'yi etkinleştir"
+bh_orange_pppoe="Orange France PPPoE"
+bh_orange_dhcp="Orange France DHCP"
+bh_orange_france="Orange France"
+
+bh_select_my_isp="Profil listesinden İnternet Servis Sağlayıcımı (ISP) seçmek istiyorum."
+bh_must_enter_passwd="Bir parola girmelisiniz."
+bh_must_change_passwd="Varsayılan yönetici parolasını kullanamazsınız. Yönetici parolasını değiştirmeniz gerekiyor."
+bh_passwd_condition="Parolanızın aşağıdaki koşulları karşılamasını öneririz:"
+bh_password_reset_conditions5_1="Parola, 6 ila 32 karakter içermelidir"
+bh_password_reset_conditions6="Bir karakter art arda en fazla iki kez kullanılabilir"
+bh_password_reset_tip3="Buna ek olarak, parolanızın aşağıdaki dört koşuldan üçünü karşılamasını öneririz:"
+bh_password_reset_conditions1="En az bir büyük harf karakter"
+bh_password_reset_conditions2="En az bir küçük harf karakter"
+bh_password_reset_conditions3="En az bir rakam"
+bh_password_reset_conditions4="En az bir özel karakter (örn. @#&)"
+bh_secure_passwd="Parolanızın Güvenliğini Sağlayın"
+bh_recommend_passwd_protect="Yönetici parolanız güvenli değil. Parolanızı, parola gereksinimlerimizi karşılayan daha güçlü bir parolayla değiştirmenizi öneririz. Daha güçlü bir parola, ağınızı harici tehlikelere karşı korur."
+bh_orbi_skip_mark="Atla"
+bh_password_reset="Router Parolası Sıfırlama"
+bh_verify_passwd_reset="Parola sıfırlama isteğinizi doğruladık. Aşağıya yeni bir parola girin, diğer alanları tamamlayın ve <b>İleri</b> düğmesine tıklayın."
+

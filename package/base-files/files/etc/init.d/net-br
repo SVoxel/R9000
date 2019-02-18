@@ -1,5 +1,7 @@
 #!/bin/sh /etc/rc.common
 
+DHCPNAME="/tmp/dhcp_name.conf"
+
 setup_hostname() # $1: apmode/brmode/extmode/factory
 {
 	local hostname
@@ -14,6 +16,7 @@ setup_hostname() # $1: apmode/brmode/extmode/factory
 	[ -z "$hostname" ] && hostname="$($CONFIG get Device_name)"
 
 	echo "$hostname" > /proc/sys/kernel/hostname
+	echo "$hostname" > $DHCPNAME
 }
 
 setup_interface_static() # $1: apmode/brmode/extmode/factory
@@ -52,7 +55,7 @@ setup_interface_dhcp() # $1: apmode/brmode/extmode
 	ifconfig br0 $($CONFIG get lan_ipaddr)
 	fi
 	
-	/sbin/udhcpc -a -b -i br0 -h "$hostname" -r $($CONFIG get ap_dhcp_ipaddr) &
+	/sbin/udhcpc -a -b -i br0 -h $DHCPNAME -r $($CONFIG get ap_dhcp_ipaddr) &
 
 	case "$1" in
 	apmode) echo "ap mode start udhcp" ;; 

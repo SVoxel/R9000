@@ -30,18 +30,27 @@ function wan_preference_status() {
 	var el = document.getElementById("wan-port-status");
 	var retried = 0;
 	var totalTry = 3;
-	if(wan_internet_cable === "Link down" || wan_sfp_cable === "Link down") {
-		statusStr = "Error: Make sure that your SFP+ module or cable is connected to the SFP+ port";
-	}
-	else if(wan_valid_ip_address !== "1") {
-		statusStr = "Error: Unable to establish an internet connection";
-	}
-
-	if(statusStr !== "") {
-		el.innerHTML = statusStr;
-		el.style.color = "red";
-		return;
-	}
+	if ( window.XMLHttpRequest)
+		xmlhttp = new XMLHttpRequest();
+	else
+		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	xmlhttp.onreadystatechange = function()
+	{
+		if ( xmlhttp.readyState == 4 && xmlhttp.status == 200 )
+		{
+			eval(xmlhttp.responseText);
+			if(wan_10g_status['wan sfp status'] === "Link down") {
+				statusStr = bh_sfp_error1;
+				el.innerHTML = statusStr;
+				el.style.color = "red";
+				return;
+			}
+			else if(wan_10g_status['wan valid ip'] !== "1") {
+				statusStr = bh_sfp_error3;
+				el.innerHTML = statusStr;
+				el.style.color = "transparent";
+				return;
+			}
 
 	if( window.XMLHttpRequest ) {
 		var reqHttp = new XMLHttpRequest();
@@ -61,21 +70,25 @@ function wan_preference_status() {
 				}, 500);
 			}
 			else if(resp === "Success;") {
-				statusStr = "Status: Connected to the internet";
+				statusStr = bh_sfp_connected;
 				el.innerHTML = statusStr;
 				el.style.color = "transparent";
 				//el.style.color = "blue";
 			}
 			else if(retried > (totalTry - 1)) {
-				statusStr = "Error: Unable to establish an internet connection";
+				statusStr = bh_sfp_error3;
 				el.innerHTML = statusStr;
-				el.style.color = "red";
+				el.style.color = "transparent";
 			}
 		}
 	}
 
 	reqHttp.open("GET", "ajax_ping_result.txt", true);
 	reqHttp.send(null);
+		}
+	}
+	xmlhttp.open("GET", "get_wan_10g_status.txt", true);
+	xmlhttp.send(null);
 }
 
 function have_wan_preference(flag) {
@@ -151,7 +164,7 @@ function check_wan_preference(cf) {
 		var el = document.getElementById("wan-port-status");
 		el.style.display = "block";
 		setTimeout(function() {
-				if(el.innerHTML == "Status: Connected to the internet")
+				if(el.innerHTML != bh_sfp_error1)
 					cf.submit();
 				else
 					document.location.reload();
@@ -176,13 +189,13 @@ function check_wan_preference(cf) {
 	<div class="wizard_body_container">
 		<div class="wizard_content_div">
 			<div class="wizard_words_div" style="padding-top:1%">
-				<div class="page_title" id="wan_preference_tr1" style="display:none">WAN Port Preference
+				<div class="page_title" id="wan_preference_tr1" style="display:none"><script>document.write(bh_wan_preference)</script>
 					<div></br>
 						<div id="wan_preference_tr2" style="display:none">
-						<input onclick='document.forms[0].hid_wan_preference.value="0"'  type="radio" name="wan_preference" id="internet_port" value="0">Internet Port (1 Gbps)
+						<input onclick='document.forms[0].hid_wan_preference.value="0"'  type="radio" name="wan_preference" id="internet_port" value="0"><script>document.write(bh_wan_port)</script>
 						</div>
 						<div id="wan_preference_tr3" style="display:none">
-						<input onclick='document.forms[0].hid_wan_preference.value="1"' type="radio" name="wan_preference" id="sfp_port" value="1" checked="true">10G LAN SFP+ Port (10 Gbps)</br></br>
+						<input onclick='document.forms[0].hid_wan_preference.value="1"' type="radio" name="wan_preference" id="sfp_port" value="1" checked="true"><script>document.write(bh_wan_lan_spf)</script></br></br>
 							<div><span id='wan-port-status' style="color: red"></span></div>
 							<div id="allBtns_div" class="wizard_buttons_div" align="center" style="margin-top:20px;">
 							<script>document.write('<input type="button" name="Next" id="next" class="purple_short_btn" value="'+bh_next_mark+'" onclick="check_wan_preference(document.forms[0])">');</script>

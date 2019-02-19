@@ -26,7 +26,7 @@ if [ "x$board_model_id_flag" != "xR8900" ]; then
 	/bin/config set miniupnp_friendlyname="NETGEAR R9000 Wireless Router"
 	/bin/config set miniupnp_modelname="NETGEAR Nighthawk X10 AD7200 Smart WiFi Router"
 	/bin/config set miniupnp_modelnumber="R9000"
-	/bin/config set miniupnp_modelurl="http://www.netgear.com/home/products/wirelessrouters"
+	/bin/config set miniupnp_modelurl="http://www.netgear.com/home/products/networking/wifi-routers/R9000.aspx"
 	/bin/config set miniupnp_modeldescription="NETGEAR R9000 RangeMax X10 AD7200 Wireless Router"
 	/bin/config set miniupnp_pnpx_hwid="VEN_01f2&amp;DEV_0027&amp;REV_01 VEN_01f2&amp;DEV_8000&amp;SUBSYS_01&amp;REV_01 VEN_01f2&amp;DEV_8000&amp;REV_01 VEN_0033&amp;DEV_0008&amp;REV_01"
 
@@ -68,9 +68,9 @@ if [ "x$board_model_id_flag" = "xR8900" ]; then
 	# miniupnp configure
 	/bin/config set miniupnp_devupc="606449084528"
 	/bin/config set miniupnp_friendlyname="NETGEAR R8900 Wireless Router"
-	/bin/config set miniupnp_modelname="RangeMax X10 AD7000 Wireless Router"
+	/bin/config set miniupnp_modelname="NETGEAR Nighthawk X10 AD7000 Smart WiFi Router"
 	/bin/config set miniupnp_modelnumber="R8900"
-	/bin/config set miniupnp_modelurl="http://www.netgear.com/home/products/wirelessrouters"
+	/bin/config set miniupnp_modelurl="http://www.netgear.com/home/products/networking/wifi-routers/R8900.aspx"
 	/bin/config set miniupnp_modeldescription="NETGEAR R8900 RangeMax X10 AD7000 Wireless Router"
 	/bin/config set miniupnp_pnpx_hwid="VEN_01f2&amp;DEV_0027&amp;REV_01 VEN_01f2&amp;DEV_8000&amp;SUBSYS_01&amp;REV_01 VEN_01f2&amp;DEV_8000&amp;REV_01 VEN_0033&amp;DEV_0008&amp;REV_01"
 

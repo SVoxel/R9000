@@ -98,9 +98,8 @@ append_read_allowuser()
 
 	if [ "x$ftp_passwd_enable" = "x0" ];then
 		case "$1" in
-			0) echo "			AllowUser admin"
+			0 | 1) echo "			AllowUser admin"
 			   echo "			AllowUser guest";;
-		    1) echo "			AllowUser guest";;
 			2) echo "			AllowUser admin";;
 			*);;
 		esac
@@ -140,7 +139,7 @@ append_display_allowuser()
 		case "$1" in
 			0 | 1) echo "			AllowUser admin"
 			   echo "			AllowUser guest";;
-		    2) echo "			AllowUser admin";;
+			2) echo "			AllowUser admin";;
 			*);;
 		esac
 	else 

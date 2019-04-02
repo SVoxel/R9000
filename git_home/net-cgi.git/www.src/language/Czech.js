@@ -184,7 +184,7 @@ bh_connect_success_1="Připojení k internetu bylo úspěšné."
 
 bh_connect_success_2="Tento router má z výroby přednastaven následující jedinečný síťový název (SSID) a "
 
-bh_network_key="síťový klíč (heslo)"
+bh_network_key="síťový klíč (heslo)."
 
 bh_rollover_help_text="Váš router má z výroby přednastaveno bezdrátové zabezpečení WPA2-PSK, které chrání vaši síť před neoprávněným přístupem. Chcete-li se připojit k bezdrátové síti, musíte zadat síťový klíč (heslo). Tato z výroby přednastavená nastavení jsou jedinečná pro dané zařízení, podobně jako výrobní číslo.  Pokud je chcete změnit, můžete to provést později na obrazovce Nast. bezdrát. připojení ve webovém rozhraní modemu."
 

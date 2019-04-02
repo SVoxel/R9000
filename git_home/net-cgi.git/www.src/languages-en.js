@@ -2045,6 +2045,8 @@ usb_share_print_prompt7="Follow the instructions in the utility to connect to th
 print_prompt1="ReadySHARE Vault lets you back up files on your Windows PC."
 print_prompt2="To back up a Windows PC on to an HDD in the router:"
 print_prompt3="1. Install the genie app on each PC by downloading the software from <a class='linktype' target='_blank' href='http://www.netgear.com/genie'>www.netgear.com/genie</a>."
+print_prompt6="1. Install ReadySHARE Vault on each PC by downloading the software from <a class='linktype' target='_blank' href='http://www.netgear.com/readyshare'>www.netgear.com/readyshare</a>."
+print_prompt7="2. Launch ReadySHARE Vault. Use the Dashboard or the Backup tab to set up and run your backup."
 readyshare_storage="ReadySHARE Storage"
 readyshare_cloud="ReadySHARE Cloud"
 readyshare_vault="ReadySHARE Vault"

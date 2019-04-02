@@ -184,7 +184,7 @@ bh_connect_success_1="Úspešne ste sa pripojili k internetu."
 
 bh_connect_success_2="Tento smerovač je prednastavený s nasledujúcim jedinečným identifikátorom bezdrôtovej siete (SSID) a "
 
-bh_network_key="sieťovým kľúčom (heslom)"
+bh_network_key="sieťovým kľúčom (heslom)."
 
 bh_rollover_help_text="Váš smerovač je prednastavený s funkciou zabezpečenia bezdrôtovej siete šifrovaním WPA2-PSK, ktoré vašu sieť chráni pred nepovoleným prístupom. Ak sa chcete pripojiť k tejto bezdrôtovej sieti, musíte zadať sieťový kľúč (heslo). Tieto predkonfigurované nastavenia sú jedinečné pre toto zariadenie, podobne ako sériové číslo.  Ak ich chcete zmeniť, môžete tak urobiť neskôr na obrazovke bezdrôtových nastavení v rámci webového grafického rozhrania smerovača."
 

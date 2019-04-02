@@ -44,6 +44,9 @@
 #include "options.h"
 #include "leases.h"
 
+/* Defined in `/usr/lib/libconfig.so` */
+extern char *config_get(char *name);
+
 unsigned char g_src_addr[6] = {0};
 u_int32_t latest_addr;
 #ifdef DHCPD_HAVE_NAS
@@ -173,6 +176,7 @@ int sendOffer(struct dhcpMessage *oldpacket)
 	unsigned char *req, *lease_time;
 	struct option_set *curr;
 	struct in_addr addr;
+	char VIinfo[VENDOR_IDENTIFYING_INFO_LEN] = {0};
 
 #ifdef DHCPD_STATIC_LEASE
 	uint32_t static_lease_ip;
@@ -294,6 +298,16 @@ int sendOffer(struct dhcpMessage *oldpacket)
 	}
 
 	add_bootp_options(&packet);
+
+	/* Add for Orange France Livebox4 and WHD94 decoder: send back gateway identity */
+	if ((strcmp(config_get("enable_orange"), "1") == 0)
+		&& (strcmp(config_get("LB_ver"), "4") == 0))
+	{
+		if (createVIoption(VENDOR_IDENTIFYING_FOR_GATEWAY, VIinfo) != -1)
+		{
+			add_option_string(packet.options, (unsigned char *)VIinfo);
+		}
+	}
 	
 	addr.s_addr = packet.yiaddr;
 #ifdef DHCP_PACKET_RESIZE
@@ -357,6 +371,7 @@ int sendACK(struct dhcpMessage *oldpacket, u_int32_t yiaddr)
 	unsigned char *lease_time;
 	u_int32_t lease_time_align = server_config.lease;
 	struct in_addr addr;
+	char VIinfo[VENDOR_IDENTIFYING_INFO_LEN] = {0};
 
 	init_packet(&packet, oldpacket, DHCPACK);
 	packet.yiaddr = yiaddr;
@@ -383,6 +398,16 @@ int sendACK(struct dhcpMessage *oldpacket, u_int32_t yiaddr)
 	}
 
 	add_bootp_options(&packet);
+
+	/* Add for Orange France Livebox4 and WHD94 decoder: send back gateway identity */
+	if ((strcmp(config_get("enable_orange"), "1") == 0)
+		&& (strcmp(config_get("LB_ver"), "4") == 0))
+	{
+		if (createVIoption(VENDOR_IDENTIFYING_FOR_GATEWAY, VIinfo) != -1)
+		{
+			add_option_string(packet.options, (unsigned char *)VIinfo);
+		}
+	}
 
 	addr.s_addr = packet.yiaddr;
 

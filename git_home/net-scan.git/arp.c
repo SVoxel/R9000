@@ -910,7 +910,7 @@ int check_sta_format(char *info)
 void show_arp_table(void)
 {
 	int i, j, fd_flag;
-	int type = 0;
+	int type = 999;
 	FILE *fp, *fw;
 	char mac[32];
 	struct arp_struct *u;

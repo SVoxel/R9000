@@ -37,7 +37,7 @@ module_param(oops_part, charp, 0444);
 MODULE_PARM_DESC(oops_part, "mtdoops mtd partiton name");
 
 #define MTDOOPS_KERNMSG_MAGIC 0x5d005d00
-#define OOPS_PAGE_SIZE 1024
+#define OOPS_PAGE_SIZE 4096
 
 extern int redirect_console_oops_msg(char *buf, int len);
 
@@ -397,6 +397,7 @@ static struct notifier_block console_panic_block = {
 
 static int __init mtdoops_console_init(void)
 {
+#if 0
 	struct mtdoops_context *cxt = &oops_cxt;
 
 	cxt->mtd_index = -1;
@@ -412,19 +413,22 @@ static int __init mtdoops_console_init(void)
 
 	register_mtd_user(&mtdoops_notifier);
 	atomic_notifier_chain_register(&panic_notifier_list, &console_panic_block);
-
+#endif
 	return 0;
 }
 
 static void __exit mtdoops_console_exit(void)
 {
+#if 0
 	struct mtdoops_context *cxt = &oops_cxt;
 
 	unregister_mtd_user(&mtdoops_notifier);
 	atomic_notifier_chain_unregister(&panic_notifier_list, &console_panic_block);
 	kfree(cxt->name);
 	vfree(cxt->oops_buf);
+#endif
 }
+
 
 
 subsys_initcall(mtdoops_console_init);

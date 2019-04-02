@@ -184,7 +184,7 @@ bh_connect_success_1="Udało się połączyć z Internetem."
 
 bh_connect_success_2="Ten router ma wstępnie ustawioną, unikalną nazwę sieci (SSID) i "
 
-bh_network_key="klucz sieci (hasło)"
+bh_network_key="klucz sieci (hasło)."
 
 bh_rollover_help_text="Twój router został wstępnie skonfigurowany wraz z zabezpieczeniem komunikacji bezprzewodowej WPA2-PSK, które zabezpiecza Twoją sieć przed włamaniem. Aby wejść do sieci bezprzewodowej należy najpierw wprowadzić słowo-klucz (hasło). Opisane ustawienia wstępne są unikatowe dla urządzenia, podobnie jak numer seryjny.  Aby je zmienić, należy przejść do ekranu Ustawienia komunikacji bezprzewodowej sieciowego graficznego interfejsu użytkownika routera."
 

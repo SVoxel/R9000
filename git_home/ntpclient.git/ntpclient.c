@@ -615,6 +615,7 @@ int primary_loop(int usd, int num_probes, int cycle_time)
 		if (steady_state == 1) {
 			to.tv_sec = DAY_TIME;
 			to.tv_usec = 0;
+			config_set("ntpFailType","0"); // ntp syn sucessfully for gui warning.
 		} else if (probes_sent >= num_probes && num_probes != 0) {
 			sysnc_result = 0;
 			break;
@@ -622,6 +623,7 @@ int primary_loop(int usd, int num_probes, int cycle_time)
 	}
 	/*when program is out of primary loop,the NTP server is fail,so delete the file.*/
 	system("rm -f /tmp/ntp_updated");
+	config_set("ntpFailType","2");
 	return sysnc_result;
 }
 
@@ -1061,6 +1063,7 @@ int main(int argc, char *argv[]) {
 
 		if (!wan_conn_up() && config_match("ap_mode", "0") && config_match("bridge_mode", "0")) {
 			/* printf("The WAN connection is NOT up!\n"); */
+			config_set("ntpFailType","1");
 			config_set("ntpFailReason", "1");
 			config_commit();
 			close(usd);
@@ -1078,6 +1081,7 @@ int main(int argc, char *argv[]) {
 		    || !setup_transmit(usd, ntps, NTP_PORT)) 
 		{
 			close(usd);
+			config_set("ntpFailType","1");
 			to.tv_sec = cycle_time;
 			to.tv_usec = 0;
 			select(1, NULL, NULL, NULL, &to);

@@ -39,6 +39,17 @@
 		reg = <0 0 0 0>;
 	};
 
+        reserved-memory {
+                #address-cells = <2>;
+                #size-cells = <2>;
+                ranges;
+
+                ramoops@0x50b00000 {
+                        no-map;
+                        reg = <0x0 0x50b00000 0x0  0x20000>;
+                };
+	};
+
 	/* CPU Configuration */
 	cpus {
 		#address-cells = <1>;

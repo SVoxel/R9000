@@ -446,6 +446,8 @@ nif_existed() # $1: nif
 vlan_create_br_and_vif() # $1: vid, $2: pri
 {
 	local brx="br$1"
+	local wandefmac=$($CONFIG get wan_factory_mac)
+	local sfpdefmac=$($CONFIG get sfp_factory_mac)
 
 	nif_existed $brx && return
 
@@ -459,6 +461,7 @@ vlan_create_br_and_vif() # $1: vid, $2: pri
 		brctl addif $brx $BondEth.$1
 		vlan_set_vif_pri $BondEth.$1 $2
 	else
+		if [ "$($CONFIG get wan_preference)" = "0" ]; then
 		#if [ "$WanIndepPhy" = "0" ]; then
 		#	vconfig add ethlan $1 && ifconfig ethlan.$1 up
 		#	vconfig add $RawEthWan $1 && ifconfig $RawEthWan.$1 up
@@ -470,10 +473,20 @@ vlan_create_br_and_vif() # $1: vid, $2: pri
 			brctl addif $brx $RawEthLan.$1
 			brctl addif $brx $RawEthWan.$1
 		#fi
-		vlan_set_vif_pri $RawEthWan.$1 $2
-		vlan_set_vif_pri $RawEthLan.$1 $2
-		ifconfig $brx hw ether $wandefmac	
-		brctl stp $brx on
+			vlan_set_vif_pri $RawEthWan.$1 $2
+			vlan_set_vif_pri $RawEthLan.$1 $2
+			ifconfig $brx hw ether $wandefmac	
+			brctl stp $brx on
+		else
+			vconfig add $RawEthLan $1 && ifconfig $RawEthLan.$1 up
+			vconfig add eth0 $1 && ifconfig eth0.$1 up
+			brctl addif $brx $RawEthLan.$1
+			brctl addif $brx eth0.$1
+			vlan_set_vif_pri eth0.$1 $2
+			vlan_set_vif_pri $RawEthLan.$1 $2
+			ifconfig $brx hw ether $sfpdefmac
+			brctl stp $brx on
+		fi
 	fi
 	ifconfig $brx up
 }
@@ -566,7 +579,7 @@ vlan_create_intranet_vif() # $1: vid, $2: pri
 	ifconfig $brx up
 }
 
-vlan_create_org_iptv_vif() # $1: vid, $2: pri
+vlan_create_isp_iptv_vif() # $1: vid, $2: pri
 {
 	local vid=$1
 	local pri=$2
@@ -629,6 +642,7 @@ vlan_create_brs_and_vifs()
 	local ru_feature=0
 
 	local vlan_enable_bridge=$($CONFIG get enable_orange)
+	local enable_spvoda_iptv=$($CONFIG get spain_voda_iptv)
 
 	if [ "x$firmware_region" = "xWW" ] || [ "x$firmware_region" = "x" ] ;then
 		if [ "x$($CONFIG get GUI_Region)" = "xRussian" ] ;then
@@ -695,16 +709,16 @@ vlan_create_brs_and_vifs()
 		else
 			used_wports=$(($used_wports | $5))
 			if [ "$vlan_enable_bridge" = "1" ]; then
-				# FREE ISP: VLAN ID 100
-				if [ "$3" = "100" ]; then
-					sw_configvlan "vlan" "add" "iptv" $3 $5 $4
 				# Orange VOD: VLAN ID 838; IPTV: VLAN ID 840
-				elif [ "$3" = "838" -o "$3" = "840" ]; then
-					 vlan_create_org_iptv_vif "838" "4"
+				if [ "$3" = "838" -o "$3" = "840" ]; then
+					 vlan_create_isp_iptv_vif "838" "4"
 					 sw_configvlan "vlan" "add" "br" "838" "0" "4"
-					 vlan_create_org_iptv_vif "840" "5"
+					 vlan_create_isp_iptv_vif "840" "5"
 					 sw_configvlan "vlan" "add" "br" "840" "0" "5"
 				fi
+			elif [ "$enable_spvoda_iptv" = "1" -a "$3" = "105" ]; then
+				vlan_create_isp_iptv_vif "105" "0"
+				sw_configvlan "vlan" "add" "br" "105" "0" "0"
 			else
 				vlan_create_br_and_vif $3 $4
 				sw_configvlan "vlan" "add" "vlan" $3 $5 $4
@@ -718,6 +732,10 @@ vlan_create_brs_and_vifs()
 	else
 		vlan_create_internet_vif $i_vid $i_pri
 		sw_configvlan "vlan" "add" "br" "$i_vid" "0" "$i_pri"
+	fi
+	# while Spain Voda IPTV is enabled, all LAN ports can be used as IPTV port. 
+	if [ "$enable_spvoda_iptv" = "1" ]; then
+		used_wports=0
 	fi
 	sw_configvlan "vlan" "add" "lan" "$lanvid" $(($used_wports ^ 0x3f)) "0"
 	sw_configvlan "vlan" "end"

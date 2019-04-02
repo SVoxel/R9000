@@ -126,9 +126,9 @@ function loadvalue() {
 	}
  }
 
-function check_wan_preference(cf) {
 
-	if(cf.hid_wan_preference.value == "0")
+function check_wan_preference_action(cf)
+{
 		if(top.wizard_wan_preference == "1")
 		{
 			cf.submit_flag.value="hijack_wan_preference";
@@ -158,6 +158,12 @@ function check_wan_preference(cf) {
 		}
 		else
 			cf.submit();
+}
+
+function check_wan_preference(cf) {
+
+	if(cf.hid_wan_preference.value == "0")
+		check_wan_preference_action(cf);
 	else
 	{
 		wan_preference_status();
@@ -165,7 +171,9 @@ function check_wan_preference(cf) {
 		el.style.display = "block";
 		setTimeout(function() {
 				if(el.innerHTML != bh_sfp_error1)
-					cf.submit();
+				{
+					check_wan_preference_action(cf);			
+				}
 				else
 					document.location.reload();
 		},3000);

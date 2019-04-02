@@ -127,7 +127,7 @@ function mode_change( )
 <input type="hidden" name="wla_wpa1_press_flag" value=0>
 <input type="hidden" name="wla_wpa2_press_flag" value=0>
 <input type="hidden" name="wla_wpas_press_flag" value=0>
-<input type="hidden" name="wps_change_flag" value="<% cfg_get("wps_status") %>">
+<input type="hidden" name="wps_change_flag">
 <input type="hidden" name="hidden_enable_guestNet">
 <input type="hidden" name="hidden_enable_ssidbro">
 <input type="hidden" name="hidden_allow_guest">
@@ -667,8 +667,9 @@ function loadvalue()
 	getObj("wpae").innerHTML='';	
 	
 	var sectype=wl_sectype;	
-	
-	form.security_type[parseInt(sectype)-1].checked=true;
+
+	if(parseInt(sectype)>0)
+		form.security_type[parseInt(sectype)-1].checked=true;
 	
 	if(an_router_flag == 1){	
 		str_have_an=getObj("hidden_an").innerHTML;
@@ -697,8 +698,8 @@ function loadvalue()
 
 		var sectype_a=wla_sectype;
 
-		form.security_type_an[parseInt(sectype_a)-1].checked=true;
-	
+		if(parseInt(sectype_a)>0)
+			form.security_type_an[parseInt(sectype_a)-1].checked=true;
 	}
 
 	if( wl_mode == "5g")

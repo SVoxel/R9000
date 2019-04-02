@@ -184,7 +184,7 @@ bh_connect_success_1="Du er tilkoblet Internett."
 
 bh_connect_success_2="Denne ruteren er forhåndsinnstilt med følgende unike navn på trådløst nettverk (SSID) og "
 
-bh_network_key="nettverksnøkkel (passord)"
+bh_network_key="nettverksnøkkel (passord)."
 
 bh_rollover_help_text="Ruteren er forhåndsinnstilt med WPA2-PSK trådløs sikkerhet for å beskytte nettverket ditt mot uønsket tilgang. For å koble til det trådløse nettverket må du angi nettverksnøkkelen (passord). Disse forhåndsinnstillingene er unike for denne enheten, som et serienummer.  Hvis du vil endre dem, kan du gjøre det senere på skjermbildet Wireless Settings (Trådløsinnstillinger) på ruterens webgrensesnitt."
 

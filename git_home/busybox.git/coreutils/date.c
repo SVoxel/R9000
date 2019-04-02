@@ -123,7 +123,9 @@ int date_main(int argc, char **argv)
 	time_zone = get_time_zone();
 	if (*time_zone != '\0') {
 		time(&tm);
-		setenv("TZ", time_zone, 1);
+		if (!(opt & DATE_OPT_UTC)) {
+			setenv("TZ", time_zone, 1);
+		}
 	}
 	memcpy(&tm_time, localtime(&tm), sizeof(tm_time));
 	/* Zero out fields - take her back to midnight! */

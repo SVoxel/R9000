@@ -122,7 +122,7 @@ $ECHO -n > "$CSR121_FILE"
 $ECHO -n > "$CSR249_FILE"
 
 local orange_vlan_enable_bridge=$($CONFIG get enable_orange)
-
+local enable_spvoda_iptv=$($CONFIG get spain_voda_iptv)
 
 case "$1" in
 	deconfig)
@@ -362,7 +362,7 @@ case "$1" in
 			# If upgrade FW, need to update stremboost database
 			sb_update_database
 		fi
-	elif [ "$orange_vlan_enable_bridge" = "1" ]; then  
+	elif [ "$orange_vlan_enable_bridge" = "1" -o "$enable_spvoda_iptv" = "1" ]; then  
 		echo "*** Enter WAN $interface DHCP bound state with IP $ip and netmask $NETMASK..."
 		$IFCONFIG $interface $ip $BROADCAST $NETMASK
 		if [ -n "$router" ]; then
@@ -598,7 +598,7 @@ case "$1" in
 			# If upgrade FW, need to update stremboost database
 			sb_update_database
 		fi
-	elif [ "$orange_vlan_enable_bridge" = "1" ]; then
+	elif [ "$orange_vlan_enable_bridge" = "1" -o "$enable_spvoda_iptv" = "1" ]; then
 		echo "*** Enter WAN $interface DHCP renew state with IP $ip and netmask $NETMASK..."
 		$IFCONFIG $interface $ip $BROADCAST $NETMASK
 		if [ -n "$router" ]; then 

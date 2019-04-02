@@ -105,7 +105,7 @@ var get_sec_channel = "<% cfg_get("wla_sec_channel") %>";
 <input type="hidden" name="wla_wpa1_press_flag" value=0>
 <input type="hidden" name="wla_wpa2_press_flag" value=0>
 <input type="hidden" name="wla_wpas_press_flag" value=0>
-<input type="hidden" name="wps_change_flag" value="<% cfg_get("wps_status") %>">
+<input type="hidden" name="wps_change_flag">
 <input type="hidden" name="hidden_enable_guestNet">
 <input type="hidden" name="hidden_enable_ssidbro">
 <input type="hidden" name="hidden_allow_guest">
@@ -1109,7 +1109,8 @@ function loadvalue()
 	if(wl_guest_enable==1 && wl_guest_sectype==2)
 		form.security_type[1].disabled = true;
 	
-	form.security_type[parseInt(sectype)-1].checked=true;
+	if(parseInt(sectype)>0)
+		form.security_type[parseInt(sectype)-1].checked=true;
 
 	if(wl_sectype == '2')
 	{
@@ -1117,7 +1118,8 @@ function loadvalue()
 		var keyno=wl_get_keyno;
 		var keylength=wl_get_keylength;
 		changekeylen(document.forms[0]);
-		form.wep_key_no[eval(keyno)-1].checked = true;
+		if(parseInt(keyno)>0)
+			form.wep_key_no[parseInt(keyno)-1].checked = true;
 		form.KEY1.value=wl_key1;
 		form.KEY2.value=wl_key2;
 		form.KEY3.value=wl_key3;
@@ -1223,6 +1225,7 @@ function loadvalue()
 		if(wl_guest_enable_an==1 && wl_guest_sectype_an==2)
 			form.security_type_an[1].disabled = true;
 
+		if(parseInt(sectype_a)>0)
 		form.security_type_an[parseInt(sectype_a)-1].checked=true;
 	
 		if(wla_sectype == '2')
@@ -1231,7 +1234,8 @@ function loadvalue()
 			var keyno=wla_get_keyno;
 			var keylength=wla_get_keylength;
 			changekeylen_a(document.forms[0]);
-			form.wep_key_no_an[eval(keyno)-1].checked = true;
+			if(parseInt(keyno)>0)
+				form.wep_key_no_an[parseInt(keyno)-1].checked = true;
 			form.KEY1_an.value=wla_key1;
 			form.KEY2_an.value=wla_key2;
 			form.KEY3_an.value=wla_key3;

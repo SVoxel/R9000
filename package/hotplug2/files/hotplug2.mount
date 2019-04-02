@@ -202,11 +202,14 @@ if [ "x$(parted -s /dev/`echo $1 | sed 's/[0-9]//g'` print noshare | grep $1)" =
 			echo "do mount ext2..." > /dev/console
 			mount -t ext2 -o nodev,noatime  /dev/$1 /mnt/$mount_part
 		;;
+		"apfs")
+                        mount -t ufsd -o nls=utf8,fmask=000,dmask=000 /dev/$1 /mnt/$mount_part
+                ;;
 		"hfs")
 			mount -t hfs -o nodev,noatime /dev/$1 /mnt/$mount_part
 		;;
 		"hfsplus")
-			mount -t hfsplus -o nodev,noatime --force /dev/$1 /mnt/$mount_part
+			mount -t ufsd -o nls=utf8,rw,nodev,noatime,uid=0,gid=0,fmask=0,dmask=0 --force /dev/$1 /mnt/$mount_part
 		;;
 		"exfat")
 			mount -t exfat -o umask=000 /dev/$1 /mnt/$mount_part
@@ -219,6 +222,11 @@ if [ "x$(parted -s /dev/`echo $1 | sed 's/[0-9]//g'` print noshare | grep $1)" =
 			fi
 		;;
 		*)
+		mount -t ufsd /dev/$1 /mnt/$mount_part
+		if [ $? -eq 0 ];then
+			echo "@@@@ mount successfully ufsd" > /dev/console
+			return
+		fi
 		mount  /dev/$1 /mnt/$mount_part
 		if [ $? -ne 0 ]; then
 			rmdir /mnt/$mount_part

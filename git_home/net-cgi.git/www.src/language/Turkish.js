@@ -184,7 +184,7 @@ bh_connect_success_1="İnternet'e başarıyla bağlandınız."
 
 bh_connect_success_2="Bu yönlendirici, aşağıdaki benzersiz kablosuz ağ adı (SSID) ve ... ile önceden ayarlanmıştır "
 
-bh_network_key="ağ anahtarı (parola)"
+bh_network_key="ağ anahtarı (parola)."
 
 bh_rollover_help_text="Yönlendiriciniz, ağınızı istenmeyen erişimlere karşı korumak için WPA2-PSK kablosuz güvenliği ile önceden ayarlanmıştır. Kablosuz ağa katılmak için, ağ anahtarını (parola) girmeniz gerekir. Bu önceden yapılmış ayarlar, seri numarası gibi bu aygıta özgüdür.  Bunları değiştirmek isterseniz, bunu yönlendirici web GUI'sindeki Kablosuz Ayarları ekranında daha sonra yapabilirsiniz."
 

@@ -80,6 +80,12 @@ function loadvalue()
 			cf.vlan_id.disabled = true;
 			cf.vlan_priority.disabled = true;
 		}
+		else if(each_info[1] == "SpainIPTV"){
+			document.getElementById("vlan_ports").style.display="";
+			cf.vlan_name.disabled = true;
+			cf.vlan_id.disabled = true;
+			cf.vlan_priority.disabled = true;
+		}
 		else
 		{
 			cf.vlan_id.disabled = false;
@@ -186,7 +192,18 @@ function change_type(cf)
 			cf.vlan_id.disabled = true;
 			cf.vlan_priority.disabled = true;
 		}
-	} else {
+	}else if(cf.vlan_type.value == "spain_voda_iptv")
+	{
+		document.getElementById("vlan_ports").style.display ="";
+		document.getElementById("orange_login").style.display ="none";
+		cf.vlan_name.value = "Spain Voda IPTV";
+		cf.vlan_name.disabled = true;
+		cf.vlan_id.value = "105";
+		cf.vlan_priority.value = "0";
+		cf.vlan_id.disabled = true;
+		cf.vlan_priority.disabled = true;
+	}
+	else {
 		if(default_internet != 1) {
 			document.getElementById("vlan_ports").style.display ="";
 			cf.vlan_name.value = each_info[1];
@@ -215,9 +232,11 @@ function change_type(cf)
 					document.write('<option value="orange_dhcp">Orange France DHCP</option><option value="orange_pppoe">Orange France PPPoE</option><option value="others" selected>Others</option>');
 			} else {
 				if(each_info[1] == "OrangeIPTV")
-					document.write('<option value="orange" selected>Orange France TV</option><option value="others">Others</option>');
+					document.write('<option value="orange" selected>Orange France TV</option><option value="spain_voda_iptv">Spain Voda IPTV</option><option value="others">Others</option>');
+				else if(each_info[1] == "SpainIPTV")
+					document.write('<option value="orange">Orange France TV</option><option value="spain_voda_iptv" selected>Spain Voda IPTV</option><option value="others">Others</option>');
 				else
-					document.write('<option value="orange">Orange France TV</option><option value="others" selected>Others</option>');
+					document.write('<option value="orange">Orange France TV</option><option value="spain_voda_iptv">Spain Voda IPTV</option><option value="others" selected>Others</option>');
 			}
 		} else {
 			document.write('<option value="others" selected>Others</option>');

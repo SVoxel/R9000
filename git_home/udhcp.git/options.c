@@ -257,3 +257,81 @@ void attach_option(struct option_set **opt_list, struct dhcp_option *option, cha
 		*curr = new;		
 	}
 }
+
+/* This function is to create DHCP option 125 with 3 sub-options for Orange France Livebox4 and
+ * WHD94 decoder. VIinfo is where the option string stored.
+ */
+int createVIoption(int type, char *VIinfo)
+{
+	char optionData[VENDOR_IDENTIFYING_INFO_LEN], *dataPtr;
+	int len, totalLen = 0;
+	char device_oui[OUI_LENGTH] = {0}, device_sn[SN_LENGTH] = {0}, device_pc[PC_LENGTH] = {0};
+
+	optionData[VENDOR_OPTION_CODE_OFFSET] = (char)VENDOR_IDENTIFYING_OPTION_CODE;
+	*(unsigned int*)(optionData+VENDOR_OPTION_ENTERPRISE_OFFSET) = (unsigned int)VENDOR_ADSL_FORUM_ENTERPRISE_NUMBER;
+	dataPtr = optionData + VENDOR_OPTION_DATA_OFFSET + VENDOR_OPTION_DATA_LEN;
+	totalLen = VENDOR_ENTERPRISE_LEN + VENDOR_OPTION_DATA_LEN;
+
+	if (type != VENDOR_IDENTIFYING_FOR_GATEWAY)
+		return -1;
+
+	if (strcmp(config_get("LB4_dev_oui"), "0") == 0)
+	{
+		strncpy(device_oui, (const char*)_LB4_deviceOui, OUI_LENGTH - 1);
+	}
+	else
+	{
+		strncpy(device_oui, config_get("LB4_dev_oui"), OUI_LENGTH - 1);
+	}
+
+	if (strcmp(config_get("LB4_dev_sn"), "0") == 0)
+	{
+		strncpy(device_sn, (const char*)_LB4_deviceSerialNum, SN_LENGTH - 1);
+	}
+	else
+	{
+		strncpy(device_sn, config_get("LB4_dev_sn"), SN_LENGTH - 1);
+	}
+
+	if (strcmp(config_get("LB4_dev_pc"), "0") == 0)
+	{
+		strncpy(device_pc, (const char*)_LB4_deviceProductClass, PC_LENGTH - 1);
+	}
+	else
+	{
+		strncpy(device_pc, config_get("LB4_dev_pc"), PC_LENGTH - 1);
+	}
+
+	/* read system information and add it to option data */
+     	/* OUI */
+	*dataPtr++ = (char)VENDOR_GATEWAY_OUI_SUBCODE;
+	len = strlen(device_oui);
+	*dataPtr++ = len;
+	strncpy(dataPtr, device_oui, len);
+	dataPtr += len;
+	totalLen += (len + VENDOR_SUBCODE_AND_LEN_BYTES);
+
+	/* Serial Number */
+	*dataPtr++ = (char)VENDOR_GATEWAY_SERIAL_NUMBER_SUBCODE;
+	len = strlen(device_sn);
+	*dataPtr++ = len;
+	strncpy(dataPtr, (const char*)device_sn, len);
+	dataPtr += len;
+	totalLen += (len + VENDOR_SUBCODE_AND_LEN_BYTES);
+
+	/* Product Class */
+        *dataPtr++ = VENDOR_GATEWAY_PRODUCT_CLASS_SUBCODE;
+	len = strlen(device_pc);
+	*dataPtr++ = len;
+	strncpy(dataPtr, (const char*)device_pc, len);
+	dataPtr += len;
+	totalLen += (len + VENDOR_SUBCODE_AND_LEN_BYTES);
+
+	optionData[VENDOR_OPTION_LEN_OFFSET] = totalLen;
+	optionData[VENDOR_OPTION_DATA_OFFSET] = totalLen - VENDOR_ENTERPRISE_LEN - VENDOR_OPTION_DATA_LEN;
+
+	/* also copy the option code and option len which is not counted in total len */
+	memcpy((void*)VIinfo,(void*)optionData,(totalLen+VENDOR_OPTION_DATA_OFFSET));
+
+	return 0;
+}

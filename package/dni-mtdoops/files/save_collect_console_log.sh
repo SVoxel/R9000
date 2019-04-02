@@ -22,7 +22,7 @@ module_name=`cat /module_name`
 
 mtd_oops="$(find_mtd_part 'crashdump')"
 
-/sbin/debug_save_panic_log $mtd_oops
+#/sbin/debug_save_panic_log $mtd_oops
 
 #disable dynamic debug for 11ad
 #[ -f /proc/sys/kernel/printk ] && echo '7' > /proc/sys/kernel/printk

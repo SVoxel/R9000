@@ -5,6 +5,8 @@ function check_vlan_input(cf,flag)
 	cf.vlan_priority.disabled = false;
 	if(cf.vlan_name.value == "Orange France TV")
 		cf.vlan_name.value = "OrangeIPTV";
+	if(cf.vlan_name.value == "Spain Voda IPTV")
+		cf.vlan_name.value = "SpainIPTV";
 	if(!(flag=='edit' && default_internet ==1))
 	{
 		
@@ -30,9 +32,15 @@ function check_vlan_input(cf,flag)
 				if(cf.vlan_name.value == "OrangeIPTV") {
 					alert("$vlan_error4_1 " +"Orange France TV" +" $vlan_error4_2");
 					cf.vlan_name.value = "Orange France TV";
-				} else {
+				}
+			        else if(cf.vlan_name.value == "SpainIPTV"){
+					alert("$vlan_error4_1 " +"Spain Voda IPTV" +" $vlan_error4_2");
+					cf.vlan_name.value = "Spain Voda IPTV";
+				}	
+				else {
 					alert("$vlan_error4_1 " +cf.vlan_name.value +" $vlan_error4_2");
 				}
+				change_type(cf);
 				return false;
 			}
 		}
@@ -101,6 +109,8 @@ function check_vlan_input(cf,flag)
 		if(wired==0 && wireless==0 && (cf.vlan_name.value != "OrangeIPTV"))
 		{
 			alert("$vlan_error5");
+			if(cf.vlan_name.value == "SpainIPTV")
+				change_type(cf);
 			return false;
 		}
 		cf.hid_wired_port.value=wired;

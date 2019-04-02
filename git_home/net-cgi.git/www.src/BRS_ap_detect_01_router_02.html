@@ -145,19 +145,19 @@ function show_yes_or_no_div(cf)
 		<div id="ap_no_content" class="ap_doc_div" style="display:none">
 			<p><b><script>document.write(bh_mode_no_tips);</script></b></p>	
 			<div class="left_div">
-				2.4GHz <script>document.write(bh_wirless_name);</script>
+				2.4GHz <script>document.write(bh_wirless_name+":");</script>
 			</div>
 			<div class="right_div"><% cfg_get_ssid_html("wl_ssid") %></div>
 			<div class="left_div">
-				5GHz <script>document.write(bh_wirless_name);</script>
+				5GHz <script>document.write(bh_wirless_name+":");</script>
 			</div>
 			<div class="right_div"><% cfg_get_ssid_html("wla_ssid") %></div>
 			<div class="left_div">
-				60GHz <script>document.write(bh_wirless_name)</script>
+				60GHz <script>document.write(bh_wirless_name+":")</script>
 			</div>
 			<div class="right_div"><% cfg_get_ssid_html("wig_ssid") %></div>
 			<div class="left_div">
-				<script>document.write(bh_wl_password);</script>
+				<script>document.write(bh_wl_password+":");</script>
 			</div>
 			<div class="right_div"><% passphrase_bg_msg("wl_wpas_spk")%></div>
 		</div>

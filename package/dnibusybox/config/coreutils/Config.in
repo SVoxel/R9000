@@ -183,14 +183,14 @@ config DNIBUSYBOX_CONFIG_DIRNAME
 
 config DNIBUSYBOX_CONFIG_DOS2UNIX
 	bool "dos2unix/unix2dos"
-	default n
+	default y
 	help
 	  dos2unix is used to convert a text file from DOS format to
 	  UNIX format, and vice versa.
 
 config DNIBUSYBOX_CONFIG_UNIX2DOS
 	bool
-	default n
+	default y
 	depends on DNIBUSYBOX_CONFIG_DOS2UNIX
 	help
 	  unix2dos is used to convert a text file from UNIX format to

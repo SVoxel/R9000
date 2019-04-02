@@ -127,7 +127,7 @@ var wps_alert="<% cfg_get("wps_alert") %>";
 <input type="hidden" name="wla_wpa2_press_flag" value=0>
 <input type="hidden" name="wla_wpas_press_flag" value=0>
 
-<input type="hidden" name="wps_change_flag" value="<% cfg_get("wps_status") %>">
+<input type="hidden" name="wps_change_flag">
 
 <input type="hidden" name="hidden_enable_guestNet">
 <input type="hidden" name="hidden_enable_ssidbro">
@@ -689,7 +689,8 @@ function setSecurity(num)
 		changekeylen(form);/* to fix bug 27115 */
 		var keyno=wl_get_keyno;
 		var keylength=wl_get_keylength;
-		form.wep_key_no[eval(keyno)-1].checked = true;
+		if(parseInt(keyno)>0)
+			form.wep_key_no[parseInt(keyno)-1].checked = true;
 		form.KEY1.value=wl_key1;
 		form.KEY2.value=wl_key2;
 		form.KEY3.value=wl_key3;
@@ -754,7 +755,8 @@ function setSecurity_an(num)
 		changekeylen_a(form); /* to fix bug 27115 */
 		var keyno_an=wl_get_keyno_an;
 		var keylength_an=wl_get_keylength_an;
-		form.wep_key_no_an[eval(keyno_an)-1].checked = true;
+		if(parseInt(keyno_an)>0)
+			form.wep_key_no_an[parseInt(keyno_an)-1].checked = true;
 		form.KEY1_an.value=wl_key1_an;
 		form.KEY2_an.value=wl_key2_an;
 		form.KEY3_an.value=wl_key3_an;
@@ -896,14 +898,16 @@ function loadvalue()
 			document.getElementById("wpa_wpa2_an_enterprise").style.display="";
 	}
 
-	form.security_type[parseInt(sectype)-1].checked=true;
+	if(parseInt(sectype)>0)
+		form.security_type[parseInt(sectype)-1].checked=true;
 	if(wl_sectype == '2')
 	{
 		var form=document.forms[0];
 		var keyno=wl_get_keyno;
 		var keylength=wl_get_keylength;
 		changekeylen(document.forms[0]);
-		form.wep_key_no[eval(keyno)-1].checked = true;
+		if(parseInt(keyno)>0)
+			form.wep_key_no[parseInt(keyno)-1].checked = true;
 		form.KEY1.value=wl_key1;
 		form.KEY2.value=wl_key2;
 		form.KEY3.value=wl_key3;
@@ -992,14 +996,16 @@ function loadvalue()
 		if(endis_wla_radio_an==1 && wla_sectype==2)
 			form.security_type_an[1].disabled = true;
 
-		form.security_type_an[parseInt(sectype_an)-1].checked=true;
+		if(parseInt(sectype_an)>0)
+			form.security_type_an[parseInt(sectype_an)-1].checked=true;
 		if(wl_sectype_an == '2')
 		{
 			var form=document.forms[0];
 			var keyno_an=wl_get_keyno_an;
 			var keylength_an=wl_get_keylength_an;
 			changekeylen_a(document.forms[0]);
-			form.wep_key_no_an[eval(keyno_an)-1].checked = true;
+			if(parseInt(keyno_an)>0)
+				form.wep_key_no_an[parseInt(keyno_an)-1].checked = true;
 			form.KEY1_an.value=wl_key1_an;
 			form.KEY2_an.value=wl_key2_an;
 			form.KEY3_an.value=wl_key3_an;

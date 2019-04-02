@@ -26,6 +26,29 @@ enum {
 #define OPTION_REQ	0x10 /* have the client request this option */
 #define OPTION_LIST	0x20 /* There can be a list of 1 or more of these */
 
+#define VENDOR_ADSL_FORUM_ENTERPRISE_NUMBER	3561
+#define VENDOR_IDENTIFYING_FOR_GATEWAY		1
+#define VENDOR_ENTERPRISE_LEN			4    /* 4 bytes */
+#define VENDOR_IDENTIFYING_INFO_LEN		142
+#define VENDOR_IDENTIFYING_OPTION_CODE		125
+#define VENDOR_OPTION_CODE_OFFSET		0
+#define VENDOR_OPTION_LEN_OFFSET		1
+#define VENDOR_OPTION_ENTERPRISE_OFFSET		2
+#define VENDOR_OPTION_DATA_OFFSET		6
+#define VENDOR_OPTION_DATA_LEN			1
+#define VENDOR_OPTION_SUBCODE_LEN		1
+#define VENDOR_SUBCODE_AND_LEN_BYTES		2
+#define VENDOR_GATEWAY_OUI_SUBCODE		4
+#define VENDOR_GATEWAY_SERIAL_NUMBER_SUBCODE	5
+#define VENDOR_GATEWAY_PRODUCT_CLASS_SUBCODE	6
+
+#define _LB4_deviceOui		"289EFC"
+#define _LB4_deviceSerialNum	"NQ2019044010129"
+#define _LB4_deviceProductClass	"Livebox 4"
+#define OUI_LENGTH		8
+#define SN_LENGTH		16
+#define PC_LENGTH		10
+
 struct dhcp_option {
 	char name[16];
 	char flags;
@@ -42,4 +65,5 @@ int add_simple_option(unsigned char *optionptr, unsigned char code, u_int32_t da
 struct option_set *find_option(struct option_set *opt_list, char code);
 void attach_option(struct option_set **opt_list, struct dhcp_option *option, char *buffer, int length);
 
+int createVIoption(int type, char *VIinfo);
 #endif

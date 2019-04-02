@@ -184,7 +184,7 @@ bh_connect_success_1="Sie sind jetzt mit dem Internet verbunden."
 
 bh_connect_success_2="Für den Router wurde folgender eindeutiger Netzwerkname (SSID) und "
 
-bh_network_key="Netzwerkschlüssel (Passwort) voreingestellt"
+bh_network_key="Netzwerkschlüssel (Passwort) voreingestellt."
 
 bh_rollover_help_text="Damit Ihr Netzwerk vor unerwünschtem Zugriff geschützt ist, wurde der Router bereits mit WPA2-PSK-Sicherheit vorkonfiguriert. Um eine Verbindung mit dem drahtlosen Netzwerk herzustellen, geben Sie den Netzwerkschlüssel (Passwort) ein. Diese Voreinstellungen sind bei diesem Gerät individuell, wie z. B. eine Seriennummer.  Sie können die Einstellungen später in der Benutzeroberfläche des Routers auf dem Bildschirm WLAN-Konfiguration ändern."
 

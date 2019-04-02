@@ -5,6 +5,7 @@ export PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export HOME=$(grep -e "^${USER:-root}:" /etc/passwd | cut -d ":" -f 6)
 export HOME=${HOME:-/root}
 export PS1='\[\033[01;31m\]\u\[\033[01;33m\]@\[\033[01;36m\]\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+export TZ=$(/bin/config get time_zone)
 
 alias ls='ls --color'
 alias la='/bin/ls -la'
@@ -20,5 +21,8 @@ alias rm='rm -i'
 
 [ -x /usr/bin/arp ] || arp() { cat /proc/net/arp; }
 [ -x /usr/bin/ldd ] || ldd() { LD_TRACE_LOADED_OBJECTS=1 $*; }
+
+time_zone_value="$(/bin/config get time_zone)"
+echo "$time_zone_value" > /tmp/time_zone
 
 umask 0022

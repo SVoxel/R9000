@@ -71,10 +71,10 @@ $(EXEC1) $(EXEC2) $(EXEC3): Makefile
 	$(CC) -c $(CFLAGS) $<
 	
 $(EXEC1): $(OBJS1)
-	$(CROSS)gcc $(LDFLAGS) $(OBJS1) -o $(EXEC1)
+	$(CROSS)gcc $(LDFLAGS) -lconfig $(OBJS1) -o $(EXEC1)
 
 $(EXEC2): $(OBJS2)
-	$(CROSS)gcc $(LDFLAGS) $(OBJS2) -o $(EXEC2)
+	$(CROSS)gcc $(LDFLAGS) -lconfig $(OBJS2) -o $(EXEC2)
 
 $(EXEC3): $(OBJS3)
 	$(CROSS)gcc $(LDFLAGS) $(OBJS3) -o $(EXEC3)

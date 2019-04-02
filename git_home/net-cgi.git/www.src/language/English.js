@@ -184,7 +184,7 @@ bh_connect_success_1="You are successfully connected to the Internet."
 
 bh_connect_success_2="This router is preset with the following unique wireless network name (SSID) and "
 
-bh_network_key="network key (password)"
+bh_network_key="network key (password)."
 
 bh_rollover_help_text="Your router is preset with WPA2-PSK wireless security to protect your network from unwanted access. To join the wireless network, you must enter the network key (password). These preset settings are unique to this device, like a serial number.  If you want to change them, you can do so later in the Wireless Settings screen on the router web GUI."
 

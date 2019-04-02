@@ -184,7 +184,7 @@ bh_connect_success_1="Connessione a Internet eseguita correttamente."
 
 bh_connect_success_2="Questo router è preimpostato con il seguente SSID (nome rete wireless) e "
 
-bh_network_key="chiave di rete (password) univoci"
+bh_network_key="chiave di rete (password) univoci."
 
 bh_rollover_help_text="Il router è preimpostato con la sicurezza wireless WPA2-PSK per proteggere la rete dagli accessi indesiderati. Per accedere alla rete wireless, è necessario inserire la chiave di rete (password). Queste impostazioni predefinite sono univoche del dispositivo, come un numero di serie.  Per modificarle, è possibile accedere in un secondo momento alla schermata Impostazioni wireless nell'interfaccia grafica Web del router."
 

@@ -171,6 +171,12 @@ function check_ntp(cf) {
 <div id="main" class="main_top_button">
 <TABLE cellspacing=5 cellPadding=0 width=100% border=0>
 <TR><TD nowrap colspan=2><b>$ntp_cur_time: <script>document.write(cur_time);</script></b></TD></TR>
+<TR id="ntp_warning" style="display:none"><TD><b style="color:red"><script>document.write("$router_ntp_setting_warning");</script></b></TD></TR>
+    <script>
+	    var ntp_updated = "<% access_file("/tmp/ntp_updated") %>";
+	    if(ntp_updated != "1")
+    		document.getElementById("ntp_warning").style.display="";
+    </script>
 <TR><TD nowrap colspan=2><input type="radio" name="ntp_type" value="0">$ntp_default</TD></TR>
 <TR><TD nowrap colspan=2><input type="radio" name="ntp_type" value="1">$ntp_pre_ser</TD></TR>
 <TR><TD nowrap colspan=2>

@@ -184,7 +184,7 @@ bh_connect_success_1="Olet muodostanut langattoman Internet-yhteyden."
 
 bh_connect_success_2="Tälle reitittimelle on määritetty valmiiksi seuraava yksilöllinen langattoman verkon nimi (SSID) ja "
 
-bh_network_key="verkkoavain (salasana)"
+bh_network_key="verkkoavain (salasana)."
 
 bh_rollover_help_text="Reitittimeen on määritetty valmiiksi WPA2-PSK-salaus langattoman yhteyden suojaamiseksi luvattomilta käyttäjiltä. Yhteyden muodostaminen langattomaan verkkoon vaatii verkkoavaimen (salasanan). Valmiiksi määritetyt asetukset ovat yksilölliset tälle laitteelle sarjanumeron tapaan.  Halutessasi voit muuttaa asetuksia myöhemmin Langattomat asetukset -näytössä reitittimen Web-käyttöliittymässä. "
 

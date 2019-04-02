@@ -184,7 +184,7 @@ bh_connect_success_1="A csatlakozás az internethez sikeresen megtörtént."
 
 bh_connect_success_2="Ez az útválasztó a következő előre megadott beállításokkal rendelkezik: egyedi vezeték nélküli hálózati név (SSID) és "
 
-bh_network_key="hálózati kulcs (jelszó)"
+bh_network_key="hálózati kulcs (jelszó)."
 
 bh_rollover_help_text="Az útválasztó WPA2-PSK vezeték nélküli biztonsággal van eleve ellátva a hálózat illetéktelen hozzáférés elleni védelme érdekében. Vezeték nélküli hálózatra való csatlakozáshoz hálózati kulcsot (jelszót) kell megadnia. Az előzetesen megadott beállítások a készülék egyedi adatai, akár a gyári szám.  Ha szeretné ezeket módosítani, később megteheti ezt az útválasztó webes felhasználói felületének Vezeték nélküli beállítások képernyőjén."
 

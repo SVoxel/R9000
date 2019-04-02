@@ -11,8 +11,7 @@ PKG_BUILD_DEPENDS:=datalib
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
 
-PKG_GIT_TREEISH:=e2346eec2dc4876ef298d8c819cbb7141ce53d50
-
+PKG_GIT_TREEISH:=f25e0e031692de3f006d7e5767b4fcf501c6567f
 include $(INCLUDE_DIR)/package.mk
 
 define Package/aws-iot

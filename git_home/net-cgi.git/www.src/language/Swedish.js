@@ -184,7 +184,7 @@ bh_connect_success_1="Du är ansluten till Internet."
 
 bh_connect_success_2="Den här routern är förinställd med följande unika namn på trådlöst nätverk (SSID) och "
 
-bh_network_key="nätverksnyckel (lösenord)"
+bh_network_key="nätverksnyckel (lösenord)."
 
 bh_rollover_help_text="Din router är förinställd med den trådlösa säkerhetsstandarden WPA2-PSK för att skydda ditt nätverk från oönskad användning. Om du vill ansluta till det trådlösa nätverket måste du ange nätverksnyckeln (lösenordet). De här förinställningarna är unika för enheten, precis som ett serienummer.  Om du vill ändra dem kan du göra det senare på sidan Trådlösa inställningar på routerns webbaserade användargränssnitt."
 

@@ -39,7 +39,6 @@ MAKE_OPTS:= \
 define Package/kmod-exfat
 #define Build/Prepare
 #	test x$(GIT_HOME) != x
-#	@echo "Plz sync with https://github.com/dorimanx/exfat-nofuse.git"
 #	test -d $(GIT_HOME)/$(PKG_NAME).git
 #	(cd $(GIT_HOME)/$(PKG_NAME).git; git-cat-file -e $(PKG_GIT_TREEISH))
 #	(cd $(KERNEL_BUILD_DIR); git-archive --format=tar --prefix=$(PKG_NAME)/ --remote=$(GIT_HOME)/$(PKG_NAME).git $(PKG_GIT_TREEISH) | tar -xvf -)

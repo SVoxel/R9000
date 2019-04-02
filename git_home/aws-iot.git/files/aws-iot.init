@@ -13,11 +13,11 @@ start() {
 	killall -9  aws-iot
 	rm /var/run/aws_iot.pid
 	if [ "$enable_ra" != "1" ]; then
-		/usr/sbin/aws-iot -t 86400 -o eventtype4
+		/usr/sbin/aws-iot -t 86400 -o eventtype4 &
 		/bin/config set aws_start_flag=2
 		/bin/config commit
 	else
-		/usr/sbin/aws-iot
+		/usr/sbin/aws-iot &
 		/bin/config set aws_start_flag=1
 		/bin/config commit
 	fi
@@ -83,8 +83,8 @@ boot()
 #		exit 1
 #	fi
 	if [ "x$(/bin/config get RA_stage)" = "x" ];then
-		/bin/config set RA_stage=prod
-		/bin/config commit
+	/bin/config set RA_stage=prod
+	/bin/config commit
 	fi
 	if [ -s /etc/reboot_reason ]; then
 		local reboot_reason=`cat  /etc/reboot_reason`
@@ -122,9 +122,10 @@ boot()
 		#date $mon$day$hour$min$year
 	fi
 	dd if=$panic_partion of=/tmp/crash_log bs=131072 count=2
-	local crash_newline=`cat /tmp/crash_log | wc -l`
-	local crash_oldline=`/bin/config get crash_line`
-	if [ "$crash_newline" != "$crash_oldline" ] && [ "x$crash_oldline" != "x" ]; then
+	#local crash_newline=`cat /tmp/crash_log | wc -l`
+	#local crash_oldline=`/bin/config get crash_line`
+	#if [ "$crash_newline" != "$crash_oldline" ] && [ "x$crash_oldline" != "x" ]; then
+	if [ -f /tmp/ramoops/crash_log ]; then
 		/bin/config set lastRebootReason=1
 		local UTC_time=`date +%s`
 		local get_time_zone=`/bin/config get time_zone`
@@ -140,18 +141,19 @@ boot()
 		fi
 		/bin/config set time_crash=$UTC_time
 		#local get_line=$(($crash_newline-$crash_oldline))
-		if [ $crash_newline -gt $crash_oldline ];then
-			local get_line=$(($crash_newline-$crash_oldline+1))
-		else
-			local get_line=$(($crash_newline+1))
-		fi
-		tail -n$get_line < /tmp/crash_log > /tmp/crash_aws_log
-		/bin/config set crash_line=$crash_newline
+		#if [ $crash_newline -gt $crash_oldline ];then
+		#	local get_line=$(($crash_newline-$crash_oldline+1))
+		#else
+		#	local get_line=$(($crash_newline+1))
+		#fi
+		#tail -n$get_line < /tmp/crash_log > /tmp/crash_aws_log
+		#/bin/config set crash_line=$crash_newline
+		cp /tmp/ramoops/crash_log /tmp/crash_aws_log
 		/bin/config set eventtype=0
 	fi
-	if [ "x$crash_oldline" == "x" ]; then
-		/bin/config set crash_line=$crash_newline
-	fi
+	#if [ "x$crash_oldline" == "x" ]; then
+	#	/bin/config set crash_line=$crash_newline
+	#fi
 	
 	check
 	 /bin/config set cpu_flag=1

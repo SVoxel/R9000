@@ -184,7 +184,7 @@ bh_connect_success_1="Du har nu oprettet forbindelse til internettet."
 
 bh_connect_success_2="Denne router er forudindstillet med det følgende entydige trådløse netværksnavn (SSID) og "
 
-bh_network_key="netværksnøgle (adgangskode)"
+bh_network_key="netværksnøgle (adgangskode)."
 
 bh_rollover_help_text="Din router er forudindstillet med WPA2-PSK trådløs sikkerhed til at beskytte dit netværk mod uønsket adgang. For at få adgang til det trådløse netværk skal du indtaste netværksnøglen (adgangskoden). Disse forudindstillede indstillinger er entydige på denne enhed, som et serienummer.  Hvis du vil ændre dem, kan du gøre det senere på skærmen Trådløse indstillinger i routerens brugergrænseflade."
 

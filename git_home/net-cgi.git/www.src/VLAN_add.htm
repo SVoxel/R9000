@@ -41,7 +41,16 @@ function change_type(cf)
 		cf.vlan_id.disabled = true;
 		cf.vlan_priority.value = "5";
 		cf.vlan_priority.disabled = true;
-	} else {
+	}else if(cf.vlan_type.value == "spain_voda_iptv"){
+		document.getElementById("vlan_ports").style.display ="";
+		cf.vlan_name.value = "Spain Voda IPTV";
+		cf.vlan_name.disabled = true;
+		cf.vlan_id.value = "105";
+		cf.vlan_id.disabled = true;
+		cf.vlan_priority.value = "0";
+		cf.vlan_priority.disabled = true;	
+	}
+	else {
 		document.getElementById("vlan_ports").style.display ="";
 		cf.vlan_name.value = "";
 		cf.vlan_name.disabled = false;
@@ -79,6 +88,7 @@ function loadvalue()
 	var netgear_region="<% get_firmware_region() %>";
 	if(netgear_region == "WW")
 		document.write('<option value="orange">Orange France TV</option>');
+		document.write('<option value="spain_voda_iptv">Spain Voda IPTV</option>');
 	</script>
 	<option value="others" selected>Others</option></TD>
 </TR>

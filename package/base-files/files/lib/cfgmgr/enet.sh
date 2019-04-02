@@ -507,6 +507,7 @@ sw_user_lan_ports_vlan_config() # $1: vlanid $2: LAN Ports, $3: Is_Bridge_VLAN $
 	local is_iptv_vlan="$5"
 	local vlan_mode="$6"
 	local vlan_enable_bridge=$($CONFIG get enable_orange)
+	local enable_spvoda_iptv=$($CONFIG get spain_voda_iptv)
 	local iptv_vlan_enable=$($CONFIG get iptv_vlan_enable)
 	local wan_preference=$($CONFIG get wan_preference)
 
@@ -520,7 +521,6 @@ sw_user_lan_ports_vlan_config() # $1: vlanid $2: LAN Ports, $3: Is_Bridge_VLAN $
 		[ "x$lan_pp" = "x" ] && continue
 		[ $lan_pp -lt 1 -o $lan_pp -gt 6 ] && continue
 		[ "$iptv_vlan_enable" = "1" -a "$vlan_mode" = "iptv" ] && continue
-		[ "$vlan_enable_bridge" = "1" -a "$vlan_mode" = "iptv" ] && continue
 		if [ "$(eval echo "$""LAN"$lan_pp"_SID")" = "0" ]; then
 			sw0_access_ports="$sw0_access_ports $(eval echo "$""LAN"$lan_pp"_PID")"
 		else
@@ -528,7 +528,14 @@ sw_user_lan_ports_vlan_config() # $1: vlanid $2: LAN Ports, $3: Is_Bridge_VLAN $
 		fi
 	done
 
-	[ "$is_bridge_vlan" = "1" ] && sw0_trunk_ports="$sw0_trunk_ports 3"
+	if [ "$is_bridge_vlan" = "1" ]; then
+		if [ "$wan_preference" = "0" ]; then
+			sw0_trunk_ports="$sw0_trunk_ports 3"
+		else
+			sw0_trunk_ports="0 5 4 6"
+			sw0_access_ports="$sw0_access_ports 3"
+		fi
+	fi
 
 	if [ "$is_wan_vlan" = "1" ]; then
 		if [ "$is_bridge_vlan" = "1" ]; then
@@ -545,8 +552,8 @@ sw_user_lan_ports_vlan_config() # $1: vlanid $2: LAN Ports, $3: Is_Bridge_VLAN $
 	fi
 
 	if [ "$is_iptv_vlan" = "1" ]; then	
-		if [ "$iptv_vlan_enable" = "1" -o "$vlan_enable_bridge" = "1" ]; then
-			if [ "$vlan_enable_bridge" = "1" ]; then
+		if [ "$iptv_vlan_enable" = "1" -o "$vlan_enable_bridge" = "1" -o "$enable_spvoda_iptv" = "1" ]; then
+			if [ "$vlan_enable_bridge" = "1" -o "$enable_spvoda_iptv" = "1" ]; then
 				sw0_trunk_ports="3 4 6"
 			else	
 				sw0_trunk_ports="3 5 4 6"

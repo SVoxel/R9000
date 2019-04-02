@@ -755,7 +755,10 @@ main(argc, argv)
 
 	if (orange_flag == 1)
 	{
-		user_class_data = "FSVDSL_livebox.Internet.softathome.Livebox3";
+		if (strcmp(config_get("LB_ver"), "4") == 0)
+			user_class_data = "FSVDSL_livebox.Internet.softathome.Livebox4";
+		else
+			user_class_data = "FSVDSL_livebox.Internet.softathome.Livebox3";
 		dhcp6_opt16 = "sagem";
 	}
 

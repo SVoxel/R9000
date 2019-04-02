@@ -71,6 +71,9 @@ static int orange_flag = 0;
 #define DEFAULT_SCRIPT		"/usr/share/udhcpc/default.script"
 #define DEFAULT_SCRIPT_AP	"/usr/share/udhcpc/default.script.ap"
 
+/* Defined in `/usr/lib/libconfig.so` */
+extern char *config_get(char *name);
+
 struct client_config_t client_config = {
 	/* Default options. */
 	abort_if_no_lease: 0,
@@ -605,8 +608,16 @@ int main(int argc, char *argv[])
 	    }
 	    else if (strcmp(client_config.interface, "brotv") == 0)
 	    {
-		//set option 77 to FSVDSL_livebox.MLTV.softathome.Livebox3
-		len = strlen("FSVDSL_livebox.MLTV.softathome.Livebox3");
+		if (strcmp(config_get("LB_ver"), "4") == 0)
+		{
+			/* Livebox4: set option 77 to FSVDSL_livebox.MLTV.softathome.Livebox4 for LB4/PC_MLTV_WHD94 */
+			len = strlen("FSVDSL_livebox.MLTV.softathome.Livebox4");
+		}
+		else
+		{	
+			/* Livebox3: set option 77 to FSVDSL_livebox.MLTV.softathome.Livebox3 */
+			len = strlen("FSVDSL_livebox.MLTV.softathome.Livebox3");
+		}
 	    }
 
 	    if (client_config.user_class) free(client_config.user_class);
@@ -616,11 +627,17 @@ int main(int argc, char *argv[])
 	    client_config.user_class[OPT_DATA] = len;
 	    if (strcmp(client_config.interface, "brwan") == 0)
 	    {
-		strncpy(client_config.user_class + OPT_DATA + 1, "FSVDSL_livebox.Internet.softathome.Livebox3", len);
+		if (strcmp(config_get("LB_ver"), "4") == 0)
+			strncpy(client_config.user_class + OPT_DATA + 1, "FSVDSL_livebox.Internet.softathome.Livebox4", len);
+		else
+			strncpy(client_config.user_class + OPT_DATA + 1, "FSVDSL_livebox.Internet.softathome.Livebox3", len);
 	    }
 	    else if (strcmp(client_config.interface, "brotv") == 0)
 	    {
-		strncpy(client_config.user_class + OPT_DATA + 1, "FSVDSL_livebox.MLTV.softathome.Livebox3", len);
+		if (strcmp(config_get("LB_ver"), "4") == 0)
+			strncpy(client_config.user_class + OPT_DATA + 1, "FSVDSL_livebox.MLTV.softathome.Livebox4", len);
+		else
+			strncpy(client_config.user_class + OPT_DATA + 1, "FSVDSL_livebox.MLTV.softathome.Livebox3", len);
 	    }
 	}
 

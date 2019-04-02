@@ -184,7 +184,7 @@ bh_connect_success_1="V-aţi conectat cu succes la Internet."
 
 bh_connect_success_2="Acest router este presetat cu următorul nume unic de reţea wireless (SSID) şi "
 
-bh_network_key="următoarea cheie de reţea (parolă)"
+bh_network_key="următoarea cheie de reţea (parolă)."
 
 bh_rollover_help_text="Routerul dvs. este presetat cu securitate wireless WPA2-PSK pentru a proteja reţeaua împotriva accesului nedorit. Pentru a accesa reţeaua wireless, trebuie să introduceţi cheia de reţea (parola). Aceste setări sunt unice pentru dispozitiv, ca un număr de serie.  Dacă doriţi să le modificaţi, o puteţi face mai târziu în ecranul Setări wireless din interfaţa grafică a routerului."
 

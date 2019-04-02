@@ -3,6 +3,7 @@
 
 FIREWALL="/www/cgi-bin/firewall.sh"
 DHCPNAME="/tmp/dhcp_name.conf"
+WAN_IPUP="/sbin/wan-ipup"
 
 SFP_IF="eth0"
 if [ "$($CONFIG get wan_preference)" = "1" -a "$($CONFIG get vlan_type)" = "1" ] ; then
@@ -73,6 +74,7 @@ same_subnet() # $1: ip1, $2: ip2, $3:netmask
 
 setup_interface_static_ip()
 {
+	old_ip=$($CONFIG get wan_dhcp_ipaddr)
 	local mtu=$($CONFIG get wan_dhcp_mtu)
 	ifconfig $WAN_IF mtu ${mtu:-1500}
 	ifconfig $WAN_IF $($CONFIG get wan_ipaddr) netmask $($CONFIG get wan_netmask)
@@ -82,9 +84,11 @@ setup_interface_static_ip()
 	route add default gw $($CONFIG get wan_gateway)
 
 	$FIREWALL restart
-    #for bug59182 when set WAN as static ip, DUT did not do NAT
-    # Run /sbin/wan-ipup  like dhcp 
-    /sbin/wan-ipup
+	#for bug59182 when set WAN as static ip, DUT did not do NAT
+	# While WAN IP is changed, run /sbin/wan-ipup
+	if [ "$old_ip" != "$($CONFIG get wan_ipaddr)" -a -x $WAN_IPUP ]; then
+		/sbin/wan-ipup $($CONFIG get wan_ipaddr)
+	fi
 
 	# static route & ripd
 	/sbin/cmdroute stop
@@ -133,6 +137,11 @@ setup_interface_dhcp()
 	if [ "x$clientid" != "x" ]; then
 		clientid_str="-c $clientid"
 	fi
+	local vendorid=$($CONFIG get dhcp_option60)
+	local vendorid_str
+	if [ "x$vendorid" != "x" ]; then
+		vendorid_str="-V $vendorid"
+	fi
 
 	if [ "x$($CONFIG get wan_hostname)" != "x" ];then
 		u_hostname=$($CONFIG get wan_hostname)
@@ -175,9 +184,9 @@ setup_interface_dhcp()
 		echo "************ org IPTV end ***************"
 	else
 		if [ "$changing_mode" = "1" ]; then
-				udhcpc -b -i $WAN_IF -h $DHCPNAME -r $($CONFIG get wan_dhcp_ipaddr) -N $($CONFIG get wan_dhcp_oldip) ${u_wan_domain:+-d $u_wan_domain} $clientid_str &
+				udhcpc -b -i $WAN_IF -h $DHCPNAME -r $($CONFIG get wan_dhcp_ipaddr) -N $($CONFIG get wan_dhcp_oldip) ${u_wan_domain:+-d $u_wan_domain} $clientid_str $vendorid_str &
     	else
-				udhcpc -b -i $WAN_IF -h $DHCPNAME -r $($CONFIG get wan_dhcp_ipaddr) -N $($CONFIG get wan_dhcp_oldip) ${u_wan_domain:+-d $u_wan_domain} $clientid_str
+				udhcpc -b -i $WAN_IF -h $DHCPNAME -r $($CONFIG get wan_dhcp_ipaddr) -N $($CONFIG get wan_dhcp_oldip) ${u_wan_domain:+-d $u_wan_domain} $clientid_str $vendorid_str
     	fi	
 	fi
 }
@@ -263,6 +272,7 @@ setup_wan_interface() # $1: manually
 	local endis_traffic=$($CONFIG get endis_traffic)
 	local firmware_region=`cat /tmp/firmware_region | awk '{print $1}'`
 	local ru_feature=0
+	local enable_spvoda_iptv=$($CONFIG get spain_voda_iptv)
 	
 	if [ "x$firmware_region" = "xWW" ] || [ "x$firmware_region" = "x" ] ;then
 		if [ "x$($CONFIG get GUI_Region)" = "xRussian" ] ;then
@@ -309,6 +319,15 @@ setup_wan_interface() # $1: manually
 					fi
 				fi
 				setup_interface_ppp $1
+
+				if [ "$enable_spvoda_iptv" = "1" ]; then
+					echo "Start spvoda iptv dhcp wan ...."
+					sleep 2
+					/bin/config set wan_endis_igmp=1
+					udhcpc -b -i brotv
+					sleep 1
+					echo 2 > /proc/sys/net/ipv4/conf/all/force_igmp_version
+				fi
 			fi
 			[ "$($CONFIG get wan_pppoe_dns_assign)" = "1" ] && set_dns
 		fi

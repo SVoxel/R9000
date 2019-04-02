@@ -184,7 +184,7 @@ bh_connect_success_1="A conexão com a Internet foi realizada com êxito."
 
 bh_connect_success_2="Este roteador está predefinido com o seguinte nome de rede sem fio exclusivo (SSID) e "
 
-bh_network_key="chave de rede (senha)"
+bh_network_key="chave de rede (senha)."
 
 bh_rollover_help_text="Seu roteador está predefinido com a segurança sem fio WPA2-PSK para proteger a rede contra acesso não autorizado. Para ingressar em uma rede sem fio, insira a chave de rede (senha). As configurações predefinidas são exclusivas para este dispositivo, como um número de série.  Caso queira alterá-las, vá até a tela Wireless Settings (Configurações sem fio) na interface gráfica de usuário da Web do roteador."
 

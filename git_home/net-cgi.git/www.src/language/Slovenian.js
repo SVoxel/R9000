@@ -184,7 +184,7 @@ bh_connect_success_1="Internetna povezava je vzpostavljena."
 
 bh_connect_success_2="Za ta usmerjevalnik je bilo vnaprej nastavljeno enolično ime brezžičnega omrežja (SSID) in "
 
-bh_network_key="omrežni ključ (geslo)"
+bh_network_key="omrežni ključ (geslo)."
 
 bh_rollover_help_text="Za usmerjevalnik je bila vnaprej nastavljena brezžična zaščita WPA2-PSK, ki omrežje ščiti pred neželenim dostopom. Če se želite pridružiti brezžičnem omrežju, morate nastaviti omrežni ključ (geslo). Te prednastavitve so enolične za to napravo, podobno kot serijska številka.  Če jih želite spremeniti, lahko to storite pozneje na zaslonu Brezžične nastavitve ali v uporabniškem vmesniku usmerjevalnika."
 

@@ -1,8 +1,10 @@
 #!/bin/sh
 
+# Run original firewall
 /usr/sbin/net-wall-bin $*
 
 if [ "$1" = "rule" ]; then
+	# Store rules of original firewall
 	cat /tmp/netwall-rules > /tmp/netwall-rules.tmp
 
 	# Check config file existence, add own rules if exists

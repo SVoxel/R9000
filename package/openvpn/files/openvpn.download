@@ -22,8 +22,8 @@ generate_client_conf_file(){
 	port=$($CONFIG get vpn_serv_port)
 	proto=$($CONFIG get vpn_serv_type)
 	if [ "$proto" = "udp" ]; then
-		sndbuf=393216
-		rcvbuf=393216
+		sndbuf=786432
+		rcvbuf=786432
 	else
 		proto=tcp
 		sndbuf=0
@@ -43,7 +43,7 @@ remote-cert-tls server
 ca ca.crt
 cert client.crt
 key client.key
-cipher AES-128-CBC
+cipher AES-128-GCM
 compress lz4-v2
 verb 0
 sndbuf $sndbuf
@@ -67,7 +67,7 @@ remote-cert-tls server
 ca ca.crt
 cert client.crt
 key client.key
-cipher AES-128-CBC
+cipher AES-128-GCM
 compress lz4-v2
 verb 5
 script-security 2
@@ -103,7 +103,7 @@ EOF
 	cat < $OPENVPN_CONF_DIR/client.key
 	cat << EOF
 </key>
-cipher AES-128-CBC
+cipher AES-128-GCM
 compress lz4-v2
 verb 5
 EOF

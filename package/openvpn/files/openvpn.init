@@ -65,10 +65,12 @@ generate_server_conf_file() {
 		port=$($CONFIG get vpn_serv_port)
 		proto=$($CONFIG get vpn_serv_type)
 		if [ "$proto" = "udp" ]; then
-			sndbuf=393216
-			rcvbuf=393216
+			fastio="fast-io"
+			sndbuf=786432
+			rcvbuf=786432
 		else
 			proto=tcp
+			fastio=";fast-io"
 			sndbuf=0
 			rcvbuf=0
 		fi
@@ -92,20 +94,22 @@ status /tmp/openvpnd.status
 mtu-disc yes
 topology subnet
 script-security 2
-ncp-ciphers AES-128-CBC:AES-256-CBC:AES-128-GCM:AES-256-GCM
-cipher AES-128-CBC
+ncp-ciphers AES-128-GCM:AES-256-GCM:AES-128-CBC:AES-256-CBC
+cipher AES-128-GCM
 auth sha1
 tls-server
 client-to-client
 duplicate-cn
 compress lz4-v2
 push "compress lz4-v2"
-fast-io
+$fastio
 client-connect "$push tap"
 sndbuf $sndbuf
 rcvbuf $rcvbuf
+push "sndbuf $sndbuf"
+push "rcvbuf $rcvbuf"
 EOF
-	else 
+	else
 		# Generate TUN server config
 		port=$($CONFIG get tun_vpn_serv_port)
 		proto=$($CONFIG get tun_vpn_serv_type)
@@ -113,9 +117,11 @@ EOF
 		lan_ipaddr=$($CONFIG get lan_ipaddr)
 		subnet=$(tun_net $lan_ipaddr $lan_netmask)
 		if [ "$proto" = "udp" ]; then
-			sndbuf=393216
-			rcvbuf=393216
+			fastio="fast-io"
+			sndbuf=786432
+			rcvbuf=786432
 		else
+			fastio=";fast-io"
 			proto=tcp
 			sndbuf=0
 			rcvbuf=0
@@ -140,18 +146,20 @@ status /tmp/openvpnd_tun.status
 mtu-disc yes
 topology subnet
 script-security 2
-ncp-ciphers AES-128-CBC:AES-256-CBC:AES-128-GCM:AES-256-GCM
-cipher AES-128-CBC
+ncp-ciphers AES-128-GCM:AES-256-GCM:AES-128-CBC:AES-256-CBC
+cipher AES-128-GCM
 auth sha1
 client-to-client
 duplicate-cn
 compress lz4-v2
 push "compress lz4-v2"
-fast-io
+$fastio
 push "dhcp-option DNS $lan_ipaddr"
 client-connect "$push tun"
 sndbuf $sndbuf
 rcvbuf $rcvbuf
+push "sndbuf $sndbuf"
+push "rcvbuf $rcvbuf"
 EOF
 	fi
 }
@@ -211,7 +219,7 @@ regenerate_cert_file() {
 	build-key-server server
 	if [ -f /tmp/md5vpn ] && [ -f /tmp/openvpn/dh1024.pem ] && [ -n "`cat /tmp/openvpn/dh1024.pem`" ]; then
 		cp /tmp/openvpn/dh1024.pem $EASY_RSA_DIR/keys/
-	else	
+	else
 		build-dh
 	fi
 	build-key client

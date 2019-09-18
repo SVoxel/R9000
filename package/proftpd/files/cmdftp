@@ -98,9 +98,11 @@ append_read_allowuser()
 
 	if [ "x$ftp_passwd_enable" = "x0" ];then
 		case "$1" in
-			0 | 1)	echo "			AllowUser admin"
-				echo "			AllowUser guest";;
-			2)	echo "			AllowUser admin";;
+			0) echo "			AllowUser admin"
+			   echo "			AllowUser guest";;
+			1) echo "			AllowUser admin"
+			   echo "			AllowUser guest";;
+			2) echo "			AllowUser admin";;
 			*);;
 		esac
 	else 
@@ -308,19 +310,12 @@ mount1()
 {
 	mkdir -p /tmp/$4/shares/"$3"
 	mount -o utf8=yes,fmask=0000,dmask=0000 /mnt/$1"$2" /tmp/$4/shares/"$3"
-	if [ $? -ne 0 ];then
+	if [ $? -ne 0 ]; then
 		# UTF8 can't be added to mounting ext2/3
         	mount /mnt/$1"$2" /tmp/$4/shares/"$3"
         	
-		if [ $? -ne 0 ];then
+		if [ $? -ne 0 ]; then
 			rmdir /tmp/$4/shares/"$3"
-		else
-			case "$5" in
-				0)chmod -R 777 /tmp/$4/shares/"$3";;
-				1)[ "$4" = "ftpadmin" ] && chmod -R 777 /tmp/$4/shares/"$3";;
-				2)chmod -R 777 /tmp/$4/shares/"$3";;
-				*);;
-			esac
 		fi
 	fi
 }
@@ -444,7 +439,7 @@ get_vendor_from_disk()
 construct_volume()
 {
 	tmp_capacity=$2
-	if [ $tmp_capacity -ge 1024 ] ;then
+	if [ $tmp_capacity -ge 1024 ]; then
 		GByte=`expr $tmp_capacity / 1024`
 		left=`expr $tmp_capacity % 1024`
 		left=`expr $left \* 100`
@@ -870,13 +865,19 @@ sleep 1
 case "$1" in
 	stop)
 		killall proftpd
+		umount_all "ftpadmin"
+		umount_all "ftpguest"
 	;;
 	start)
 		killall proftpd
+		umount_all "ftpadmin"
+		umount_all "ftpguest"
 		ftp_start
 	;;
 	restart)
 		killall proftpd
+		umount_all "ftpadmin"
+		umount_all "ftpguest"
 		ftp_start
 	;;
 esac

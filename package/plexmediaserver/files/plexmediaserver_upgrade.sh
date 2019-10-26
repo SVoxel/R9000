@@ -4,9 +4,11 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
 oc () { "$@" >> /dev/console 2>&1 ; } # stdout & stderr to /dev/console
 
+modelname=`cat /module_name`
+modelname_lc="$(echo $modelname |awk '{print tolower($0)}')"
 #plex_download_url="https://plex.tv/downloads/details/1?channel=0&build=linux-openwrt-armv7&distro=netgear"
-plex_download_url="ftp://updates1.netgear.com/sw-apps/plex/r9000/"
-plex_download_url_https="https://http.fw.updates1.netgear.com/sw-apps/plex/r9000/"
+plex_download_url="ftp://updates1.netgear.com/sw-apps/plex/${modelname_lc}/"
+plex_download_url_https="https://http.fw.updates1.netgear.com/sw-apps/plex/${modelname_lc}/"
 plex_version_name="*.*.*.*"
 plex_filter_name="plexmediaserver-r9k-"$plex_version_name"-armv7.tgz"
 plex_volume_name="plexmediaserver"
@@ -133,7 +135,8 @@ plex_download()
     [ ! -d $plex_partition_mount_point ] && oc echo "plex download: no plex partition!" && echo "4" > $plex_download_result && config set plex_update_run=0 && config commit && return 0
     config set plex_update_run=3
 	config commit
-    binary_name=`echo $1 |awk -F "/" '{print $6}'`
+    #binary_name=`echo $1 |awk -F "/" '{print $6}'`
+    binary_name=`cat $plex_latest_version | head -1 |awk '{print $1}'`
     ls /tmp/$plex_filter_name 2>/dev/null | grep -v "$binary_name" | xargs rm -rf
     if [ "x`ls /tmp/$binary_name 2>/dev/null`" = "x/tmp/$binary_name" ];then
         oc echo "plex download: plex binary have been downloaded, no need to download again."
@@ -307,7 +310,7 @@ plex_update()
 		[ "x`config get plex_retry_flag`" != "x0" ] && config set plex_retry_flag=0 && config commit
 		logger -- "[PLEX]Plex new binary upgrade success,"
 	fi
-    [ $upgrade_result -eq 0 -a "x$1" = "x1" ] && config set plex_auto_upgrade_enable=1 && config commit
+    [ $upgrade_result -eq 0 -a "x$1" = "x1" ] && config set plex_auto_upgrade_enable=1 && config set plex_update_run=-1 && config commit && /sbin/cmdsched
 }
 
 #For plex update retry 3 times

@@ -1,15 +1,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libubox
-PKG_VERSION:=2019-11-24-07413cce
+PKG_VERSION:=2020-01-20-43a103ff
 PKG_RELEASE=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://git.lede-project.org/project/libubox.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=4382c76d
+PKG_SOURCE_VERSION:=43a103ff
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
-PKG_MIRROR_MD5SUM:=078bd734dee81528ee5bad1a2cb39028
+PKG_MIRROR_MD5SUM:=e9152d07df73f758a707ffa0077564ed
 CMAKE_INSTALL:=1
 
 PKG_LICENSE:=ISC
@@ -47,7 +47,7 @@ define Package/jshn/description
   Library for parsing and generating JSON from shell scripts
 endef
 
-TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include -Wno-error=missing-field-initializers
+TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include
 CMAKE_OPTIONS = \
 	-DLUAPATH=/usr/lib/lua
 

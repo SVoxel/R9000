@@ -8,17 +8,21 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=e2fsprogs
-PKG_VERSION:=1.44.5
-PKG_MD5SUM:=3b52323fe5777d33d0b10a1b2ee54c86
+PKG_CPE_ID:=cpe:/a:e2fsprogs_project:e2fsprogs
+PKG_VERSION:=1.45.5
+PKG_HASH:=f9faccc0d90f73556e797dc7cc5979b582bd50d3f8609c0f2ad48c736d44aede
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=@SF/e2fsprogs
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+PKG_SOURCE_URL:=@KERNEL/linux/kernel/people/tytso/e2fsprogs/v$(PKG_VERSION)/
 
 HOST_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/host-build.mk
 
+ifneq ($(shell $(HOSTCC) --version | grep clang),)
+  HOST_CFLAGS += -D__GNUC_PREREQ\(...\)=0
+endif
 HOST_CFLAGS += $(FPIC)
 
 HOST_CONFIGURE_ARGS += \

@@ -11,12 +11,12 @@ include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=wireguard-tools
 
-PKG_VERSION:=1.0.20191226
+PKG_VERSION:=1.0.20200121
 PKG_RELEASE:=1
 
 PKG_SOURCE:=wireguard-tools-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://git.zx2c4.com/wireguard-tools/snapshot/
-PKG_MD5SUM:=2e9ff0ff4486a2866c00584fd2e735c7
+PKG_MD5SUM:=7208dc273f0386521170b83263135be4
 
 PKG_LICENSE:=GPL-2.0
 PKG_LICENSE_FILES:=COPYING
@@ -44,10 +44,12 @@ define Package/wireguard-tools/description
   general purpose VPN for running on embedded interfaces and super computers
   alike, fit for many different circumstances. It uses UDP.
 
-  This package provides the userspace control program for WireGuard.
+  This package provides the userspace control program for WireGuard and init script.
 endef
 
 define Package/wireguard-tools/install
+	$(INSTALL_DIR) $(1)/etc/init.d/
+	$(INSTALL_BIN) ./files/wg-client.init $(1)/etc/init.d/wg-client
 	$(INSTALL_DIR) $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/wg $(1)/usr/bin/
 endef

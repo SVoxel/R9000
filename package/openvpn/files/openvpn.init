@@ -260,7 +260,7 @@ start() {
 
     	set_up_ethernet_bridge
 
-	# Open the door to let client in 
+	# Open the door to let client in
 	net-wall rule
 	net-wall start
 
@@ -271,6 +271,10 @@ start() {
 	$PROG $OPENVPN_TUN_CONF_FILE &
 
 	/usr/sbin/wget -T 10 http://www.speedtest.net/api/country -O /tmp/openvpn/server_location
+
+	# Open access to LAN for client of TUN server
+	net-wall rule
+	net-wall start
 }
 
 stop() {

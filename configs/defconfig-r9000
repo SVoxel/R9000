@@ -1254,8 +1254,8 @@ CONFIG_PACKAGE_disktype=y
 #
 # CONFIG_PACKAGE_badblocks is not set
 CONFIG_PACKAGE_e2fsprogs=y
-# CONFIG_PACKAGE_resize2fs is not set
-# CONFIG_PACKAGE_tune2fs is not set
+CONFIG_PACKAGE_resize2fs=y
+CONFIG_PACKAGE_tune2fs=y
 
 #
 # Terminal
@@ -1283,7 +1283,8 @@ CONFIG_PACKAGE_unzip=y
 #
 CONFIG_PACKAGE_blkid=y
 # CONFIG_PACKAGE_cfdisk is not set
-# CONFIG_PACKAGE_fdisk is not set
+CONFIG_PACKAGE_fdisk=y
+CONFIG_PACKAGE_libfdisk=y
 # CONFIG_PACKAGE_findfs is not set
 # CONFIG_PACKAGE_hd-idle is not set
 # CONFIG_PACKAGE_lsblk is not set
@@ -1298,7 +1299,7 @@ CONFIG_PACKAGE_blkid=y
 #
 CONFIG_PACKAGE_taskset=y
 # CONFIG_PACKAGE_cal is not set
-CONFIG_PACKAGE_cifs-utils=y
+CONFIG_PACKAGE_cifsmount=y
 CONFIG_PACKAGE_datalib=y
 CONFIG_PACKAGE_dbus=y
 # CONFIG_PACKAGE_dbus-utils is not set
@@ -2431,6 +2432,7 @@ CONFIG_PACKAGE_libpcap=y
 # CONFIG_PACKAGE_libpng is not set
 CONFIG_PACKAGE_libpopt=y
 CONFIG_PACKAGE_libreadline=y
+CONFIG_PACKAGE_libsmartcols=y
 CONFIG_PACKAGE_libubox=y
 CONFIG_PACKAGE_libuci=y
 # CONFIG_PACKAGE_libuci-lua is not set

@@ -48,15 +48,6 @@ if [ "$1" = "start" ] || [ "$1" = "restart" ]; then
 		iptables -t nat -A POSTROUTING -o wg0 -j MASQUERADE
 	fi
 
-	# Check if tun0 interface exists: open access to LAN for client of TUN server
-	ifconfig | grep -q tun0
-	if [ $? -eq 0 ]; then
-		iptables -I FORWARD -j ACCEPT
-		iptables -I FORWARD -i tun0 -o br0 -j ACCEPT
-		iptables -I FORWARD -i br0 -o tun0 -j ACCEPT
-		iptables -t nat -A POSTROUTING -o br0 -j MASQUERADE
-	fi
-
 	# Run own script with own iptables rules providing backward compatibility
 	if [ -x /opt/scripts/firewall-start.sh ]; then
 		/opt/scripts/firewall-start.sh

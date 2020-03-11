@@ -11,7 +11,7 @@ body{ background: url(../image/oneline.gif) 0 -80px repeat-x #e5e5e5; margin: au
 #menu .advanced_black_button{margin-bottom: 5px;  width: 182px; height: 28px;background:url(../image/menus.gif) no-repeat 0 0;color: #ffffff;cursor:pointer; position: relative }
 #menu .advanced_black_button_double{margin-bottom: 5px;  width: 182px; height: 42px;background:url(../image/menus.gif) no-repeat 0 -28px; color: #ffffff;cursor:pointer; overflow:hidden; position: relative }
 #menu .advanced_black_button_triple{margin-bottom: 5px;  width: 182px; height: 58px;background:url(../image/menus.gif) no-repeat 0 -70px;color: #ffffff;cursor:pointer; position: relative }
-.menu_common_words{ font-size: 12px;}
+.menu_common_words{ font-size: 15px;}
 .menu_rufi_words{ font-weight: Bold; font-size: 13px;}
 .menu_ie9_words{ font-weight: 350; font-size: 14.8px;}
 

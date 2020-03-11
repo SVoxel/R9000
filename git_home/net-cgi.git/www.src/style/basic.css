@@ -7,7 +7,7 @@ body{ background: url(../image/oneline.gif) 0 -80px repeat-x #e5e5e5; margin:aut
 #middle{ width: 100%; min-height:455px; _height: 795px; position:absolute; top:5px; bottom:0px; left: 0; right: 0; }
 
 #menu{ float: left; width: 195px; font-family: Arial; text-align: left; position:absolute; top:0; bottom:45px;}
-.menu_common_words{ font-size: 12px;}
+.menu_common_words{ font-size: 15px;}
 .menu_ie9_words{ font-weight: 350; font-size: 14.8px;}
 #menu .basic_button{margin-bottom: 5px;  width: 190px; height: 29px; background:url(../image/menus.gif) no-repeat -736px -70px; color: #4e4e4e;cursor:pointer; position: relative}
 #menu .basic_button_mid{margin-bottom: 5px;  width: 190px; height: 44px; background:url(../image/menus.gif) no-repeat -720px -128px;color: #4e4e4e;cursor:pointer; position: relative }

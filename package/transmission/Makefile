@@ -26,8 +26,6 @@ PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 
-TARGET_CPPFLAGS:=-I$(STAGING_DIR)/usr/include/openssl-1.1.x $(TARGET_CPPFLAGS)
-TARGET_LDFLAGS:=-L$(STAGING_DIR)/usr/lib/openssl-1.1.x $(TARGET_LDFLAGS)
 TARGET_CFLAGS += -ffunction-sections -fdata-sections
 TARGET_LDFLAGS += -Wl,--gc-sections
 
@@ -48,7 +46,7 @@ endef
 define Package/transmission-daemon-openssl
   $(call Package/transmission-daemon/Default)
   TITLE+= (with OpenSSL)
-  DEPENDS+=+libopenssl-1.1.x
+  DEPENDS+=+libopenssl
   VARIANT:=openssl
 endef
 
@@ -62,7 +60,7 @@ endef
 define Package/transmission-cli-openssl
   $(call Package/transmission/template)
   TITLE+= (with OpenSSL)
-  DEPENDS+=+libopenssl-1.1.x
+  DEPENDS+=+libopenssl
   VARIANT:=openssl
 endef
 
@@ -76,7 +74,7 @@ endef
 define Package/transmission-remote-openssl
   $(call Package/transmission/template)
   TITLE+= (with OpenSSL)
-  DEPENDS+=+libopenssl-1.1.x
+  DEPENDS+=+libopenssl
   VARIANT:=openssl
 endef
 
@@ -125,7 +123,7 @@ endef
 Package/transmission-daemon-mbedtls/conffiles = $(Package/transmission-daemon-openssl/conffiles)
 
 CONFIGURE_VARS += \
-	LIBEVENT_LIBS="$(STAGING_DIR)/usr/lib/libevent-2.1.so.6.0.2"
+	LIBEVENT_LIBS="$(STAGING_DIR)/usr/lib/libevent-2.1.so.7.0.0"
 
 CONFIGURE_ARGS += \
 	--enable-daemon \

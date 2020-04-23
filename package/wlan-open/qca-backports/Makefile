@@ -45,7 +45,7 @@ endef
 define KernelPackage/qca-cfg80211
   $(call KernelPackage/qca-mac80211/Default)
   TITLE:=cfg80211 - wireless configuration API
-  DEPENDS+= +iw +kmod-crypto-core +kmod-crypto-manager +kmod-crypto-aead2
+  DEPENDS+= +iw-full +kmod-crypto-core +kmod-crypto-manager +kmod-crypto-aead2
   FILES:= \
 	$(PKG_BUILD_DIR)/compat.ko \
 	$(PKG_BUILD_DIR)/cfg80211.ko

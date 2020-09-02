@@ -1803,15 +1803,15 @@ CONFIG_PACKAGE_kmod-crypto-manager=y
 # CONFIG_PACKAGE_kmod-crypto-michael-mic is not set
 # CONFIG_PACKAGE_kmod-crypto-misc is not set
 # CONFIG_PACKAGE_kmod-crypto-null is not set
-# CONFIG_PACKAGE_kmod-crypto-ocf is not set
+CONFIG_PACKAGE_kmod-crypto-ocf=y
 # CONFIG_PACKAGE_kmod-crypto-ocf-bench is not set
-# CONFIG_PACKAGE_kmod-crypto-ocf-cryptodev is not set
-# CONFIG_PACKAGE_kmod-crypto-ocf-cryptosoft is not set
+CONFIG_PACKAGE_kmod-crypto-ocf-cryptodev=y
+CONFIG_PACKAGE_kmod-crypto-ocf-cryptosoft=y
 # CONFIG_PACKAGE_kmod-crypto-ocf-null is not set
 # CONFIG_PACKAGE_kmod-crypto-rng is not set
 # CONFIG_PACKAGE_kmod-crypto-sha1 is not set
 # CONFIG_PACKAGE_kmod-crypto-test is not set
-# CONFIG_PACKAGE_kmod-crypto-user is not set
+CONFIG_PACKAGE_kmod-crypto-user=y
 # CONFIG_PACKAGE_kmod-crypto-wq is not set
 # CONFIG_PACKAGE_kmod-crypto-xts is not set
 
@@ -2300,6 +2300,8 @@ CONFIG_PACKAGE_libxtables=y
 # CONFIG_PACKAGE_libcyassl is not set
 CONFIG_PACKAGE_libopenssl=y
 CONFIG_PACKAGE_libopenssl-1.1.x=y
+CONFIG_PACKAGE_libopenssl-afalg-1.1.x=y
+CONFIG_PACKAGE_libopenssl-devcrypto-1.1.x=y
 CONFIG_PACKAGE_libopenssl-conf-1.1.x=y
 # CONFIG_PACKAGE_libmbedtls is not set
 
@@ -2309,6 +2311,10 @@ CONFIG_PACKAGE_libopenssl-conf-1.1.x=y
 CONFIG_OPENSSL_WITH_EC=y
 CONFIG_OPENSSL_WITH_EC2M=y
 CONFIG_OPENSSL_WITH_SSL3=y
+CONFIG_OPENSSL_11X_ENGINE=y
+# CONFIG_OPENSSL_11X_ENGINE_BUILTIN is not set
+# CONFIG_OPENSSL_11X_ENGINE_BUILTIN_AFALG is not set
+# CONFIG_OPENSSL_11X_ENGINE_BUILTIN_DEVCRYPTO is not set
 CONFIG_OPENSSL_11X_WITH_EC=y
 CONFIG_OPENSSL_11X_WITH_EC2M=y
 CONFIG_OPENSSL_11X_WITH_SSL3=y

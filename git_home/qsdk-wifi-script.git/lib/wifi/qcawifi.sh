@@ -2306,6 +2306,7 @@ wl_lan_restricted_access()
     ETH_P_IPv6=0x86dd
     IPPROTO_ICMP=1
     IPPROTO_UDP=17
+    IPPROTO_TCP=6
     IPPROTO_ICMPv6=58
     DHCPS_DHCPC=67:68
     DHCP6S_DHCP6C=546:547
@@ -2320,9 +2321,11 @@ wl_lan_restricted_access()
     ebtables -D FORWARD -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$DHCPS_DHCPC" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$DHCPS_DHCPC" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$PORT_DNS" -j ACCEPT
+    ebtables -D INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_TCP" --ip-dport "$PORT_DNS" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_ICMPv6" --ip6-icmp-type ! echo-request -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_UDP" --ip6-dport "$DHCP6S_DHCP6C" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_UDP" --ip6-dport "$PORT_DNS" -j ACCEPT
+    ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_TCP" --ip6-dport "$PORT_DNS" -j ACCEPT
     ebtables -L | grep  "ath" > /tmp/wifi_rules
     while read loop
     do
@@ -2343,9 +2346,11 @@ wl_lan_restricted_access()
                 ebtables -P INPUT ACCEPT
                 ebtables -A INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$DHCPS_DHCPC" -j ACCEPT
                 ebtables -A INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$PORT_DNS" -j ACCEPT
+                ebtables -A INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_TCP" --ip-dport "$PORT_DNS" -j ACCEPT
                 ebtables -A INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_ICMPv6" --ip6-icmp-type ! echo-request -j ACCEPT
                 ebtables -A INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_UDP" --ip6-dport "$DHCP6S_DHCP6C" -j ACCEPT
                 ebtables -A INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_UDP" --ip6-dport "$PORT_DNS" -j ACCEPT
+                ebtables -A INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_TCP" --ip6-dport "$PORT_DNS" -j ACCEPT
                 inited=1
             fi
         done
@@ -2378,6 +2383,7 @@ clear_wifi_ebtables()
     ETH_P_IPv6=0x86dd
     IPPROTO_ICMP=1
     IPPROTO_UDP=17
+    IPPROTO_TCP=6
     IPPROTO_ICMPv6=58
     DHCPS_DHCPC=67:68
     DHCP6S_DHCP6C=546:547
@@ -2392,9 +2398,11 @@ clear_wifi_ebtables()
     ebtables -D FORWARD -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$DHCPS_DHCPC" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$DHCPS_DHCPC" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$PORT_DNS" -j ACCEPT
+    ebtables -D INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_TCP" --ip-dport "$PORT_DNS" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_ICMPv6" --ip6-icmp-type ! echo-request -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_UDP" --ip6-dport "$DHCP6S_DHCP6C" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_UDP" --ip6-dport "$PORT_DNS" -j ACCEPT
+    ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_TCP" --ip6-dport "$PORT_DNS" -j ACCEPT
     ebtables -L | grep  "ath" > /tmp/wifi_rules
     while read loop
     do

@@ -332,6 +332,9 @@ disable_qcawifi() {
 		[ -n "$PID_WD" ] && kill $PID_WD && echo "wlan down triggered by GUI, kill wifi watchdog" >> /dev/console
 	fi
 
+	local PID_11K=`ps | grep 11k_scan | grep -v grep | awk '{print $1}'`
+	[ -n "$PID_11K" ] && kill $PID_11K && rm -f /tmp/.11k_scan_lock && echo "wlan down, kill 11k_scan" >> /dev/console
+
 	echo "$DRIVERS disable radio $1" >/dev/console
 	find_qcawifi_phy "$device" ||  retval=1
 
@@ -1769,6 +1772,17 @@ wifischedule_qcawifi()
     fi
 }
 
+wifiapscan_qcawifi()
+{
+    local device="$1"
+
+    config_get vifs "$device" vifs
+    for vif in $vifs; do
+        config_get ifname "$vif" ifname
+        [ "$ifname" = "ath0" -o "$ifname" = "ath1" ] && iwlist "$ifname" scan
+    done
+}
+
 wifistainfo_qcawifi()
 {
     local device="$1"
@@ -2292,6 +2306,7 @@ wl_lan_restricted_access()
     ETH_P_IPv6=0x86dd
     IPPROTO_ICMP=1
     IPPROTO_UDP=17
+    IPPROTO_TCP=6
     IPPROTO_ICMPv6=58
     DHCPS_DHCPC=67:68
     DHCP6S_DHCP6C=546:547
@@ -2306,9 +2321,11 @@ wl_lan_restricted_access()
     ebtables -D FORWARD -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$DHCPS_DHCPC" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$DHCPS_DHCPC" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$PORT_DNS" -j ACCEPT
+    ebtables -D INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_TCP" --ip-dport "$PORT_DNS" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_ICMPv6" --ip6-icmp-type ! echo-request -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_UDP" --ip6-dport "$DHCP6S_DHCP6C" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_UDP" --ip6-dport "$PORT_DNS" -j ACCEPT
+    ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_TCP" --ip6-dport "$PORT_DNS" -j ACCEPT
     ebtables -L | grep  "ath" > /tmp/wifi_rules
     while read loop
     do
@@ -2329,9 +2346,11 @@ wl_lan_restricted_access()
                 ebtables -P INPUT ACCEPT
                 ebtables -A INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$DHCPS_DHCPC" -j ACCEPT
                 ebtables -A INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$PORT_DNS" -j ACCEPT
+                ebtables -A INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_TCP" --ip-dport "$PORT_DNS" -j ACCEPT
                 ebtables -A INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_ICMPv6" --ip6-icmp-type ! echo-request -j ACCEPT
                 ebtables -A INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_UDP" --ip6-dport "$DHCP6S_DHCP6C" -j ACCEPT
                 ebtables -A INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_UDP" --ip6-dport "$PORT_DNS" -j ACCEPT
+                ebtables -A INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_TCP" --ip6-dport "$PORT_DNS" -j ACCEPT
                 inited=1
             fi
         done
@@ -2364,6 +2383,7 @@ clear_wifi_ebtables()
     ETH_P_IPv6=0x86dd
     IPPROTO_ICMP=1
     IPPROTO_UDP=17
+    IPPROTO_TCP=6
     IPPROTO_ICMPv6=58
     DHCPS_DHCPC=67:68
     DHCP6S_DHCP6C=546:547
@@ -2378,9 +2398,11 @@ clear_wifi_ebtables()
     ebtables -D FORWARD -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$DHCPS_DHCPC" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$DHCPS_DHCPC" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_UDP" --ip-dport "$PORT_DNS" -j ACCEPT
+    ebtables -D INPUT -p "$ETH_P_IP" --ip-proto "$IPPROTO_TCP" --ip-dport "$PORT_DNS" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_ICMPv6" --ip6-icmp-type ! echo-request -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_UDP" --ip6-dport "$DHCP6S_DHCP6C" -j ACCEPT
     ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_UDP" --ip6-dport "$PORT_DNS" -j ACCEPT
+    ebtables -D INPUT -p "$ETH_P_IPv6" --ip6-proto "$IPPROTO_TCP" --ip6-dport "$PORT_DNS" -j ACCEPT
     ebtables -L | grep  "ath" > /tmp/wifi_rules
     while read loop
     do

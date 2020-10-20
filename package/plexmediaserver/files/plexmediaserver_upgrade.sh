@@ -51,10 +51,10 @@ plex_check()
 	fi
     rm -rf $plex_check_result $plex_download_result $plex_upgrade_result 2>/dev/null
     rm -rf $plex_check_tmp $plex_check_tmp2 2>/dev/null
-    curl --connect-timeout 30 --keepalive-time 30 --retry 1 $plex_download_url_https"verify_binary.txt" -o $plex_check_tmp2 2>/dev/null 
+    curl --capath /etc/ssl/certs --connect-timeout 30 --keepalive-time 30 --retry 1 $plex_download_url_https"verify_binary2.txt" -o $plex_check_tmp2 2>/dev/null 
     plex_echo=`echo $?`
     if [ $plex_echo -ne 0 ];then
-    	curl --insecure --connect-timeout 30 --keepalive-time 30 $plex_download_url"verify_binary.txt" -o $plex_check_tmp2 2>/dev/null 
+    	curl --capath /etc/ssl/certs --connect-timeout 30 --keepalive-time 30 $plex_download_url"verify_binary2.txt" -o $plex_check_tmp2 2>/dev/null 
     	plex_echo=`echo $?`
     else
 	plex_download_url=$plex_download_url_https
@@ -164,7 +164,7 @@ plex_download()
 
     /etc/plexmediaserver/plexmediaserver_upgrade.sh download_percent $1 &
     curl --insecure --connect-timeout 60 --keepalive-time 180 $1 -o /tmp/$binary_name 2>/dev/nul
-    #curl --insecure $plex_download_url$1 -o /tmp/$1 2>/dev/null
+    #curl --capath /etc/ssl/certs $plex_download_url$1 -o /tmp/$1 2>/dev/null
     [ `echo $?` -ne 0 ] && oc echo "plex download: download failed!" && echo "2" > $plex_download_result && rm -rf /tmp/$binary_name && config set plex_update_run=0 && config commit && return 0
     
     oldsum=`cat /tmp/plex_latest_version |grep $binary_name |awk '{print $3}'`

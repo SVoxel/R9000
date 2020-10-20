@@ -79,10 +79,6 @@ start_stage0() # $1: boot/start
 		echo 0 > /proc/sys/net/ipv6/dnshijack_apmode
 		killall boxlogin
 	fi
-
-	if vlan_iptv_wl_enable || bridge_stop_nss; then
-		/etc/init.d/qca-nss-ecm stop &
-	fi
 }
 
 stop0()
@@ -125,4 +121,3 @@ boot()
 	op_create_br0_brwan
 	start_stage0 boot
 }
-

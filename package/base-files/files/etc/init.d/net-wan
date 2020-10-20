@@ -13,15 +13,26 @@ fi
 check_qca_nss() {
 	local proto=$($CONFIG get wan_proto)
 	if [ "$proto" = "pptp" ] || [ "$proto" = "l2tp" ] || [ "$($CONFIG get qos_endis_on)" = "1" ] ; then
-		/etc/init.d/qca-nss-ecm stop &
+		if [ -x /etc/init.d/qca-nss-ecm ]; then
+			/etc/init.d/qca-nss-ecm stop &
+		fi
 	elif [ "$($CONFIG get streamboost_enable)" = "1" ] && [ "$proto" = "dhcp" ]; then
-		/etc/init.d/qca-nss-ecm stop &
+		if [ -x /etc/init.d/qca-nss-ecm ]; then
+			/etc/init.d/qca-nss-ecm stop &
+		fi
 	elif [ "$($CONFIG get streamboost_enable)" = "1" ] && [ "$proto" = "static" ]; then
-		/etc/init.d/qca-nss-ecm stop &
+		if [ -x /etc/init.d/qca-nss-ecm ]; then
+			/etc/init.d/qca-nss-ecm stop &
+		fi
 	else
 		pppmod=`lsmod |grep pppoe`
-		[ "x$pppmod" = "x" ] && insmod pppox && insmod pppoe
-		/etc/init.d/qca-nss-ecm start
+		if [ "x$pppmod" = "x" ] ; then
+			insmod pppox
+			insmod pppoe
+		fi
+		if [ -x /etc/init.d/qca-nss-ecm ]; then
+			/etc/init.d/qca-nss-ecm start
+		fi
 	fi
 }
 

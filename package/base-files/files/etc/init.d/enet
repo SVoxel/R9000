@@ -17,6 +17,5 @@ boot()
 {
 	et_init
 	detect_wan_port_status
-	/etc/init.d/qca-nss-ecm start
 }
 

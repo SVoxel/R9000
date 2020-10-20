@@ -61,8 +61,6 @@ start() {
 	if [ ! -s /etc/config/nowan  -o ! -s /etc/config/lanwan ]; then
 		cp /rom/etc/config/* /etc/config
 	fi
-	grep -q "dev\.nss\.general\.redirect=1" /etc/sysctl.d/qca-nss-ecm.conf || cp /rom/etc/sysctl.d/qca-nss-ecm.conf /etc/sysctl.d/qca-nss-ecm.conf
-
 
 	# Set same with ANNA SDK
 	sysctl -w net.bridge.bridge-nf-call-arptables=0

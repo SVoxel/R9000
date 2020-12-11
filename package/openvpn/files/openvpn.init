@@ -94,8 +94,8 @@ status /tmp/openvpnd.status
 mtu-disc yes
 topology subnet
 script-security 2
-ncp-ciphers AES-128-GCM:AES-256-GCM:AES-128-CBC:AES-256-CBC
-cipher AES-128-GCM
+ncp-ciphers CHACHA20-POLY1305:AES-128-GCM:AES-256-GCM:AES-128-CBC:AES-256-CBC
+cipher CHACHA20-POLY1305
 auth sha1
 tls-server
 client-to-client
@@ -146,8 +146,8 @@ status /tmp/openvpnd_tun.status
 mtu-disc yes
 topology subnet
 script-security 2
-ncp-ciphers AES-128-GCM:AES-256-GCM:AES-128-CBC:AES-256-CBC
-cipher AES-128-GCM
+ncp-ciphers CHACHA20-POLY1305:AES-128-GCM:AES-256-GCM:AES-128-CBC:AES-256-CBC
+cipher CHACHA20-POLY1305
 auth sha1
 client-to-client
 duplicate-cn

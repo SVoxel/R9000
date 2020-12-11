@@ -43,7 +43,7 @@ remote-cert-tls server
 ca ca.crt
 cert client.crt
 key client.key
-cipher AES-128-GCM
+cipher CHACHA20-POLY1305
 compress lz4-v2
 verb 0
 sndbuf $sndbuf

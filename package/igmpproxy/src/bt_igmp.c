@@ -1,4 +1,5 @@
 #include "defs.h"
+#include <pcap.h>
 
 int get_if_mac(char mac[], char *ifname)
 {

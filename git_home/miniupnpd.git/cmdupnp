@@ -60,7 +60,7 @@ upnp_start() {
 
 	[ -f $MINIUPNPD_CONF ] && rm -f $MINIUPNPD_CONF
 	[ ! -d /tmp/etc ] && mkdir /tmp/etc
-	print_upnp_conf "$wan_ifname" "$listenip" "$($config get upnp_AdverTime)" "$($config get upnp_TimeToLive)" "$name" "$($config get lan_netmask)" "$non_igd" "$(artmtd -r sn | head -1 | awk -F":" '{print $2}')" "$($config get miniupnp_pnpx_hwid)" "$($config get miniupnp_modelurl)" "$($config get miniupnp_modelnumber)" "$($config get miniupnp_modelname)" "($config get miniupnp_modeldescription)" "$($config get Device_name)" > $MINIUPNPD_CONF
+	print_upnp_conf "$wan_ifname" "$listenip" "$($config get upnp_AdverTime)" "$($config get upnp_TimeToLive)" "$name" "$($config get lan_netmask)" "$non_igd" "$(artmtd -r sn | head -1 | awk -F":" '{print $2}')" "$($config get miniupnp_pnpx_hwid)" "$($config get miniupnp_modelurl)" "$($config get miniupnp_modelnumber)" "$($config get miniupnp_modelname)" "$($config get miniupnp_modeldescription)" "$($config get Device_name)" > $MINIUPNPD_CONF
 
 	# wait a moment ...
 	sleep 2

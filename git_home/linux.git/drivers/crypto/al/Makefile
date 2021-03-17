@@ -1,3 +1,5 @@
+KBUILD_CFLAGS := $(filter-out -O%,$(KBUILD_CFLAGS)) -O3
+
 MAKEFILE_DIR:=$(dir $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST)))
 
 KBUILD_CPPFLAGS += -Iarch/arm/mach-alpine/include/al_hal/

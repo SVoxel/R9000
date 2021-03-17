@@ -2,6 +2,8 @@
 # Makefile for the linux kernel.
 #
 
+KBUILD_CFLAGS := $(filter-out -O%,$(KBUILD_CFLAGS)) -O3
+
 ccflags-$(CONFIG_ARCH_MULTIPLATFORM) := -I$(srctree)/$(src)/include \
         -I$(srctree)/arch/arm/plat-orion/include
 

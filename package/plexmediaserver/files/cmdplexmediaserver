@@ -72,6 +72,14 @@ plex_start()
            sed -i -e '/PLEX_BROWSER_ROOT=/a\export PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR="`config get plex_file_path`/Library/Application Support"' $plexmediaserver_script
            sync
         fi
+
+	# Voxel: Plex startup fixup
+	export CMD_PLEX_INSTALLER="$(/usr/bin/md5sum ./plexmediaserver.sh | /usr/bin/awk '{ print $1 }')"
+	export CMD_PLEX_FIXED_BUG="$(/usr/bin/md5sum /etc/plexmediaserver/plexmediaserver.sh | /usr/bin/awk '{ print $1 }')"
+	if [ $CMD_PLEX_INSTALLER != $CMD_PLEX_FIXED_BUG ]; then
+		cp -p -f /etc/plexmediaserver/plexmediaserver.sh .
+	fi
+
         #Retry three times to start Plex.
         retry_times=0
         while [ $retry_times -lt 3 ]

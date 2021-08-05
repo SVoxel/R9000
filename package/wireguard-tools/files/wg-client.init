@@ -105,12 +105,15 @@ start() {
 	fi
 
 	# WireGuard: create wg0 config (wg0.conf)
-	echo "[Interface]"		>  $WGConfig
-	echo "PrivateKey = $PrivateKey"	>> $WGConfig
-	echo "[Peer]"			>> $WGConfig
-	echo "PublicKey = $PublicKey"	>> $WGConfig
-	echo "Endpoint = $IP:$Port"	>> $WGConfig
-	echo "AllowedIPs = 0.0.0.0/0"	>> $WGConfig
+	echo "[Interface]"				>  $WGConfig
+	echo "PrivateKey = $PrivateKey"			>> $WGConfig
+	echo "[Peer]"					>> $WGConfig
+	echo "PublicKey = $PublicKey"			>> $WGConfig
+	if [ ! -z "$PresharedKey" ]; then
+		echo "PresharedKey = $PresharedKey"	>> $WGConfig
+	fi
+	echo "Endpoint = $IP:$Port"			>> $WGConfig
+	echo "AllowedIPs = 0.0.0.0/0"			>> $WGConfig
 
 	# Set config file for wg0 interface
 	wg setconf wg0 "$WGConfig" >>$LOG_FILE 2>>$LOG_FILE

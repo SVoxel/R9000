@@ -557,7 +557,7 @@ libs-y		:= $(libs-y1) $(libs-y2)
 #
 # System.map is generated to document addresses of all kernel symbols
 
-busybox-all  := $(core-y) $(libs-y) -lconfig
+busybox-all  := $(core-y) $(libs-y)
 
 # Rule to link busybox - also used during CONFIG_KALLSYMS
 # May be overridden by arch/$(ARCH)/Makefile
@@ -565,7 +565,7 @@ quiet_cmd_busybox__ ?= LINK    $@
       cmd_busybox__ ?= $(srctree)/scripts/trylink $(CC) $(LDFLAGS) \
       -o $@ \
       -Wl,--warn-common -Wl,--sort-common -Wl,--gc-sections \
-      -Wl,--start-group $(busybox-all) -Wl,--end-group
+      -Wl,--start-group $(busybox-all) -Wl,--end-group -L$(STAGING_DIR)/usr/lib -lconfig
 
 # Generate System.map
 quiet_cmd_sysmap = SYSMAP

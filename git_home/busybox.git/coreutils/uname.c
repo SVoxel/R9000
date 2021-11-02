@@ -89,7 +89,7 @@ int uname_main(int argc, char **argv)
 	}
 #endif
 
-	strcpy(uname_info.processor, "unknown");
+	strcpy(uname_info.processor, "AL-514");
 
 	delta = utsname_offset;
 	do {

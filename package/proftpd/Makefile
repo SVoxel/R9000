@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=proftpd
-PKG_VERSION:=1.3.7b
+PKG_VERSION:=1.3.7c
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=ftp://ftp.proftpd.org/distrib/source
-PKG_MD5SUM:=50f9d8abc44b4ef600d884ba9803bfba
+PKG_MD5SUM:=bee3df0bc3c945c62657410610fedeb3
 
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
@@ -38,8 +38,8 @@ MAKE_FLAGS += \
 	INSTALL_GROUP=$(shell id -g)
 
 CONFIGURE_ARGS += \
-	--with-includes=$(STAGING_DIR)/include:$(STAGING_DIR)/usr/include:$(STAGING_DIR)/usr/lib/libintl/include:$(STAGING_DIR)/usr/lib/libiconv/include \
-	--with-libraries=$(STAGING_DIR)/lib:$(STAGING_DIR)/usr/lib:$(STAGING_DIR)/usr/lib/libintl/lib:$(STAGING_DIR)/usr/lib/libiconv/lib \
+	--with-includes=$(STAGING_DIR)/include:$(STAGING_DIR)/usr/include:$(STAGING_DIR)/usr/lib/libintl/include:$(STAGING_DIR)/usr/lib/libiconv-full/include \
+	--with-libraries=$(STAGING_DIR)/lib:$(STAGING_DIR)/usr/lib:$(STAGING_DIR)/usr/lib/libintl/lib:$(STAGING_DIR)/usr/lib/libiconv-full/lib \
 	--disable-cap \
 	--disable-auth-pam \
 	--disable-strip \

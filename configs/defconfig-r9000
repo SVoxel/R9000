@@ -2344,7 +2344,7 @@ CONFIG_PACKAGE_libsqlite3=y
 CONFIG_DNI_GREEN_DOWNLOAD=y
 CONFIG_PACKAGE_fcgi=y
 # CONFIG_PACKAGE_fcgixx is not set
-CONFIG_PACKAGE_jansson=y
+# CONFIG_PACKAGE_jansson is not set
 # CONFIG_PACKAGE_libantlr3c is not set
 CONFIG_PACKAGE_libavahi=y
 CONFIG_PACKAGE_libavahi-client=y

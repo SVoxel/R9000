@@ -127,7 +127,6 @@ start() {
 
 	/www/cgi-bin/uhttpd.sh start
 	inetd
-	detplc
     #for bug58012
     touch /tmp/fwcheck_status
 }

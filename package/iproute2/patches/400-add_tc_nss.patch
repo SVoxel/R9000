@@ -1,6 +1,6 @@
 --- a/include/linux/pkt_sched.h
 +++ b/include/linux/pkt_sched.h
-@@ -104,6 +104,211 @@ enum {
+@@ -112,6 +112,211 @@
  
  #define TCA_STAB_MAX (__TCA_STAB_MAX - 1)
  
@@ -214,14 +214,14 @@
  struct tc_fifo_qopt {
 --- a/tc/Makefile
 +++ b/tc/Makefile
-@@ -51,6 +51,7 @@ TCMODULES += em_meta.o
- TCMODULES += q_mqprio.o
+@@ -61,6 +61,7 @@
  TCMODULES += q_codel.o
  TCMODULES += q_fq_codel.o
+ TCMODULES += q_fq.o
 +TCMODULES += q_nss.o
+ TCMODULES += q_pie.o
+ TCMODULES += q_hhf.o
  
- TCSO :=
- ifeq ($(TC_CONFIG_ATM),y)
 --- /dev/null
 +++ b/tc/q_nss.c
 @@ -0,0 +1,1413 @@

@@ -1,16 +1,16 @@
 --- a/tc/Makefile
 +++ b/tc/Makefile
-@@ -38,6 +38,7 @@ TCMODULES += m_mirred.o
+@@ -44,6 +44,7 @@ TCMODULES += m_mirred.o
  TCMODULES += m_nat.o
  TCMODULES += m_pedit.o
  TCMODULES += m_skbedit.o
 +TCMODULES += m_connmark.o
  TCMODULES += m_csum.o
- TCMODULES += p_ip.o
- TCMODULES += p_icmp.o
+ TCMODULES += m_simple.o
+ TCMODULES += m_vlan.o
 --- /dev/null
 +++ b/tc/m_connmark.c
-@@ -0,0 +1,71 @@
+@@ -0,0 +1,74 @@
 +/*
 + * m_connmark.c		Connection tracking marking import
 + *
@@ -61,6 +61,9 @@
 +		return -1;
 +
 +	NEXT_ARG();
++
++	if (matches(*argv, "help") == 0)
++		usage();
 +
 +	*argc_p = argc;
 +	*argv_p = argv;

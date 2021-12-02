@@ -25,6 +25,11 @@ define Package/pot
 endef
 
 define Build/Prepare
+	#test x$(GIT_HOME) != x
+	#test -d $(GIT_HOME)/$(PKG_NAME).git
+	#(cd $(GIT_HOME)/$(PKG_NAME).git; git-cat-file -e $(PKG_GIT_TREEISH))
+	#(cd $(BUILD_DIR); git-archive --format=tar --prefix=$(PKG_NAME)/ --remote=$(GIT_HOME)/$(PKG_NAME).git $(PKG_GIT_TREEISH) | tar -xvf -)
+	#$(call Build/Patch/Default)
 	mkdir -p $(PKG_BUILD_DIR)
 	$(CP) ./src/* $(PKG_BUILD_DIR)/
 endef
@@ -36,13 +41,13 @@ endef
 define Package/pot/install
 	install -d -m0755 $(1)/usr/sbin
 	install -m0755 $(PKG_BUILD_DIR)/potd $(1)/usr/sbin/
-	install -m0755 $(PKG_BUILD_DIR)/potval $(1)/usr/sbin/
+	install -m0755 $(PKG_BUILD_DIR)/pot_tool $(1)/usr/sbin/
 	install -m0755 $(PKG_BUILD_DIR)/ntpst $(1)/usr/sbin/
 	install -m0755 $(PKG_BUILD_DIR)/stamac $(1)/usr/sbin/
 	install -m0755 $(PKG_BUILD_DIR)/netconn $(1)/usr/sbin/
+	install -m0755 ./files/netconn.sh $(1)/usr/sbin/
 	install -d -m0755 $(1)/etc/init.d
 	install -m0755 ./files/pot.init $(1)/etc/init.d/pot
-	install -m0755 ./files/netconn.sh $(1)/usr/sbin
 endef
 
 $(eval $(call BuildPackage,pot))

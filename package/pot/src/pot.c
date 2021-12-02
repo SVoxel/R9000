@@ -363,6 +363,83 @@ int potval_func(int argc, char **argv)
 	return 0;
 }
 
+void pot_tool_usage(char *name)
+{
+	fprintf(stderr,
+		"\nUsage: %s get / reset \n",
+		name);
+	exit(0);
+}
+
+int pot_tool_get()
+{
+	char potval[128] = {0}, strtime[64] = {0}, tz_env[64] = {0}, timezone[64] = {0};
+	unsigned char mac[6];
+	time_t ntptime;
+	const unsigned char nomac[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+	FILE *fp;
+
+	memset(potval, 0x00, sizeof(potval));
+	memset(strtime, 0x00, sizeof(strtime));
+	if ((fp = fopen(POT_FILENAME, "r")) == NULL)
+		return -1;
+	if (!fgets(potval, sizeof(potval), fp))
+		potval[0] = '\0';
+	fclose(fp);
+
+	fprintf(stdout, "POT: %s\n", potval);
+
+	strncpy(timezone, "GMT+0", sizeof(timezone));
+	ntptime = get_ntpsynctime();
+	if (0xffffffff == ntptime) {
+		strncpy(strtime, "00-00-00", sizeof(strtime));
+	} else {
+		snprintf(tz_env, sizeof(tz_env), "TZ=%s", timezone);
+		putenv(tz_env);
+		//printf("Current NTP time_zone = %s \n",timezone);
+		strftime(strtime, sizeof(strtime), "%T, %b %d, %Y", localtime(&ntptime));
+
+	}
+
+	fprintf(stdout, "NTP synchronized date/time: %s\n", strtime);
+
+	get_stamac(mac);
+	if(!memcmp(nomac, mac, 6))
+		memset(mac, 0, 6);
+	fprintf(stdout, "First associated STA: %02x-%02x-%02x-%02x-%02x-%02x\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+	return 0;
+}
+
+int pot_tool_reset()
+{
+	char recvbuf[8] = {0};
+
+	set_potval(recvbuf);
+	sleep(2);
+	pot_tool_get();
+}
+
+int pot_tool_func(int argc, char **argv)
+{
+	char cmd[32] = {0};
+
+	if(argv[1] == NULL) {
+		pot_tool_usage(argv[0]);
+		return 0;
+	} else
+		strncpy(cmd, argv[1], sizeof(cmd));
+
+	if (strncmp(cmd, "get", sizeof("get")) == 0)
+		pot_tool_get();
+	else if (strncmp(cmd, "reset", sizeof("reset")) == 0)
+		pot_tool_reset();
+	else
+		pot_tool_usage(argv[0]);	
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	daemon(1, 1);
@@ -375,6 +452,10 @@ int main(int argc, char *argv[])
 		return potval_func(argc, argv);
 	else if (strstr(argv[0], "potd") != NULL)
 		return pot_func(argc, argv);
+	else if (strstr(argv[0], "netconn") != NULL)
+		return netconn_func(argc, argv);
+	else if (strstr(argv[0], "pot_tool") != NULL)
+		return pot_tool_func(argc, argv);
 	else
 		dfp("command name is wrong!\n");
 

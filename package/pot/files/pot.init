@@ -4,7 +4,6 @@ START=70
 
 pot_start() {
 	potd
-	potval
 	netconn.sh &
 }
 
@@ -13,7 +12,6 @@ boot() {
 }
 
 pot_stop(){
-	killall potval
 	killall potd
 }
 

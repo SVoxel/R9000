@@ -13,23 +13,51 @@ MINIDLNA_DB=/tmp/minidlna
 MAX_FREE_SPACE=0
 
 DISK_FIND_TABLE=/tmp/find_disk_abcxzy
+DISK_FIND_TABLE_BACKUP=/tmp/find_disk_abcxzy_backup
 TMP_DATA_XYZ=/tmp/tmp_data_xyz
 TMP_DEVICE_NAME=/tmp/tmp_device_name_xyz
 
+LOWMEM_SIZE=524288
+is_system_lowmem() {
+	local memory_total="$(cat /proc/meminfo | grep "^MemTotal:" | awk '{print $2}' | sed 's/ //g')"
+
+	if [ "x$memory_total" = "x" ]; then
+		memory_total=0
+	fi
+
+	if [ $memory_total -le $LOWMEM_SIZE ]; then
+		echo -n "1"
+	else
+		echo -n "0"
+	fi
+}
+
 print_dlna_conf() {
+
+local connection_option
+local module_name="$(cat /module_name)"
+
+if [ "$(is_system_lowmem)" = "1" ]; then
+	connection_option="max_connections=3"
+else
+	connection_option=""
+fi
+
 cat <<EOF
 port=8200
-network_interface=br0
+network_interface=$($config get lan_ifname)
 friendly_name=$3
 album_art_names=Cover.jpg/cover.jpg/AlbumArtSmall.jpg/albumartsmall.jpg/AlbumArt.jpg/albumart.jpg/Album.jpg/album.jpg/Folder.jpg/folder.jpg/Thumb.jpg/thumb.jpg
 inotify=yes
 enable_tivo=$4
-strict_dlna=yes
+strict_dlna=no
 presentation_url=http://www.routerlogin.net
 notify_interval=900
 serial=12345678
 model_number=1
+model_name=Windows Media Connect compatible (NETGEAR $module_name)
 root_container=B
+$connection_option
 EOF
 }
  
@@ -52,7 +80,7 @@ map_usb_to_dlna()
         case "$3" in
                 0 | 1)
 			dir_num=$(($dir_num+1))
-			FREE_SPACE=`df -m | grep /tmp/mnt/$1 | awk '{print $4}'`
+			FREE_SPACE=`df -m | grep /mnt/$1 | awk '{print $4}'`
 			if [ $FREE_SPACE -gt $MAX_FREE_SPACE ]; then
 				MAX_FREE_SPACE=$FREE_SPACE
 				[ -d $MINIDLNA_DB ] && rm -rf $MINIDLNA_DB
@@ -204,7 +232,7 @@ get_usb_serial_num()
 	disk_name=`echo $1 | sed 's/[0-9]//g'`
 	partition_num=`echo $1 | cut -c 4-`
 	if [ "x$partition_num" = "x" ]; then
-	#	partition_num=0
+#		partition_num=0
 		partition_num=`echo $1 | cut -c 3-`
 	fi
 	disk_scsi_id=`ls /sys/block/$disk_name/device/scsi_device* | awk -F: '{print $1}'`
@@ -223,7 +251,7 @@ get_usb_serial_num()
 get_sd_card_serial_num()
 {
 	partition_num=`echo $1 | cut -c 4-`
-	uuid=`/usr/sbin/vol_id -u /dev/$1`
+	uuid=`/usr/sbin/blkid /dev/$1 | grep -o 'UUID=.*' | awk -F\" '{print $2}'`
 	if [ "x$uuid" = "x" ]; then
 		get_usb_serial_num $1
 	else
@@ -239,7 +267,7 @@ get_volume_from_disk()
 {
 	disk_name=`echo $1 | sed 's/[0-9]//g'`
 	partition_num=`echo $1 | cut -c 4-`
-	volume=`/usr/sbin/vol_id -L /dev/$1`
+	volume=`/usr/sbin/blkid /dev/$1 | grep -o 'LABEL=.*' | awk -F\" '{print $2}'`
 	if [ "x$volume" = "x" ];then
 		volume=`echo $(/usr/sbin/parted -s /dev/$disk_name print | grep "Number" -A16 | sed -n '2,16p' | awk 'NF>=6{for(n=6;n<=NF;n++)printf $n" ";print     ""}' | sed -n $partition_num"p")`
 		if [ "x$volume" = "x" ];then
@@ -344,7 +372,7 @@ scan_disk_entries()
 		vendor=`get_vendor_from_disk "$part_name"`
 		volume=`get_volume_from_disk "$part_name" "$label" "$M_capacity"`
 
-		if [ "x$vendor" = "x" -o "x$volume" = "x" ];then
+		if [ "x$vendor" = "x" -a "x$volume" = "x" ];then
 			continue
 		fi
 
@@ -352,7 +380,7 @@ scan_disk_entries()
 			continue
 		fi
 
-		echo "$part_name*$vendor*$volume*$device_id">>$DISK_FIND_TABLE
+		echo "$part_name*$vendor*$volume*$device_id">>$DISK_FIND_TABLE && cp -rf $DISK_FIND_TABLE $DISK_FIND_TABLE_BACKUP
 
 		if [ $i -ge 20 ];then
 			break
@@ -413,17 +441,17 @@ dlna_start() {
 	PID_file=/var/run/cmddlna.pid
 	test -f $PID_file && kill $(cat $PID_file)
 	echo "$$" > $PID_file
-	sleep 5
+	#sleep 5
 
-	local name=$($config get upnp_serverName)
-	[ "x$name" = "x" ] && name=$($config get Device_name)
-	[ "x$name" = "x" ] && name="ReadyDLNA: $(cat /module_name)"
+	local name=$($config get Device_name)
+	[ "x$name" = "x" ] && name="$(cat /module_name)"
+	local formate_name="ReadyDLNA: $name"
 	dir_num=0
 
 	[ -f $MINIDLNA_CONF ] && rm -f $MINIDLNA_CONF
 	[ ! -d /tmp/etc ] && mkdir /tmp/etc
 
-	print_dlna_conf "$($config get lan_ipaddr)" "$($config get lan_netmask)" "$name" "$($config get upnp_enable_tivo)" > $MINIDLNA_CONF
+	print_dlna_conf "$($config get lan_ipaddr)" "$($config get lan_netmask)" "$formate_name" "$($config get upnp_enable_tivo)" > $MINIDLNA_CONF
 
 	scan_disk_entries
 
@@ -448,7 +476,8 @@ dlna_start() {
 		
 		dev=`get_devnam_fromlabel "$vendor" "$volume" "$serial_num"_"$partition_num"`
 		if [ "x$dev" != "x" ];then
-			map_usb_to_dlna "$dev" "$relative_path" "$access" >> $MINIDLNA_CONF
+			mount_p=`mount |grep "/dev/$dev" |awk -F"mnt/" '{print $2}' |awk '{print $1}'`		
+			[ "x$mount_p" != "x" ] && map_usb_to_dlna "$mount_p" "$relative_path" "$access" >> $MINIDLNA_CONF
 		fi
 		
 		let j=$j+1
@@ -470,39 +499,41 @@ dlna_start() {
 
 change_ip_restart() 
 {
-	if [ "$media_server_enable" = "1" -a -e "$MINIDLNA_CONF" -a "x$(grep db_dir $MINIDLNA_CONF)" != "x" ]; then
+	if [ "$media_server_enable" = "1" ] && [ -e "$MINIDLNA_CONF" ] && [ "x$(grep db_dir $MINIDLNA_CONF 2>/dev/null)" != "x" ]; then
 		killall_minidlna
 		rm -f /var/run/minidlna.pid
 		/usr/sbin/minidlna -f $MINIDLNA_CONF
 	fi
 }
 
+KWILT_BIN="$(which kwilt)"
+
 echo "check minidlna ... " >/dev/console
 case "$1" in
 	stop)
 		killall_minidlna
-		kwilt stop
+		[ "x$KWILT_BIN" != "x" ] && kwilt stop
 		[ -n $(which ntgr_sw_api_event_notify) ] && \
 			ntgr_sw_api_event_notify event_notify dlna stopping
 	;;
 	start)
-		kwilt stop
+		[ "x$KWILT_BIN" != "x" ] && kwilt stop
 		killall_minidlna
 		[ "$media_server_enable" = "1" ] && dlna_start
-		kwilt start
+		[ "x$KWILT_BIN" != "x" ] && kwilt start
 		[ -n $(which ntgr_sw_api_event_notify) ] && \
 			ntgr_sw_api_event_notify event_notify dlna starting
 	;;
 	restart)
-		kwilt stop
+		[ "x$KWILT_BIN" != "x" ] && kwilt stop
 		killall_minidlna
 		[ "$media_server_enable" = "1" ] && dlna_start
-		kwilt start
+		[ "x$KWILT_BIN" != "x" ] && kwilt start
 	;;
 	ip_restart)
-		kwilt stop
+		[ "x$KWILT_BIN" != "x" ] && kwilt stop
 		killall_minidlna
 		change_ip_restart
-		kwilt start
+		[ "x$KWILT_BIN" != "x" ] && kwilt start
 	;;
 esac

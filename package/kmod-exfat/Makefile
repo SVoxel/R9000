@@ -9,13 +9,17 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=exfat-nofuse
+PKG_VERSION:=2018-04-17-01c30ad5
 PKG_RELEASE:=1
-PKG_GIT_TREEISH=de4c760bc9a05ead83bc3ec6eec6cf1fb106f523
 
-PKG_SOURCE:=$(PKG_NAME).tar.gz
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_SUBDIR:=$(KERNEL_BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE_VERSION:=01c30ad5
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+PKG_MIRROR_MD5SUM:=760e977f48581ed4afa34f3bf96a36a4
 
 NF=nf
-PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/$(PKG_NAME)
+PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -37,12 +41,6 @@ MAKE_OPTS:= \
 	M="$(PKG_BUILD_DIR)"
 
 define Package/kmod-exfat
-#define Build/Prepare
-#	test x$(GIT_HOME) != x
-#	test -d $(GIT_HOME)/$(PKG_NAME).git
-#	(cd $(GIT_HOME)/$(PKG_NAME).git; git-cat-file -e $(PKG_GIT_TREEISH))
-#	(cd $(KERNEL_BUILD_DIR); git-archive --format=tar --prefix=$(PKG_NAME)/ --remote=$(GIT_HOME)/$(PKG_NAME).git $(PKG_GIT_TREEISH) | tar -xvf -)
-#	$(call Build/Patch/Default)
 	$(call Package/exfat-fuse/template)
 endef
 

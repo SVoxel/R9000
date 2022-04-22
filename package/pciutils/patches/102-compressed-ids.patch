@@ -1,17 +1,15 @@
 --- a/update-pciids.sh
 +++ b/update-pciids.sh
-@@ -6,9 +6,8 @@ set -e
- SRC="http://pci-ids.ucw.cz/v2.2/pci.ids"
- DEST=pci.ids
- PCI_COMPRESSED_IDS=
--GREP=grep
+@@ -9,7 +9,7 @@
+ 
+ [ "$1" = "-q" ] && quiet=true || quiet=false
  
 -# if pci.ids is read-only (because the filesystem is read-only),
 +# if pci.ids.gz is read-only (because the filesystem is read-only),
  # then just skip this whole process.
  if ! touch ${DEST} >/dev/null 2>&1 ; then
  	${quiet} || echo "${DEST} is read-only, exiting." 1>&2
-@@ -18,7 +17,7 @@ fi
+@@ -19,7 +19,7 @@
  if [ "$PCI_COMPRESSED_IDS" = 1 ] ; then
  	DECOMP="cat"
  	SRC="$SRC.gz"
@@ -20,7 +18,7 @@
  elif which bzip2 >/dev/null 2>&1 ; then
  	DECOMP="bzip2 -d"
  	SRC="$SRC.bz2"
-@@ -53,7 +52,7 @@ if ! $DECOMP <$DEST.new >$DEST.neww ; th
+@@ -54,7 +54,7 @@
  	exit 1
  fi
  

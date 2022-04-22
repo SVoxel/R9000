@@ -1,6 +1,6 @@
 --- a/lib/configure
 +++ b/lib/configure
-@@ -39,7 +39,7 @@ if [ -z "$HOST" ] ; then
+@@ -47,7 +47,7 @@
  fi
  [ -n "$RELEASE" ] && rel="${RELEASE}"
  # CAVEAT: tr on Solaris is a bit weird and the extra [] is otherwise harmless.

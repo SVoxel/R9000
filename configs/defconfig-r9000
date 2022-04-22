@@ -481,13 +481,8 @@ CONFIG_TOOLCHAINOPTS=y
 #
 # Binary tools
 #
-# CONFIG_BINUTILS_VERSION_2_19_1 is not set
-# CONFIG_BINUTILS_VERSION_2_20_1 is not set
-# CONFIG_BINUTILS_VERSION_2_21 is not set
-# CONFIG_BINUTILS_VERSION_2_21_1 is not set
-# CONFIG_BINUTILS_VERSION_2_22 is not set
-CONFIG_BINUTILS_VERSION_2_38=y
 CONFIG_EXTRA_BINUTILS_CONFIG_OPTIONS=""
+CONFIG_BINUTILS_VERSION_2_38=y
 CONFIG_BINUTILS_VERSION="2.38"
 
 #
@@ -501,7 +496,7 @@ CONFIG_BINUTILS_VERSION="2.38"
 # CONFIG_GCC_VERSION_4_6_LINARO is not set
 # CONFIG_GCC_VERSION_4_7_LINARO is not set
 # CONFIG_GCC_VERSION_4_8_LINARO is not set
-CONFIG_GCC_VERSION_11_2_0=y
+CONFIG_GCC_VERSION_11_3_0=y
 # CONFIG_GCC_VERSION_LLVM is not set
 # CONFIG_GCC_USE_GRAPHITE is not set
 CONFIG_EXTRA_GCC_CONFIG_OPTIONS="--with-fpu=neon-vfpv4 --with-float=hard"
@@ -524,9 +519,9 @@ CONFIG_UCLIBC_VERSION_0_9_33=y
 #
 CONFIG_GDB=y
 # CONFIG_INSIGHT is not set
-CONFIG_GCC_DEFAULT_VERSION_11_2_0=y
-CONFIG_GCC_VERSION="11.2.0"
-CONFIG_GCC_VERSION_11_2=y
+CONFIG_GCC_DEFAULT_VERSION_11_3_0=y
+CONFIG_GCC_VERSION="11.3.0"
+CONFIG_GCC_VERSION_11_3=y
 CONFIG_UCLIBC_VERSION="0.9.33.2"
 CONFIG_LIBC="uClibc"
 CONFIG_LIBC_VERSION="0.9.33.2"
@@ -1781,7 +1776,7 @@ CONFIG_PACKAGE_kmod-dm=y
 # CONFIG_PACKAGE_kmod-md-mod is not set
 # CONFIG_PACKAGE_kmod-nbd is not set
 # CONFIG_PACKAGE_kmod-scsi-cdrom is not set
-CONFIG_PACKAGE_kmod-scsi-core=y
+# CONFIG_PACKAGE_kmod-scsi-core is not set
 # CONFIG_PACKAGE_kmod-scsi-generic is not set
 
 #
@@ -1796,7 +1791,7 @@ CONFIG_PACKAGE_kmod-crypto-core=y
 # CONFIG_PACKAGE_kmod-crypto-deflate is not set
 # CONFIG_PACKAGE_kmod-crypto-des is not set
 # CONFIG_PACKAGE_kmod-crypto-ecb is not set
-CONFIG_PACKAGE_kmod-crypto-hash=y
+# CONFIG_PACKAGE_kmod-crypto-hash is not set
 # CONFIG_PACKAGE_kmod-crypto-hmac is not set
 # CONFIG_PACKAGE_kmod-crypto-hw-geode is not set
 # CONFIG_PACKAGE_kmod-crypto-hw-hifn-795x is not set
@@ -1835,8 +1830,9 @@ CONFIG_PACKAGE_kmod-exfat=y
 # CONFIG_PACKAGE_kmod-fs-autofs4 is not set
 # CONFIG_PACKAGE_kmod-fs-btrfs is not set
 CONFIG_PACKAGE_kmod-fs-cifs=y
-CONFIG_PACKAGE_kmod-fs-exportfs=y
-CONFIG_PACKAGE_kmod-fs-ext4=y
+# CONFIG_PACKAGE_kmod-fs-exportfs is not set
+# CONFIG_PACKAGE_kmod-fs-ext4 is not set
+CONFIG_PACKAGE_kmod-fs-fscache=y
 # CONFIG_PACKAGE_kmod-fs-hfs is not set
 # CONFIG_PACKAGE_kmod-fs-hfsplus is not set
 # CONFIG_PACKAGE_kmod-fs-isofs is not set
@@ -1883,23 +1879,23 @@ CONFIG_PACKAGE_kmod-fuse=y
 # Libraries
 #
 # CONFIG_PACKAGE_kmod-lib-cordic is not set
-CONFIG_PACKAGE_kmod-lib-crc-ccitt=y
+# CONFIG_PACKAGE_kmod-lib-crc-ccitt is not set
 # CONFIG_PACKAGE_kmod-lib-crc-itu-t is not set
-CONFIG_PACKAGE_kmod-lib-crc16=y
+# CONFIG_PACKAGE_kmod-lib-crc16 is not set
 # CONFIG_PACKAGE_kmod-lib-crc32c is not set
 # CONFIG_PACKAGE_kmod-lib-crc7 is not set
 # CONFIG_PACKAGE_kmod-lib-crc8 is not set
 # CONFIG_PACKAGE_kmod-lib-lzo is not set
-CONFIG_PACKAGE_kmod-lib-textsearch=y
+# CONFIG_PACKAGE_kmod-lib-textsearch is not set
 # CONFIG_PACKAGE_kmod-lib-zlib is not set
 
 #
 # Native Language Support
 #
-CONFIG_PACKAGE_kmod-nls-base=y
+# CONFIG_PACKAGE_kmod-nls-base is not set
 # CONFIG_PACKAGE_kmod-nls-cp1250 is not set
 # CONFIG_PACKAGE_kmod-nls-cp1251 is not set
-CONFIG_PACKAGE_kmod-nls-cp437=y
+# CONFIG_PACKAGE_kmod-nls-cp437 is not set
 # CONFIG_PACKAGE_kmod-nls-cp775 is not set
 # CONFIG_PACKAGE_kmod-nls-cp850 is not set
 # CONFIG_PACKAGE_kmod-nls-cp852 is not set
@@ -1968,7 +1964,7 @@ CONFIG_PACKAGE_kmod-ipt-rpfilter=y
 # CONFIG_PACKAGE_kmod-ipt-u32 is not set
 # CONFIG_PACKAGE_kmod-ipt-ulog is not set
 CONFIG_PACKAGE_kmod-nf-conntrack-netlink=y
-CONFIG_PACKAGE_kmod-nfnetlink=y
+# CONFIG_PACKAGE_kmod-nfnetlink is not set
 # CONFIG_PACKAGE_kmod-nfnetlink-log is not set
 # CONFIG_PACKAGE_kmod-nfnetlink-queue is not set
 
@@ -1993,7 +1989,7 @@ CONFIG_PACKAGE_kmod-dni_enet=y
 # CONFIG_PACKAGE_kmod-hfcmulti is not set
 # CONFIG_PACKAGE_kmod-hfcpci is not set
 CONFIG_PACKAGE_kmod-ifb=y
-CONFIG_PACKAGE_kmod-libphy=y
+# CONFIG_PACKAGE_kmod-libphy is not set
 # CONFIG_PACKAGE_kmod-macvlan is not set
 # CONFIG_PACKAGE_kmod-natsemi is not set
 # CONFIG_PACKAGE_kmod-ne2k-pci is not set
@@ -2032,7 +2028,7 @@ CONFIG_PACKAGE_kmod-bonding=y
 # CONFIG_PACKAGE_kmod-ipsec is not set
 # CONFIG_PACKAGE_kmod-iptunnel4 is not set
 # CONFIG_PACKAGE_kmod-iptunnel6 is not set
-CONFIG_PACKAGE_kmod-ipv6=y
+# CONFIG_PACKAGE_kmod-ipv6 is not set
 # CONFIG_PACKAGE_kmod-isdn4linux is not set
 CONFIG_PACKAGE_kmod-l2tp=y
 # CONFIG_PACKAGE_kmod-l2tp-eth is not set
@@ -2081,7 +2077,7 @@ CONFIG_PACKAGE_kmod-dnshijack=y
 CONFIG_PACKAGE_kmod-ftp-alg=y
 # CONFIG_PACKAGE_kmod-gpio-nxp-74hc164 is not set
 # CONFIG_PACKAGE_kmod-hid is not set
-CONFIG_PACKAGE_kmod-input-core=y
+# CONFIG_PACKAGE_kmod-input-core is not set
 # CONFIG_PACKAGE_kmod-input-evdev is not set
 # CONFIG_PACKAGE_kmod-input-joydev is not set
 # CONFIG_PACKAGE_kmod-input-polldev is not set
@@ -2153,17 +2149,17 @@ CONFIG_PACKAGE_kmod-sound-soc-core=y
 # CONFIG_PACKAGE_kmod-usb-acm is not set
 # CONFIG_PACKAGE_kmod-usb-atm is not set
 # CONFIG_PACKAGE_kmod-usb-cm109 is not set
-CONFIG_PACKAGE_kmod-usb-core=y
+# CONFIG_PACKAGE_kmod-usb-core is not set
 # CONFIG_PACKAGE_kmod-usb-hid is not set
 # CONFIG_PACKAGE_kmod-usb-net is not set
 # CONFIG_PACKAGE_kmod-usb-ohci is not set
 # CONFIG_PACKAGE_kmod-usb-printer is not set
 # CONFIG_PACKAGE_kmod-usb-serial is not set
-CONFIG_PACKAGE_kmod-usb-storage=y
+# CONFIG_PACKAGE_kmod-usb-storage is not set
 # CONFIG_PACKAGE_kmod-usb-storage-extras is not set
 # CONFIG_PACKAGE_kmod-usb-test is not set
 # CONFIG_PACKAGE_kmod-usb-uhci is not set
-CONFIG_PACKAGE_kmod-usb-xhci=y
+# CONFIG_PACKAGE_kmod-usb-xhci is not set
 # CONFIG_PACKAGE_kmod-usb-yealink is not set
 # CONFIG_PACKAGE_kmod-usb2 is not set
 # CONFIG_PACKAGE_kmod-usbip is not set

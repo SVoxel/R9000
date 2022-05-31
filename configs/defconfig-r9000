@@ -355,7 +355,7 @@ CONFIG_TARGET_r9000_Default=y
 # CONFIG_TARGET_omap4_Default is not set
 CONFIG_TARGET_BOARD="r9000"
 CONFIG_TARGET_ARCH_PACKAGES="r9000"
-CONFIG_DEFAULT_TARGET_OPTIMIZATION="-O2 -pipe -mcpu=cortex-a15 -mfpu=neon-vfpv4 -funsafe-math-optimizations -mtune=cortex-a15 -mfloat-abi=hard -fcommon"
+CONFIG_DEFAULT_TARGET_OPTIMIZATION="-O2 -pipe -mcpu=cortex-a15 -mfpu=neon-vfpv4 -ftree-vectorize -fvect-cost-model=unlimited -funsafe-math-optimizations -mtune=cortex-a15 -mfloat-abi=hard -fcommon"
 CONFIG_LINUX_3_10=y
 CONFIG_DEFAULT_base-files=y
 CONFIG_DEFAULT_busybox=y
@@ -470,7 +470,7 @@ CONFIG_KERNEL_GIT_LOCAL_REPOSITORY=""
 # CONFIG_BUILD_LOG is not set
 # CONFIG_SRC_TREE_OVERRIDE is not set
 CONFIG_TARGET_OPTIONS=y
-CONFIG_TARGET_OPTIMIZATION="-O2 -pipe -mcpu=cortex-a15 -mfpu=neon-vfpv4 -funsafe-math-optimizations -mtune=cortex-a15 -mfloat-abi=hard -fcommon"
+CONFIG_TARGET_OPTIMIZATION="-O2 -pipe -mcpu=cortex-a15 -mfpu=neon-vfpv4 -ftree-vectorize -fvect-cost-model=unlimited -funsafe-math-optimizations -mtune=cortex-a15 -mfloat-abi=hard -fcommon"
 # CONFIG_SOFT_FLOAT is not set
 # CONFIG_EXTERNAL_TOOLCHAIN is not set
 CONFIG_INSTALL_LIBSTDCPP=y

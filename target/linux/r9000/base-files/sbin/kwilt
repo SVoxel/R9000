@@ -1,8 +1,8 @@
 #!/bin/sh
 # app version format :
 #    <app name>-<app version>-<model name>-<firmware version>-<dash version>.<ext file name>
-#    eg: kwilt-v<kwilt version>-r7800-v<r7800 version>-<dash version>.<ext file name>
-#    eg: kwilt-v1.2-r7800-v1.0.4.60-002.tar.gz
+#    eg: kwilt-v<kwilt version>-R9000-v<R9000 version>-<dash version>.<ext file name>
+#    eg: kwilt-v1.2-R9000-v1.0.4.60-002.tar.gz
 #
 
 oc () { "$@" >> /dev/console 2>&1 ; } # stdout & stderr to /dev/console

@@ -18,7 +18,7 @@ define Package/dni-bond
 endef
 
 define Package/dni-bond/description
-	It is used for R7800 bonding to hardware setting
+	It is used for R9000 bonding to hardware setting
 endef
 
 define Build/Prepare

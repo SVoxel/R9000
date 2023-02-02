@@ -8,17 +8,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libid3tag
-PKG_VERSION:=0.15.1b
-PKG_RELEASE:=3
+PKG_VERSION:=0.16.2
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@SF/mad
-PKG_MD5SUM:=e5808ad997ba32c498803822078748c3
+PKG_MD5SUM:=196ac45b7066c5714af0e441271ad4e3
 
-PKG_FIXUP:=autoreconf
-PKG_INSTALL:=1
+CMAKE_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/cmake.mk
 
 define Package/libid3tag
   SECTION:=libs
@@ -29,20 +29,11 @@ define Package/libid3tag
 endef
 
 define Package/libid3tag/description
-	libid3tag is a library for reading and (eventually) writing ID3 tags, both 
+	libid3tag is a library for reading and (eventually) writing ID3 tags, both
 	ID3v1 and the various versions of ID3v2.
 endef
 
-TARGET_CFLAGS += $(FPIC)
-
-define Build/Configure
-	$(call Build/Configure/Default, \
-		--enable-shared \
-		--enable-static \
-		--disable-debugging \
-		--disable-profiling \
-	)
-endef
+TARGET_CFLAGS += $(FPIC) -DNDEBUG
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include

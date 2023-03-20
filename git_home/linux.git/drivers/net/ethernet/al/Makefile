@@ -1,5 +1,3 @@
-KBUILD_CFLAGS := $(filter-out -O%,$(KBUILD_CFLAGS)) -O3
-
 KBUILD_CPPFLAGS += -Iarch/arm/mach-alpine/include/al_hal/
 
 obj-$(CONFIG_NET_AL_ETH) += al_eth_drv.o

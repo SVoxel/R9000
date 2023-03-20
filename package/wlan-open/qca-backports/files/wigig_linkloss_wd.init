@@ -3,10 +3,18 @@
 START=98
 STOP=1
 
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+CONFIG=/bin/config
+WIG_ENABLED=$($CONFIG get endis_wig_radio)
+
 start() {
-    /sbin/11ad_linkloss_wd.sh &
+	if [ "$WIG_ENABLED" = "1" ]; then
+		/sbin/11ad_linkloss_wd.sh &
+	else
+		rmmod wil6210
+	fi
 }
 
 stop() {
-    killall 11ad_linkloss_wd.sh
+	killall 11ad_linkloss_wd.sh
 }

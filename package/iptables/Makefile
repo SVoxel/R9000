@@ -25,12 +25,14 @@ PKG_LICENSE:=GPL-2.0
 PKG_CPE_ID:=cpe:/a:netfilter_core_team:iptables
 
 include $(INCLUDE_DIR)/package.mk
+
 ifeq ($(DUMP),)
   -include $(LINUX_DIR)/.config
   include $(INCLUDE_DIR)/netfilter.mk
   STAMP_CONFIGURED:=$(strip $(STAMP_CONFIGURED))_$(shell grep 'NETFILTER' $(LINUX_DIR)/.config | mkhash md5)
 endif
 
+TARGET_CFLAGS := $(filter-out -O%,$(TARGET_CFLAGS)) -O3
 
 define Package/iptables/Default
   SECTION:=net

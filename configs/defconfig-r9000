@@ -2450,7 +2450,7 @@ CONFIG_PACKAGE_libusb-compat=y
 CONFIG_PACKAGE_libuuid=y
 # CONFIG_PACKAGE_libvorbis is not set
 CONFIG_PACKAGE_libwxwidgets=y
-CONFIG_PACKAGE_libxml2=y
+# CONFIG_PACKAGE_libxml2 is not set
 # CONFIG_PACKAGE_linux-atm is not set
 # CONFIG_PACKAGE_mxml is not set
 # CONFIG_PACKAGE_taglib is not set

@@ -65,12 +65,19 @@ generate_server_conf_file() {
 		port=$($CONFIG get vpn_serv_port)
 		proto=$($CONFIG get vpn_serv_type)
 		if [ "$proto" = "udp" ]; then
+			cipher="CHACHA20-POLY1305"
+			proto=udp
+			complz4="compress lz4-v2"
+			pushlz4="push \"compress lz4-v2\""
 			fastio="fast-io"
 			sndbuf=786432
 			rcvbuf=786432
 		else
 			proto=tcp
-			fastio=";fast-io"
+			cipher="CHACHA20-POLY1305"
+			complz4="compress lz4-v2"
+			pushlz4="push \"compress lz4-v2\""
+			fastio="# fast-io"
 			sndbuf=0
 			rcvbuf=0
 		fi
@@ -94,14 +101,14 @@ status /tmp/openvpnd.status
 mtu-disc yes
 topology subnet
 script-security 2
-ncp-ciphers CHACHA20-POLY1305:AES-128-GCM:AES-256-GCM:AES-128-CBC:AES-256-CBC
-cipher CHACHA20-POLY1305
+cipher $cipher
+data-ciphers CHACHA20-POLY1305:AES-128-GCM:AES-256-GCM:AES-128-CBC:AES-256-CBC
 auth sha1
 tls-server
 client-to-client
 duplicate-cn
-compress lz4-v2
-push "compress lz4-v2"
+$complz4
+$pushlz4
 $fastio
 client-connect "$push tap"
 sndbuf $sndbuf
@@ -109,7 +116,7 @@ rcvbuf $rcvbuf
 push "sndbuf $sndbuf"
 push "rcvbuf $rcvbuf"
 EOF
-	else
+	else 
 		# Generate TUN server config
 		port=$($CONFIG get tun_vpn_serv_port)
 		proto=$($CONFIG get tun_vpn_serv_type)
@@ -117,12 +124,19 @@ EOF
 		lan_ipaddr=$($CONFIG get lan_ipaddr)
 		subnet=$(tun_net $lan_ipaddr $lan_netmask)
 		if [ "$proto" = "udp" ]; then
+			proto=udp
+			cipher="CHACHA20-POLY1305"
+			complz4="compress lz4-v2"
+			pushlz4="push \"compress lz4-v2\""
 			fastio="fast-io"
 			sndbuf=786432
 			rcvbuf=786432
 		else
-			fastio=";fast-io"
 			proto=tcp
+			cipher="CHACHA20-POLY1305"
+			complz4="compress lz4-v2"
+			pushlz4="push \"compress lz4-v2\""
+			fastio="# fast-io"
 			sndbuf=0
 			rcvbuf=0
 		fi
@@ -146,13 +160,13 @@ status /tmp/openvpnd_tun.status
 mtu-disc yes
 topology subnet
 script-security 2
-ncp-ciphers CHACHA20-POLY1305:AES-128-GCM:AES-256-GCM:AES-128-CBC:AES-256-CBC
-cipher CHACHA20-POLY1305
+cipher $cipher
+data-ciphers CHACHA20-POLY1305:AES-128-GCM:AES-256-GCM:AES-128-CBC:AES-256-CBC
 auth sha1
 client-to-client
 duplicate-cn
-compress lz4-v2
-push "compress lz4-v2"
+$complz4
+$pushlz4
 $fastio
 push "dhcp-option DNS $lan_ipaddr"
 client-connect "$push tun"
@@ -244,7 +258,7 @@ start() {
 	if [ "$($CONFIG get vpn_enable)" = "0" ]; then
 		exit 1
 	fi
-	if [ "$($CONFIG get endis_ddns)" = "0" ] && [ "$($CONFIG get wan_proto)" != "static" ]; then
+	if [ "$($CONFIG get endis_ddns)" = "0" ] && [ "$($CONFIG get wan_proto)" != "static" ] && [ "$($CONFIG get wan_pppoe_wan_assign)" = "0" ]; then
 		exit 1
 	fi
 	if [ "$($CONFIG get ap-mode)" = "1" ]; then
@@ -289,7 +303,7 @@ stop() {
 	brctl delif $br $tap
 	$PROG --rmtun --dev $tap
 
-	#close the door
+	# Close the door
 	net-wall rule
 	net-wall start
 }

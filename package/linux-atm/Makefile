@@ -21,6 +21,8 @@ PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 
+TARGET_CFLAGS += -Wno-incompatible-pointer-types
+
 ATM_DEBUG_BINS:=aread awrite atmdiag atmdump atmswitch saaldump \
 		sonetdiag svc_recv svc_send ttcp_atm
 ATM_DEBUG_SBINS:=atmaddr atmloop atmtcp esi atmsigd bus \

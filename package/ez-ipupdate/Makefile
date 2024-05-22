@@ -23,6 +23,8 @@ PKG_GIT_TREEISH:=ez-ipupdate-v3.0.10-dni21
 
 include $(INCLUDE_DIR)/package.mk
 
+TARGET_CFLAGS += -Wno-implicit-function-declaration
+
 MAKE_FLAGS += CFLAGS="$(TARGET_CFLAGS) $(EXTRA_CFLAGS) \
 			  -DNETGEAR_PROJECT -DEXPERIMENTAL"
 

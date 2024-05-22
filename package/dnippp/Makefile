@@ -22,6 +22,8 @@ PKG_GIT_TREEISH=ppp-v2.4.3-dni29
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/kernel.mk
 
+TARGET_CFLAGS += -Wno-implicit-function-declaration -Wno-return-mismatch
+
 define Package/dnippp/Default
   SECTION:=net
   CATEGORY:=Network

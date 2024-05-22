@@ -8,6 +8,7 @@ CC = gcc
 FILES = main.o nvram.o pppnas.o session.o route.o iprule.o iproute.o
 
 CFLAGS += -Wall -Wunused -g -O2
+CFLAGS += -Wno-implicit-function-declaration -Wno-int-conversion
 
 all : ppp-nas
 

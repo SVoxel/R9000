@@ -27,6 +27,7 @@ PKG_BUILD_PARALLEL:=1
 include $(INCLUDE_DIR)/package.mk
 
 TARGET_CFLAGS := $(filter-out -O%,$(TARGET_CFLAGS)) -Os
+TARGET_CFLAGS += -Wno-implicit-function-declaration -Wno-int-conversion
 
 define Package/less
   SECTION:=utils

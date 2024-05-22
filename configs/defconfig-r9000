@@ -1173,6 +1173,7 @@ CONFIG_PACKAGE_inotifywatch=y
 CONFIG_PACKAGE_jq=y
 CONFIG_PACKAGE_led-control=y
 # CONFIG_PACKAGE_led-extender is not set
+CONFIG_PACKAGE_libatomic=y
 CONFIG_PACKAGE_libc=y
 CONFIG_PACKAGE_libgcc=y
 CONFIG_PACKAGE_libpthread=y

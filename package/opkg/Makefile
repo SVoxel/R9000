@@ -50,7 +50,7 @@ endef
 define Package/opkg-curl
 $(call Package/opkg/Default)
   TITLE += (with curl support)
-  DEPENDS:=+libcurl +zlib
+  DEPENDS:=+libopenssl-1.0.2 +libcurl +zlib
   VARIANT:=curl
 endef
 
@@ -74,6 +74,9 @@ define Package/opkg/conffiles
 /etc/opkg.conf
 endef
 
+TARGET_CPPFLAGS:=-I$(STAGING_DIR)/usr/local/include $(TARGET_CPPFLAGS)
+TARGET_LDFLAGS:=-L$(STAGING_DIR)/usr/local/lib $(TARGET_LDFLAGS)
+TARGET_CFLAGS:=-L$(STAGING_DIR)/usr/local/lib $(TARGET_CFLAGS)
 TARGET_CFLAGS += $(if $(CONFIG_GCC_VERSION_4_3)$(CONFIG_GCC_VERSION_4_4),-Wno-array-bounds)
 TARGET_CFLAGS += -ffunction-sections -fdata-sections
 EXTRA_CFLAGS += $(TARGET_CPPFLAGS) -L$(STAGING_DIR)/usr/lib -lz

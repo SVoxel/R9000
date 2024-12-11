@@ -2457,6 +2457,7 @@ CONFIG_PACKAGE_libpci=y
 CONFIG_PACKAGE_libpopt=y
 CONFIG_PACKAGE_libreadline=y
 CONFIG_PACKAGE_libsmartcols=y
+CONFIG_PACKAGE_libtalloc=y
 CONFIG_PACKAGE_libubox=y
 CONFIG_PACKAGE_libuci=y
 # CONFIG_PACKAGE_libuci-lua is not set

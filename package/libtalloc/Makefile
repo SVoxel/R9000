@@ -7,8 +7,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=talloc
 PKG_VERSION:=2.4.2
-MAJOR_VERSION:=2
-PKG_RELEASE:=1
+MAJOR_VERSION:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://www.samba.org/ftp/talloc

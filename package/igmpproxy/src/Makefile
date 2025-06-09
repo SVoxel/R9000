@@ -12,7 +12,7 @@ EXTRA_FLAG = -DUSE_ATH_HEADER
 # CFLAGS=-g
 CFLAGS=-Os
 CFLAGS += $(EXTRA_FLAGS) -DUSE_ATH_HEADER -DDNI_MULTI_LAN_SUPPORT
-CFLAGS += -Wno-implicit-function-declaration -Wno-int-conversion -Wno-incompatible-pointer-types -Wno-return-mismatch
+CFLAGS += -std=gnu17 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-incompatible-pointer-types -Wno-return-mismatch
 
 default : build.h igmpproxy
 

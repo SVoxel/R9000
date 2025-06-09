@@ -1,57 +1,116 @@
 #
-# Copyright (C) 2006-2015 OpenWrt.org
+# Copyright (C) 2009-2010 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
 #
+
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mtd-utils
-PKG_VERSION:=2.2.0
-PKG_RELEASE:=1
+PKG_REV:=aea36417067dade75192bafa03af70b6eb2677b1
+PKG_VERSION:=1.5.2
+PKG_RELEASE:=2
+PKG_INSTALL:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_URL:=https://infraroot.at/pub/mtd/
-PKG_HASH:=250d082f67375ca8451b5fcfc9a23a53ced3ebebd8312c288daf2507bbab1324
-PKG_CPE_ID:=cpe:/a:mtd-utils_project:mtd-utils
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+PKG_SOURCE_URL:=git://git.infradead.org/mtd-utils.git
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE_VERSION:=$(PKG_REV)
+PKG_MIRROR_MD5SUM:=f69aca3fd198b419bdc7aa2e60d108b4
 
-PKG_FIXUP:=autoreconf
+PKG_BUILD_DEPENDS:=util-linux
 
-include $(INCLUDE_DIR)/host-build.mk
+include $(INCLUDE_DIR)/package.mk
 
-ifneq ($(HOST_OS),Linux)
-  HOST_CFLAGS += \
-	-I$(CURDIR)/include \
-	-Dloff_t=off_t \
-	-D__BYTE_ORDER=BYTE_ORDER \
-	-include endian.h \
-	-DNO_NATIVE_SUPPORT \
-	-include fls.h
-endif
+TARGET_CFLAGS := $(filter-out -O%,$(TARGET_CFLAGS)) -Os
+TARGET_CFLAGS += -std=gnu17 -Wno-incompatible-pointer-types
 
-HOST_CPPFLAGS += -I/usr/include/uuid
+FILES:= \
+	doc_loadbios \
+	docfdisk \
+	flash_erase \
+	flash_eraseall \
+	flash_lock \
+	flash_otp_dump \
+	flash_otp_info \
+	flash_unlock \
+	flashcp \
+	ftl_check \
+	ftl_format \
+	jffs2dump \
+	mtd_debug \
+	mtdinfo \
+	nanddump \
+	nandtest \
+	nandwrite \
+	nftldump \
+	nftl_format \
+	recv_image \
+	rfddump \
+	rfdformat \
+	serve_image \
+	sumtool \
+	ubiattach \
+	ubicrc32 \
+	ubidetach \
+	ubiformat \
+	ubimkvol \
+	ubinfo \
+	ubinize \
+	ubirename \
+	ubirmvol \
+	ubirsvol \
+	ubiupdatevol
 
-HOST_CONFIGURE_ARGS+= \
-	--without-tests \
-	--without-crypto \
-	--without-xattr \
-	--without-zstd \
-	--without-lzo \
-	--with-lzma
-
-HOST_MAKE_FLAGS += \
-	PROGRAMS="mkfs.jffs2 ubinize mkfs.ubifs"
-
-define Host/Install
-	$(CP) \
-		$(HOST_BUILD_DIR)/mkfs.jffs2 \
-		$(HOST_BUILD_DIR)/mkfs.ubifs \
-		$(HOST_BUILD_DIR)/ubinize \
-		$(STAGING_DIR_HOST)/bin/
+define PartGen
+define Package/mtd-utils-$(subst _,-,$(firstword $(subst :, ,$(1))))
+  TITLE:=$(firstword $(subst :, ,$(1))) package from mtd-utils
+  URL:=http://www.linux-mtd.infradead.org/
+  SECTION:=utils
+  CATEGORY:=Utilities
+  DEPENDS:=mtd-utils $(wordlist 2,$(words $(subst :, ,$(1))),$(subst :, ,$(1)))
+endef
 endef
 
-define Host/Clean
-	rm -f $(STAGING_DIR_HOST)/bin/{mkfs.jffs2,mkfs.ubifs,ubinize}
+define Package/mtd-utils
+  TITLE:=Utilities for flash info/debug
+  SECTION:=utils
+  CATEGORY:=Utilities
+  URL:=http://www.linux-mtd.infradead.org/
+  MENU:=1
 endef
 
-$(eval $(call HostBuild))
+define Package/mtd-utils/description
+  Utilities for manipulating memory technology devices.
+endef
+
+define Package/mtd-utils/install
+	true
+endef
+
+$(foreach file,$(FILES),$(eval $(call PartGen,$(file))))
+
+MAKE_FLAGS += \
+	DESTDIR="$(PKG_INSTALL_DIR)" \
+	BUILDDIR="$(PKG_BUILD_DIR)" \
+	LDLIBS+="$(LIBGCC_S)" \
+	WITHOUT_XATTR=1 \
+	WITHOUT_LZO=1
+
+define PartInstall
+define Package/mtd-utils-$(subst _,-,$(firstword $(subst :, ,$(1))))/install
+	$(INSTALL_DIR) \
+		$$(1)/usr/sbin
+
+	$(INSTALL_BIN) \
+		$(PKG_INSTALL_DIR)/usr/sbin/$(firstword $(subst :, ,$(1))) \
+		$$(1)/usr/sbin/
+endef
+endef
+
+$(foreach file,$(FILES),$(eval $(call PartInstall,$(file))))
+
+$(eval $(call BuildPackage,mtd-utils))
+$(foreach file,$(FILES),$(eval $(call BuildPackage,mtd-utils-$(subst _,-,$(firstword $(subst :, ,$(file)))))))

@@ -26,6 +26,8 @@ PKG_CHECK_FORMAT_SECURITY:=0
 
 include $(INCLUDE_DIR)/package.mk
 
+TARGET_CFLAGS += -std=gnu17
+
 define Package/unzip
   SECTION:=utils
   CATEGORY:=Utilities

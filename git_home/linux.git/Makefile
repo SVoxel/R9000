@@ -571,9 +571,9 @@ endif # $(dot-config)
 all: vmlinux
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-KBUILD_CFLAGS += -Os $(EXTRA_OPTIMIZATION) $(call cc-disable-warning,maybe-uninitialized,)
+KBUILD_CFLAGS += -std=gnu17 -Os $(EXTRA_OPTIMIZATION) $(call cc-disable-warning,maybe-uninitialized,)
 else
-KBUILD_CFLAGS += -O2 -fno-reorder-blocks -fno-tree-ch -ftree-vectorize -fvect-cost-model=dynamic $(EXTRA_OPTIMIZATION)
+KBUILD_CFLAGS += -std=gnu17 -O2 -fno-reorder-blocks -fno-tree-ch -ftree-vectorize -fvect-cost-model=dynamic $(EXTRA_OPTIMIZATION)
 endif
 
 KBUILD_CFLAGS += -Wno-int-conversion -Wno-return-mismatch -Wno-incompatible-pointer-types -Wno-incompatible-pointer-types

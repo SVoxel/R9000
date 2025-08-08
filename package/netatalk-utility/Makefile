@@ -12,6 +12,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/netatalk-utility
   SECTION:=net
   CATEGORY:=Network
+  DEPENDS:=+datalib
   TITLE:=Netatalk Utility
 endef
 

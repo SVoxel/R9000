@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libgcrypt
-PKG_VERSION:=1.12.2
+PKG_VERSION:=1.12.4
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://www.gnupg.org/ftp/gcrypt/libgcrypt/
-PKG_MD5SUM:=4e98430cfc16d842a7231026c32418da
+PKG_MD5SUM:=93dbb26a9caaeb0cdae4a6dcd8c04300
 PKG_LICENSE:=LGPL-2.1+ GPL-2.0+
 PKG_LICENSE_FILES:=COPYING
 
